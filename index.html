@@ -4,159 +4,227 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Just Beat It</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFjMjAyOSIvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwNzA4MGIiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJmbCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZjdhNDUiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI2YmZmIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiByeD0iMTUiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiMzYTQxNTI4MCIvPgo8cGF0aCBkPSJNMzIgMTAgQzQyIDI0IDQ3IDM0IDQxIDQ0IEMzNyA1MSAyNyA1MSAyMyA0NCBDMTcgMzQgMjIgMjQgMzIgMTAgWiIgZmlsbD0idXJsKCNmbCkiLz4KPHBhdGggZD0iTTE4IDM0IEgyNiBMMzAgMjAgTDM2IDQ2IEw0MCAzMCBINTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzA3MDgwYiIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzFjMjAyOSIvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwNzA4MGIiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJmbCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZjdhNDUiLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI2YmZmIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiByeD0iMTUiIGZpbGw9InVybCgjYmcpIiBzdHJva2U9IiMzYTQxNTI4MCIvPgo8cGF0aCBkPSJNMzIgMTAgQzQyIDI0IDQ3IDM0IDQxIDQ0IEMzNyA1MSAyNyA1MSAyMyA0NCBDMTcgMzQgMjIgMjQgMzIgMTAgWiIgZmlsbD0idXJsKCNmbCkiLz4KPHBhdGggZD0iTTE4IDM0IEgyNiBMMzAgMjAgTDM2IDQ2IEw0MCAzMCBINTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzA3MDgwYiIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==">
+<meta name="theme-color" content="#0b0d11">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
   :root{
-    --bg:#14161a;
-    --panel:#1d2026;
-    --panel-2:#252932;
-    --border:#33384333;
-    --text:#eef0f3;
-    --text-dim:#9aa1ad;
-    --accent:#5ee6c8;
-    --accent-2:#ff8a5c;
-    --danger:#ff6b6b;
-    --radius:14px;
+    --bg:#0b0d11;
+    --panel:#181c24;
+    --panel-2:#222733;
+    --border:#3a415280;
+    --text:#f7f9fc;
+    --text-dim:#aab2c2;
+    --accent:#4ef0c8;
+    --accent-2:#ff7a45;
+    --accent-3:#8b6bff;
+    --danger:#ff5470;
+    --radius:18px;
+    --radius-sm:12px;
+    --shadow-card:0 10px 28px -14px rgba(0,0,0,.7);
+    --shadow-btn:0 10px 24px -8px #4ef0c855;
   }
   *{box-sizing:border-box;}
+  html{-webkit-tap-highlight-color:transparent;}
   body{
     margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg);
+    font-family:'Manrope',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 12% -10%, #1c3d3440 0%, transparent 42%),
+      radial-gradient(circle at 100% 0%, #3a234f40 0%, transparent 48%),
+      var(--bg);
+    background-attachment:fixed;
     color:var(--text);
     min-height:100vh;
+    -webkit-font-smoothing:antialiased;
   }
-  #app{max-width:560px;margin:0 auto;padding:0 0 60px;min-height:100vh;}
+  #app{max-width:560px;margin:0 auto;padding:0 0 70px;min-height:100vh;}
   header{
     position:sticky;top:0;z-index:10;
-    background:linear-gradient(180deg,var(--bg) 80%,transparent);
-    padding:18px 18px 10px;
-    display:flex;align-items:center;gap:10px;
+    background:transparent;
+    padding:20px 18px 12px;
+    display:flex;align-items:center;gap:12px;
   }
-  header h1{font-size:18px;margin:0;font-weight:700;flex:1;}
+  header h1{
+    font-size:19px;margin:0;font-weight:800;flex:1;letter-spacing:-.2px;
+    background:linear-gradient(90deg,var(--text) 25%,var(--accent) 110%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .brand-mark{width:34px;height:34px;flex-shrink:0;display:block;}
   .back-btn{
-    background:var(--panel-2);border:none;color:var(--text);
-    width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    width:36px;height:36px;border-radius:11px;font-size:17px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
   }
+  .back-btn:active{transform:scale(.92);}
   .logout-btn{
-    background:none;border:none;color:var(--text-dim);font-size:12.5px;cursor:pointer;
-    text-decoration:underline;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text-dim);
+    font-size:12.5px;font-weight:800;cursor:pointer;
+    display:flex;align-items:center;gap:6px;
+    padding:8px 14px;border-radius:20px;
+    transition:transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
   }
-  main{padding:6px 18px 30px;}
+  .logout-btn:hover{
+    background:var(--panel-2);color:var(--danger);border-color:#ff547080;
+  }
+  .logout-btn:active{transform:scale(.93);}
+  main{padding:8px 18px 30px;}
   .card{
     background:var(--panel);border:1px solid var(--border);
-    border-radius:var(--radius);padding:18px;margin-bottom:14px;
+    box-shadow:var(--shadow-card);
+    border-radius:var(--radius);padding:20px;margin-bottom:16px;
   }
   .home-cat{
-    display:flex;align-items:center;gap:14px;
+    display:flex;align-items:center;gap:16px;
     padding:20px;margin-bottom:14px;border-radius:var(--radius);
     background:var(--panel);border:1px solid var(--border);
+    box-shadow:var(--shadow-card);
     cursor:pointer;transition:transform .15s ease;
   }
-  .home-cat:active{transform:scale(.98);}
+  .home-cat:active{transform:scale(.97);}
   .home-cat .icon{
-    width:46px;height:46px;border-radius:12px;
-    display:flex;align-items:center;justify-content:center;font-size:22px;
-    background:var(--panel-2);
+    width:52px;height:52px;border-radius:16px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:24px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-3));
+    box-shadow:0 8px 18px -6px #4ef0c855;
   }
-  .home-cat .label{font-size:17px;font-weight:700;}
-  .home-cat .sub{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+  .home-cat .label{font-size:17.5px;font-weight:800;letter-spacing:-.1px;}
+  .home-cat .sub{font-size:13px;color:var(--text-dim);margin-top:3px;font-weight:600;}
   .list-item{
-    background:var(--panel);border:1px solid var(--border);border-radius:12px;
-    padding:16px;margin-bottom:10px;cursor:pointer;
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-sm);
+    box-shadow:var(--shadow-card);
+    padding:16px 18px;margin-bottom:10px;cursor:pointer;
+    border-left:3px solid var(--accent);
   }
   .list-item:active{opacity:.8;}
-  .list-item h3{margin:0 0 4px;font-size:15.5px;}
-  .list-item p{margin:0;font-size:12.5px;color:var(--text-dim);}
+  .list-item h3{margin:0 0 4px;font-size:16px;font-weight:700;}
+  .list-item p{margin:0;font-size:12.5px;color:var(--text-dim);font-weight:600;}
   .pill{
-    display:inline-block;font-size:11px;padding:3px 9px;border-radius:20px;
-    background:var(--panel-2);color:var(--accent);margin-right:6px;
+    display:inline-block;font-size:11.5px;font-weight:800;padding:4px 11px;border-radius:20px;
+    background:linear-gradient(135deg,#4ef0c833,#8b6bff33);
+    color:var(--accent);margin-right:6px;letter-spacing:.2px;
+    border:1px solid #4ef0c840;
   }
   .btn{
-    background:var(--accent);color:#0a0f0d;border:none;border-radius:12px;
-    padding:13px 18px;font-size:14.5px;font-weight:700;cursor:pointer;width:100%;
+    background:linear-gradient(135deg,var(--accent),#38d6b0);color:#04120d;border:none;border-radius:14px;
+    padding:15px 18px;font-size:15px;font-weight:800;cursor:pointer;width:100%;
+    box-shadow:var(--shadow-btn);transition:transform .1s ease;
   }
-  .btn.secondary{background:var(--panel-2);color:var(--text);}
-  .btn.small{width:auto;padding:8px 14px;font-size:13px;}
-  .btn.danger{background:var(--danger);color:#1a0000;}
-  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn:active{transform:scale(.98);}
+  .btn.secondary{background:var(--panel-2);color:var(--text);box-shadow:none;border:1px solid var(--border);}
+  .btn.small{width:auto;padding:9px 16px;font-size:13.5px;}
+  .btn.danger{background:linear-gradient(135deg,var(--danger),#c92548);color:#fff;box-shadow:0 10px 24px -8px #ff547055;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
   .exercise-card{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
-    padding:16px;margin-bottom:12px;
+    box-shadow:var(--shadow-card);
+    padding:18px;margin-bottom:14px;border-top:3px solid var(--accent-2);
   }
-  .exercise-card h3{margin:0 0 2px;font-size:16px;}
-  .ex-meta{font-size:12.5px;color:var(--text-dim);margin-bottom:10px;}
+  .exercise-card h3{margin:0 0 3px;font-size:16.5px;font-weight:800;}
+  .ex-meta{font-size:12.5px;color:var(--text-dim);margin-bottom:12px;font-weight:700;}
   .set-row{
     display:grid;grid-template-columns:28px 1fr 1fr 34px;gap:8px;align-items:center;
     margin-bottom:8px;
   }
-  .set-row span{font-size:13px;color:var(--text-dim);}
+  .set-row span{font-size:13px;color:var(--text-dim);font-weight:700;}
   .set-row input[type=number], .set-row input[type=text]{
     width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
-    border-radius:8px;padding:9px 8px;font-size:14px;
+    border-radius:10px;padding:10px 9px;font-size:14.5px;font-weight:600;
   }
-  .set-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);}
+  .set-row input[type=number]:focus, .set-row input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+  .set-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent);}
   .note-box{
-    font-size:12.5px;color:var(--text-dim);background:var(--panel-2);
-    border-radius:10px;padding:10px 12px;margin-top:8px;line-height:1.5;
+    font-size:13px;color:var(--text-dim);background:var(--panel-2);
+    border-radius:12px;padding:12px 14px;margin-top:10px;line-height:1.55;font-weight:500;
   }
   .toggle-guide{
-    background:none;border:none;color:var(--accent);font-size:12.5px;
-    padding:6px 0 0;cursor:pointer;font-weight:600;
+    background:none;border:none;color:var(--accent);font-size:13px;
+    padding:8px 0 0;cursor:pointer;font-weight:800;
   }
-  .guide-body{display:none;margin-top:8px;font-size:13px;line-height:1.55;color:var(--text-dim);}
+  .guide-body{display:none;margin-top:10px;font-size:13.5px;line-height:1.6;color:var(--text-dim);}
   .guide-body.open{display:block;}
   .guide-body b{color:var(--text);}
   .warm-item{
     display:flex;justify-content:space-between;align-items:center;
-    padding:10px 0;border-bottom:1px solid var(--border);
+    padding:11px 0;border-bottom:1px solid var(--border);
   }
   .warm-item:last-child{border-bottom:none;}
-  .warm-item .l{font-size:14px;}
-  .warm-item .r{font-size:12px;color:var(--text-dim);}
+  .warm-item .l{font-size:14.5px;font-weight:600;}
+  .warm-item .r{font-size:12.5px;color:var(--text-dim);font-weight:600;}
   .timer-bar{
     position:fixed;bottom:0;left:0;right:0;z-index:50;
-    background:var(--panel-2);border-top:1px solid var(--border);
-    padding:14px 18px;display:flex;align-items:center;gap:14px;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border-top:1px solid var(--border);
+    box-shadow:0 -10px 30px -10px rgba(0,0,0,.7);
+    padding:14px 18px 16px;
     max-width:560px;margin:0 auto;
+    overflow:hidden;
   }
-  .timer-bar .t{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent);}
-  .timer-bar .lbl{flex:1;font-size:13px;color:var(--text-dim);}
+  .timer-progress{position:relative;top:-14px;left:-18px;width:calc(100% + 36px);height:4px;background:#ffffff12;}
+  .timer-progress-fill{height:100%;width:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width 1s linear;}
+  .timer-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:-6px;}
+  .timer-adj{
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    width:50px;height:50px;border-radius:15px;font-size:13px;font-weight:800;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    transition:transform .12s ease;
+  }
+  .timer-adj:active{transform:scale(.9);}
+  .timer-center{flex:1;text-align:center;}
+  .timer-center .lbl{font-size:12.5px;color:var(--text-dim);font-weight:700;margin-bottom:1px;}
+  .timer-center .t{
+    font-size:32px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.15;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .timer-actions{display:flex;gap:10px;margin-top:12px;}
+  .timer-actions .btn{flex:1;}
+  .video-link{
+    color:var(--accent-2);font-size:13px;font-weight:800;text-decoration:none;
+    padding:8px 0 0;display:inline-flex;align-items:center;gap:4px;
+  }
+  .video-link:active{opacity:.7;}
   input, textarea{font-family:inherit;}
-  .field{margin-bottom:12px;}
-  .field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:5px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;font-weight:700;letter-spacing:.1px;}
   .field input, .field textarea{
     width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
-    border-radius:10px;padding:11px 12px;font-size:14.5px;
+    border-radius:12px;padding:12px 13px;font-size:14.5px;font-weight:500;
   }
+  .field input:focus, .field textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .empty{text-align:center;color:var(--text-dim);font-size:13.5px;padding:30px 10px;}
-  .photo-thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;}
+  .empty{text-align:center;color:var(--text-dim);font-size:13.5px;padding:34px 10px;font-weight:600;}
+  .photo-thumb{width:56px;height:56px;border-radius:12px;object-fit:cover;}
   canvas.chart-canvas{max-width:100%;}
   .chip-select{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
   .chip{
-    padding:8px 14px;border-radius:20px;background:var(--panel-2);color:var(--text-dim);
-    font-size:12.5px;cursor:pointer;border:1px solid var(--border);
+    padding:9px 15px;border-radius:20px;background:var(--panel-2);color:var(--text-dim);
+    font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--border);
   }
-  .chip.active{background:var(--accent);color:#0a0f0d;border-color:var(--accent);}
+  .chip.active{background:linear-gradient(135deg,var(--accent),#38d6b0);color:#04120d;border-color:transparent;box-shadow:0 6px 16px -6px #4ef0c866;}
   .success-banner{
-    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#0a0f0d;
-    padding:20px;border-radius:var(--radius);text-align:center;font-weight:700;margin-bottom:14px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#04120d;
+    padding:22px;border-radius:var(--radius);text-align:center;font-weight:800;margin-bottom:16px;
+    box-shadow:var(--shadow-btn);font-size:15px;
   }
   .error-banner{
-    background:var(--danger);color:#1a0000;padding:12px 16px;border-radius:12px;
-    font-size:13.5px;margin-bottom:12px;font-weight:600;
+    background:linear-gradient(135deg,var(--danger),#c92548);color:#fff;padding:13px 16px;border-radius:12px;
+    font-size:13.5px;margin-bottom:12px;font-weight:700;
   }
   #loginScreen, #onboardingScreen{
-    max-width:360px;margin:18vh auto 0;padding:0 24px;text-align:center;
+    max-width:380px;margin:14vh auto 0;padding:0 24px;text-align:center;
   }
-  #loginScreen h1, #onboardingScreen h1{font-size:22px;margin-bottom:6px;}
-  #loginScreen p, #onboardingScreen p{color:var(--text-dim);font-size:13.5px;margin-bottom:24px;}
+  #loginScreen h1, #onboardingScreen h1{font-size:26px;margin-bottom:8px;font-weight:900;letter-spacing:-.3px;}
+  #loginScreen p, #onboardingScreen p{color:var(--text-dim);font-size:14px;margin-bottom:26px;font-weight:600;}
   #loginScreen .card, #onboardingScreen .card{text-align:left;}
-  .spinner-wrap{display:flex;justify-content:center;padding:60px 0;color:var(--text-dim);font-size:13.5px;}
+  .spinner-wrap{display:flex;justify-content:center;padding:70px 0;color:var(--text-dim);font-size:14px;font-weight:600;}
 </style>
 </head>
 <body>
@@ -186,9 +254,27 @@
 
 <div id="app" style="display:none;">
   <header>
+    <svg class="brand-mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="brandBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1c2029"/>
+          <stop offset="100%" stop-color="#07080b"/>
+        </linearGradient>
+        <linearGradient id="brandFlame" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ff7a45"/>
+          <stop offset="100%" stop-color="#8b6bff"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#brandBg)" stroke="#3a415280"/>
+      <path d="M32 10 C42 24 47 34 41 44 C37 51 27 51 23 44 C17 34 22 24 32 10 Z" fill="url(#brandFlame)"/>
+      <path d="M18 34 H26 L30 20 L36 46 L40 30 H50" fill="none" stroke="#07080b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
     <button class="back-btn" id="backBtn" style="visibility:hidden">‹</button>
     <h1 id="pageTitle">Just Beat It</h1>
-    <button class="logout-btn" onclick="logout()">Esci</button>
+    <button class="logout-btn" onclick="logout()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+      Esci
+    </button>
   </header>
   <main id="view"></main>
 </div>
@@ -216,17 +302,18 @@ const SCHEDE = [
     periodo: '2 settimane · 3x/settimana · Full body',
     note: 'Tecnica e mobilità, carichi leggeri. Attenzione spalla sinistra: niente lento avanti/military press né alzate laterali pesanti in questo blocco.',
     riscaldamento: [
-      {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi/curvo al bancone'},
-      {nome:'Affondo con rotazione toracica', serie:'5-6 per lato', note:'Apre anca e torace insieme'},
-      {nome:'Leg swings', serie:'10 per lato', note:'Sblocca l\'anca prima di leg press/squat'},
-      {nome:'Band pull-apart / rotazioni spalle', serie:'10-15 ripetizioni', note:'Riattiva i muscoli posteriori della spalla — utile per la spalla sinistra'},
-      {nome:'Caviglia contro muro', serie:'5-6 per lato', note:'Migliora la profondità in leg press/squat'}
+      {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi/curvo al bancone', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
+      {nome:'Affondo con rotazione toracica', serie:'5-6 per lato', note:'Apre anca e torace insieme', video:'https://www.youtube.com/watch?v=Boi2zLj_4_8'},
+      {nome:'Leg swings', serie:'10 per lato', note:'Sblocca l\'anca prima di leg press/squat', video:'https://www.youtube.com/watch?v=difYoBtZi2s'},
+      {nome:'Band pull-apart / rotazioni spalle', serie:'10-15 ripetizioni', note:'Riattiva i muscoli posteriori della spalla — utile per la spalla sinistra', video:'https://www.youtube.com/watch?v=hfhQm_FgbkE'},
+      {nome:'Caviglia contro muro', serie:'5-6 per lato', note:'Migliora la profondità in leg press/squat', video:'https://www.youtube.com/watch?v=-9XqrNwJ6aI'}
     ],
     esercizi: [
       {
         nome:'Leg Press 45°', serieTarget:3, ripTarget:'12', recupero:90,
         note:'Spinta controllata, non bloccare le ginocchia in alto, talloni sempre a contatto con la pedana',
         alternativa:'Squat a corpo libero',
+        video:'https://www.youtube.com/watch?v=z-6O7fi2uJA',
         guida:{
           muscoli:'Quadricipiti, glutei, femorali (secondari).',
           esecuzione:'Siediti con schiena e bacino aderenti allo schienale. Piedi sulla pedana all\'altezza delle spalle. Scendi controllato fino a circa 90° di flessione senza staccare i talloni, poi spingi senza bloccare le ginocchia a fine corsa.',
@@ -237,6 +324,7 @@ const SCHEDE = [
         nome:'Chest Press (macchina)', serieTarget:3, ripTarget:'10-12', recupero:90,
         note:'Scapole leggermente indietro, il gomito non si blocca in fondo alla spinta',
         alternativa:'Push-up sulle ginocchia',
+        video:'https://www.youtube.com/watch?v=6mWAqa41eKI',
         guida:{
           muscoli:'Pettorali, spalle anteriori e tricipiti (secondari).',
           esecuzione:'Sedile regolato con maniglie all\'altezza del petto. Scapole leggermente retratte. Spingi in avanti senza bloccare i gomiti, torna con controllo senza far cadere le spalle in avanti.',
@@ -247,6 +335,7 @@ const SCHEDE = [
         nome:'Lat Machine presa neutra', serieTarget:3, ripTarget:'10-12', recupero:90,
         note:'Tira con la schiena, non con le braccia; mai dietro la nuca',
         alternativa:'Pulldown con la corda',
+        video:'https://www.youtube.com/watch?v=DTDvohtOxN0',
         guida:{
           muscoli:'Gran dorsale, bicipiti (secondari).',
           esecuzione:'Cosce bloccate sotto il supporto, presa neutra poco più larga delle spalle. Tira verso l\'alto del petto portando i gomiti in basso/indietro, busto quasi verticale. Torna su con controllo.',
@@ -257,6 +346,7 @@ const SCHEDE = [
         nome:'Leg Curl', serieTarget:3, ripTarget:'12-15', recupero:90,
         note:'Eccentrica lenta (circa 3 secondi in fase di ritorno)',
         alternativa:'—',
+        video:'https://www.youtube.com/watch?v=1zevKZn_n1E',
         guida:{
           muscoli:'Femorali (parte posteriore della coscia).',
           esecuzione:'Cuscinetto superiore sopra le ginocchia, inferiore dietro le caviglie. Fletti portando il cuscinetto verso i glutei, torna con eccentrica lenta di circa 3 secondi.',
@@ -267,6 +357,7 @@ const SCHEDE = [
         nome:'Hip Thrust (multipower)', serieTarget:3, ripTarget:'12', recupero:90,
         note:'Utile anche per chi sta tante ore in piedi: rinforza glutei e bacino',
         alternativa:'Ponte glutei a corpo libero',
+        video:'https://www.youtube.com/watch?v=bxQCTxv8dhA',
         guida:{
           muscoli:'Glutei principalmente, femorali e core di supporto.',
           esecuzione:'Scapole appoggiate al bordo di una panca, ginocchia piegate. Bilanciere sopra le anche (con cuscinetto). Spingi le anche in alto fino ad allineare ginocchia-bacino-spalle, scendi con controllo.',
@@ -277,6 +368,7 @@ const SCHEDE = [
         nome:'Plank', serieTarget:3, ripTarget:'20-30"', recupero:60,
         note:'Pancia in tensione, non inarcare la parte bassa della schiena',
         alternativa:'Plank sulle ginocchia',
+        video:'https://www.youtube.com/watch?v=TDQQ93WtkJM',
         guida:{
           muscoli:'Addome nel complesso, spalle e glutei per la stabilità.',
           esecuzione:'Appoggio su avambracci e punte dei piedi, gomiti sotto le spalle. Corpo in linea retta da spalle a caviglie. Respira regolarmente.',
@@ -384,11 +476,24 @@ const view = document.getElementById('view');
 const pageTitle = document.getElementById('pageTitle');
 const backBtn = document.getElementById('backBtn');
 
+const BACK_MAP = {
+  'allenamento-list':'home',
+  'alimentazione':'home',
+  'misure':'home',
+  'storico':'home',
+  'statistiche':'home',
+  'storico-allenamento':'storico',
+  'storico-misure':'storico',
+  'progressi-detail':'storico-allenamento'
+};
+
 backBtn.addEventListener('click', ()=>{
   if(route.name==='sessione'){
     if(!confirm('Uscire? Il progresso di questa sessione andrà perso se non la salvi.')) return;
+    goHome();
+    return;
   }
-  goHome();
+  setRoute({name: BACK_MAP[route.name] || 'home'});
 });
 
 function goHome(){ route={name:'home'}; render(); }
@@ -400,28 +505,40 @@ function render(){
   if(route.name==='home') renderHome();
   else if(route.name==='allenamento-list') renderAllenamentoList();
   else if(route.name==='sessione') renderSessione();
-  else if(route.name==='progressi') renderProgressi();
-  else if(route.name==='progressi-detail') renderProgressiDetail();
+  else if(route.name==='alimentazione') renderAlimentazione();
   else if(route.name==='misure') renderMisure();
+  else if(route.name==='storico') renderStorico();
+  else if(route.name==='storico-allenamento') renderStoricoAllenamento();
+  else if(route.name==='storico-misure') renderStoricoMisure();
+  else if(route.name==='progressi-detail') renderProgressiDetail();
+  else if(route.name==='statistiche') renderStatistiche();
 }
 
 /* ============ HOME ============ */
 function renderHome(){
   pageTitle.textContent = 'Just Beat It';
-  const saluto = profiloUtente ? `<p style="color:var(--text-dim);font-size:13.5px;margin:0 0 14px;">Ciao, ${profiloUtente.nome} 👋</p>` : '';
+  const saluto = profiloUtente ? `<p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0 0 14px;">Ciao, ${profiloUtente.nome} 👋</p>` : '';
   view.innerHTML = `
     ${saluto}
     <div class="home-cat" onclick="setRoute({name:'allenamento-list'})">
       <div class="icon">🏋️</div>
       <div><div class="label">Allenamento</div><div class="sub">Scegli una scheda e inizia la seduta</div></div>
     </div>
-    <div class="home-cat" onclick="setRoute({name:'progressi'})">
-      <div class="icon">📈</div>
-      <div><div class="label">Progressi</div><div class="sub">Storico sedute e andamento carichi</div></div>
+    <div class="home-cat" onclick="setRoute({name:'alimentazione'})">
+      <div class="icon">🍎</div>
+      <div><div class="label">Dieta</div><div class="sub">In arrivo</div></div>
     </div>
     <div class="home-cat" onclick="setRoute({name:'misure'})">
       <div class="icon">📏</div>
-      <div><div class="label">Misure</div><div class="sub">Peso, circonferenze e foto nel tempo</div></div>
+      <div><div class="label">Misure</div><div class="sub">Registra una nuova rilevazione</div></div>
+    </div>
+    <div class="home-cat" onclick="setRoute({name:'storico'})">
+      <div class="icon">🗂️</div>
+      <div><div class="label">Storico</div><div class="sub">Sedute e misure passate</div></div>
+    </div>
+    <div class="home-cat" onclick="setRoute({name:'statistiche'})">
+      <div class="icon">📈</div>
+      <div><div class="label">Statistiche</div><div class="sub">Carichi esercizi e misure corporee</div></div>
     </div>
   `;
 }
@@ -469,7 +586,7 @@ function renderSessione(){
             ${w.nome}
           </label>
         </div>
-        <div class="r" style="margin-left:28px;">${w.note}</div>
+        <div class="r" style="margin-left:28px;">${w.note}${w.video ? ` · <a href="${w.video}" target="_blank" rel="noopener" class="video-link" style="padding:0;">▶ Video</a>` : ''}</div>
       </div>
       <div class="r">${w.serie}</div>
     </div>`;
@@ -490,7 +607,10 @@ function renderSessione(){
       </div>`;
     });
     html += `<div class="note-box">${e.note}${e.alternativa && e.alternativa!=='—' ? ' · Alternativa: '+e.alternativa : ''}</div>
-      <button class="toggle-guide" onclick="toggleGuide(${ei})">Guida esercizio ▾</button>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <button class="toggle-guide" onclick="toggleGuide(${ei})">Guida esercizio ▾</button>
+        ${e.video ? `<a href="${e.video}" target="_blank" rel="noopener" class="video-link">▶ Guarda il video</a>` : ''}
+      </div>
       <div class="guide-body" id="guide-${ei}">
         <b>Muscoli:</b> ${e.guida.muscoli}<br><br>
         <b>Esecuzione:</b> ${e.guida.esecuzione}<br><br>
@@ -518,32 +638,74 @@ function markSetDone(ei,si,recupero,checked){
   if(checked){ startRestTimer(recupero); }
 }
 
+let restState = null;
+
 function startRestTimer(seconds){
   clearRestTimer();
-  let remaining = seconds;
+  restState = { remaining: seconds, total: seconds, paused: false };
   const bar = document.createElement('div');
   bar.className = 'timer-bar';
   bar.id = 'restBar';
-  bar.innerHTML = `<div class="lbl">Recupero</div><div class="t" id="restT">${remaining}"</div>
-    <button class="btn small secondary" onclick="clearRestTimer()">Salta</button>`;
+  bar.innerHTML = `
+    <div class="timer-progress"><div class="timer-progress-fill" id="restFill"></div></div>
+    <div class="timer-row">
+      <button class="timer-adj" onclick="adjustRest(-15)">−15"</button>
+      <div class="timer-center">
+        <div class="lbl">Recupero</div>
+        <div class="t" id="restT">${seconds}"</div>
+      </div>
+      <button class="timer-adj" onclick="adjustRest(15)">+15"</button>
+    </div>
+    <div class="timer-actions">
+      <button class="btn small secondary" id="restPauseBtn" onclick="togglePauseRest()">⏸ Pausa</button>
+      <button class="btn small secondary" onclick="clearRestTimer()">Salta</button>
+    </div>`;
   document.body.appendChild(bar);
+  updateRestDisplay();
   restTimerHandle = setInterval(()=>{
-    remaining--;
-    const t = document.getElementById('restT');
-    if(!t){ clearInterval(restTimerHandle); return; }
-    if(remaining<=0){
-      t.textContent = "Via! 💪";
+    if(!restState || restState.paused) return;
+    restState.remaining--;
+    if(restState.remaining<=0){
+      updateRestDisplay();
+      const t = document.getElementById('restT');
+      if(t) t.textContent = "Via! 💪";
       beep();
       clearInterval(restTimerHandle);
       setTimeout(clearRestTimer, 2000);
-    } else {
-      t.textContent = remaining+'"';
+      return;
     }
+    updateRestDisplay();
   },1000);
+}
+
+function updateRestDisplay(){
+  if(!restState) return;
+  const t = document.getElementById('restT');
+  const fill = document.getElementById('restFill');
+  if(t) t.textContent = restState.remaining>0 ? restState.remaining+'"' : 'Via! 💪';
+  if(fill){
+    const pct = restState.total>0 ? Math.max(0, Math.min(100, (restState.remaining/restState.total)*100)) : 0;
+    fill.style.width = pct+'%';
+  }
+}
+
+function adjustRest(delta){
+  if(!restState) return;
+  restState.remaining = Math.max(0, restState.remaining + delta);
+  if(restState.remaining > restState.total) restState.total = restState.remaining;
+  updateRestDisplay();
+}
+
+function togglePauseRest(){
+  if(!restState) return;
+  restState.paused = !restState.paused;
+  const btn = document.getElementById('restPauseBtn');
+  if(btn) btn.textContent = restState.paused ? '▶ Riprendi' : '⏸ Pausa';
 }
 
 function clearRestTimer(){
   if(restTimerHandle){ clearInterval(restTimerHandle); restTimerHandle=null; }
+  restState = null;
   const bar = document.getElementById('restBar');
   if(bar) bar.remove();
 }
@@ -575,34 +737,40 @@ async function terminaSessione(){
     const ref = await userCollection('sessioni').add(payload);
     cache.sessioni.push({ id: ref.id, ...payload });
     sessionDraft = null;
-    setRoute({name:'progressi', justSaved:true});
+    setRoute({name:'storico-allenamento', justSaved:true});
   }catch(e){
     alert('Errore nel salvataggio: '+e.message);
     btn.disabled = false; btn.textContent = 'Termina e salva allenamento';
   }
 }
 
-/* ============ PROGRESSI ============ */
-function renderProgressi(){
-  pageTitle.textContent = 'Progressi';
+/* ============ STORICO ============ */
+function renderStorico(){
+  pageTitle.textContent = 'Storico';
+  view.innerHTML = `
+    <div class="home-cat" onclick="setRoute({name:'storico-allenamento'})">
+      <div class="icon">🏋️</div>
+      <div><div class="label">Allenamento</div><div class="sub">Le sedute salvate</div></div>
+    </div>
+    <div class="home-cat" onclick="setRoute({name:'storico-misure'})">
+      <div class="icon">📏</div>
+      <div><div class="label">Misure</div><div class="sub">Le rilevazioni salvate</div></div>
+    </div>
+  `;
+}
+
+function renderStoricoAllenamento(){
+  pageTitle.textContent = 'Storico allenamento';
   const sessioni = cache.sessioni.slice().reverse();
   let html = '';
   if(route.justSaved){
     html += `<div class="success-banner">Allenamento salvato ✅</div>`;
   }
-
   if(sessioni.length===0){
     html += `<p class="empty">Nessun allenamento salvato ancora. Completa una seduta in "Allenamento" per vederla qui.</p>`;
     view.innerHTML = html;
     return;
   }
-
-  html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Andamento carichi per esercizio</h3>
-    <div class="chip-select" id="exChips"></div>
-    <canvas class="chart-canvas" id="progChart" height="180"></canvas>
-  </div>`;
-
-  html += `<h3 style="font-size:14px;color:var(--text-dim);margin:18px 0 8px;">Sedute salvate</h3>`;
   sessioni.forEach((s)=>{
     const d = new Date(s.data);
     html += `<div class="list-item" onclick="setRoute({name:'progressi-detail', id:'${s.id}'})">
@@ -610,49 +778,147 @@ function renderProgressi(){
       <p>${d.toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'})}</p>
     </div>`;
   });
+  view.innerHTML = html;
+}
 
+function renderStoricoMisure(){
+  pageTitle.textContent = 'Storico misure';
+  const misure = cache.misure.slice().reverse();
+  let html = '';
+  if(route.justSaved){
+    html += `<div class="success-banner">Rilevazione salvata ✅</div>`;
+  }
+  if(misure.length===0){
+    html += `<p class="empty">Nessuna misura registrata ancora.</p>`;
+    view.innerHTML = html;
+    return;
+  }
+  misure.forEach((m)=>{
+    html += `<div class="list-item" style="display:flex;align-items:center;gap:12px;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        ${m.foto ? `<img class="photo-thumb" src="${m.foto}">` : ''}
+        <div>
+          <h3 style="margin:0;">${new Date(m.data).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}</h3>
+          <p>${m.peso?m.peso+' kg':''} ${m.vita?'· vita '+m.vita+'cm':''}</p>
+        </div>
+      </div>
+      <button class="btn small secondary" onclick="eliminaMisura('${m.id}')">✕</button>
+    </div>`;
+  });
+  view.innerHTML = html;
+}
+
+/* ============ STATISTICHE ============ */
+function renderStatistiche(){
+  pageTitle.textContent = 'Statistiche';
+  const haveSessioni = cache.sessioni.length>0;
+  const haveMisureStats = cache.misure.length>0;
+
+  if(!haveSessioni && !haveMisureStats){
+    view.innerHTML = `<p class="empty">Non ci sono ancora dati sufficienti. Completa un allenamento o registra una misura per vedere le statistiche qui.</p>`;
+    return;
+  }
+
+  let html = '';
+  if(haveSessioni){
+    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Carichi esercizi</h3>
+      <div class="chip-select" id="exChips"></div>
+      <canvas class="chart-canvas" id="progChart" height="180"></canvas>
+    </div>`;
+  }
+  if(haveMisureStats){
+    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Misure corporee</h3>
+      <div class="chip-select" id="misureChips"></div>
+      <canvas class="chart-canvas" id="misureChart" height="180"></canvas>
+    </div>`;
+  }
   view.innerHTML = html;
 
-  const exNames = [...new Set(cache.sessioni.flatMap(s=>s.esercizi.map(e=>e.nome)))];
-  const chipWrap = document.getElementById('exChips');
-  let selected = exNames[0];
-  function drawChart(name){
-    const points = cache.sessioni
-      .filter(s=>s.esercizi.some(e=>e.nome===name))
-      .map(s=>{
-        const e = s.esercizi.find(e=>e.nome===name);
-        const pesi = e.sets.map(x=>parseFloat(x.peso)).filter(v=>!isNaN(v));
-        const maxPeso = pesi.length ? Math.max(...pesi) : null;
-        return {data: new Date(s.data).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}), peso: maxPeso};
-      })
-      .filter(p=>p.peso!==null);
-    const ctx = document.getElementById('progChart');
-    if(window._chart) window._chart.destroy();
-    if(points.length===0){
-      ctx.getContext('2d').clearRect(0,0,ctx.width,ctx.height);
-      return;
+  if(haveSessioni){
+    const exNames = [...new Set(cache.sessioni.flatMap(s=>s.esercizi.map(e=>e.nome)))];
+    const chipWrap = document.getElementById('exChips');
+    let selected = exNames[0];
+    function drawChart(name){
+      const points = cache.sessioni
+        .filter(s=>s.esercizi.some(e=>e.nome===name))
+        .map(s=>{
+          const e = s.esercizi.find(e=>e.nome===name);
+          const pesi = e.sets.map(x=>parseFloat(x.peso)).filter(v=>!isNaN(v));
+          const maxPeso = pesi.length ? Math.max(...pesi) : null;
+          return {data: new Date(s.data).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}), peso: maxPeso};
+        })
+        .filter(p=>p.peso!==null);
+      const ctx = document.getElementById('progChart');
+      if(window._chart) window._chart.destroy();
+      if(points.length===0){
+        ctx.getContext('2d').clearRect(0,0,ctx.width,ctx.height);
+        return;
+      }
+      window._chart = new Chart(ctx, {
+        type:'line',
+        data:{ labels: points.map(p=>p.data), datasets:[{
+          label: name+' (kg max)', data: points.map(p=>p.peso),
+          borderColor:'#5ee6c8', backgroundColor:'#5ee6c833', tension:.3, fill:true, pointRadius:4
+        }]},
+        options:{ plugins:{legend:{labels:{color:'#eef0f3'}}}, scales:{
+          x:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}},
+          y:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}}
+        }}
+      });
     }
-    window._chart = new Chart(ctx, {
-      type:'line',
-      data:{ labels: points.map(p=>p.data), datasets:[{
-        label: name+' (kg max)', data: points.map(p=>p.peso),
-        borderColor:'#5ee6c8', backgroundColor:'#5ee6c833', tension:.3, fill:true, pointRadius:4
-      }]},
-      options:{ plugins:{legend:{labels:{color:'#eef0f3'}}}, scales:{
-        x:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}},
-        y:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}}
-      }}
+    chipWrap.innerHTML = exNames.map(n=>`<div class="chip ${n===selected?'active':''}" data-n="${n}">${n}</div>`).join('');
+    chipWrap.querySelectorAll('.chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        chipWrap.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active');
+        drawChart(chip.dataset.n);
+      });
     });
+    if(selected) drawChart(selected);
   }
-  chipWrap.innerHTML = exNames.map(n=>`<div class="chip ${n===selected?'active':''}" data-n="${n}">${n}</div>`).join('');
-  chipWrap.querySelectorAll('.chip').forEach(chip=>{
-    chip.addEventListener('click', ()=>{
-      chipWrap.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-      chip.classList.add('active');
-      drawChart(chip.dataset.n);
+
+  if(haveMisureStats){
+    const chipWrap2 = document.getElementById('misureChips');
+    const metricheDisponibili = MISURE_METRICHE.filter(mm => cache.misure.some(m=>m[mm.key]!=null && m[mm.key]!==''));
+    let selected2 = metricheDisponibili[0] ? metricheDisponibili[0].key : null;
+
+    function drawMisuraChart(key){
+      const metrica = MISURE_METRICHE.find(mm=>mm.key===key);
+      const points = cache.misure
+        .filter(m=>m[key]!=null && m[key]!=='')
+        .map(m=>({
+          x: new Date(m.data).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}),
+          y: Number(m[key])
+        }));
+      const ctx = document.getElementById('misureChart');
+      if(window._misureChart) window._misureChart.destroy();
+      if(points.length===0){
+        ctx.getContext('2d').clearRect(0,0,ctx.width,ctx.height);
+        return;
+      }
+      window._misureChart = new Chart(ctx, {
+        type:'line',
+        data:{ labels: points.map(p=>p.x), datasets:[{
+          label: `${metrica.label} (${metrica.unit})`, data: points.map(p=>p.y),
+          borderColor: metrica.color, backgroundColor: metrica.color+'33', tension:.3, fill:true, pointRadius:4
+        }]},
+        options:{ plugins:{legend:{labels:{color:'#eef0f3'}}}, scales:{
+          x:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}},
+          y:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}}
+        }}
+      });
+    }
+
+    chipWrap2.innerHTML = metricheDisponibili.map(mm=>`<div class="chip ${mm.key===selected2?'active':''}" data-k="${mm.key}">${mm.label}</div>`).join('');
+    chipWrap2.querySelectorAll('.chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        chipWrap2.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+        chip.classList.add('active');
+        drawMisuraChart(chip.dataset.k);
+      });
     });
-  });
-  if(selected) drawChart(selected);
+    if(selected2) drawMisuraChart(selected2);
+  }
 }
 
 function renderProgressiDetail(){
@@ -681,15 +947,33 @@ async function eliminaSessione(id){
   try{
     await userCollection('sessioni').doc(id).delete();
     cache.sessioni = cache.sessioni.filter(s=>s.id!==id);
-    setRoute({name:'progressi'});
+    setRoute({name:'storico-allenamento'});
   }catch(e){ alert('Errore: '+e.message); }
 }
 
+/* ============ DIETA ============ */
+function renderAlimentazione(){
+  pageTitle.textContent = 'Dieta';
+  view.innerHTML = `<div class="card">
+    <p class="empty" style="padding:10px 0;">La sezione Dieta è in arrivo. Aggiungerò il piano alimentare più avanti, riprogrammando questa parte dell'app.</p>
+  </div>`;
+}
+
 /* ============ MISURE ============ */
+const MISURE_METRICHE = [
+  {key:'peso', label:'Peso', unit:'kg', color:'#ff8a5c'},
+  {key:'vita', label:'Vita', unit:'cm', color:'#4ef0c8'},
+  {key:'petto', label:'Petto', unit:'cm', color:'#8b6bff'},
+  {key:'fianchi', label:'Fianchi', unit:'cm', color:'#ff7a45'},
+  {key:'braccioDx', label:'Braccio Dx', unit:'cm', color:'#4ef0c8'},
+  {key:'braccioSx', label:'Braccio Sx', unit:'cm', color:'#38d6b0'},
+  {key:'cosciaDx', label:'Coscia Dx', unit:'cm', color:'#ff5470'},
+  {key:'cosciaSx', label:'Coscia Sx', unit:'cm', color:'#c92548'}
+];
+
 function renderMisure(){
   pageTitle.textContent = 'Misure';
-  const misure = cache.misure.slice().reverse();
-  let html = `<div class="card">
+  view.innerHTML = `<div class="card">
     <h3 style="margin-top:0;font-size:15px;">Nuova rilevazione</h3>
     <div id="misuraError"></div>
     <div class="field"><label>Data</label><input type="date" id="mData" value="${new Date().toISOString().slice(0,10)}"></div>
@@ -702,51 +986,17 @@ function renderMisure(){
       <div class="field"><label>Fianchi (cm)</label><input type="number" step="0.5" id="mFianchi"></div>
     </div>
     <div class="grid2">
-      <div class="field"><label>Braccio (cm)</label><input type="number" step="0.5" id="mBraccio"></div>
-      <div class="field"><label>Coscia (cm)</label><input type="number" step="0.5" id="mCoscia"></div>
+      <div class="field"><label>Braccio Dx (cm)</label><input type="number" step="0.5" id="mBraccioDx"></div>
+      <div class="field"><label>Braccio Sx (cm)</label><input type="number" step="0.5" id="mBraccioSx"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Coscia Dx (cm)</label><input type="number" step="0.5" id="mCosciaDx"></div>
+      <div class="field"><label>Coscia Sx (cm)</label><input type="number" step="0.5" id="mCosciaSx"></div>
     </div>
     <div class="field"><label>Foto progressi (facoltativa)</label><input type="file" accept="image/*" id="mFoto"></div>
     <button class="btn" id="saveMisuraBtn" onclick="salvaMisura()">Salva rilevazione</button>
-  </div>`;
-
-  if(misure.length>0){
-    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Andamento peso</h3><canvas class="chart-canvas" id="pesoChart" height="160"></canvas></div>`;
-    html += `<h3 style="font-size:14px;color:var(--text-dim);margin:18px 0 8px;">Storico</h3>`;
-    misure.forEach((m)=>{
-      html += `<div class="list-item" style="display:flex;align-items:center;gap:12px;justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          ${m.foto ? `<img class="photo-thumb" src="${m.foto}">` : ''}
-          <div>
-            <h3 style="margin:0;">${new Date(m.data).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}</h3>
-            <p>${m.peso?m.peso+' kg':''} ${m.vita?'· vita '+m.vita+'cm':''}</p>
-          </div>
-        </div>
-        <button class="btn small secondary" onclick="eliminaMisura('${m.id}')">✕</button>
-      </div>`;
-    });
-  } else {
-    html += `<p class="empty">Nessuna misura registrata ancora.</p>`;
-  }
-
-  view.innerHTML = html;
-
-  if(misure.length>0){
-    const points = cache.misure.filter(m=>m.peso).map(m=>({
-      x: new Date(m.data).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}),
-      y: m.peso
-    }));
-    if(points.length){
-      new Chart(document.getElementById('pesoChart'), {
-        type:'line',
-        data:{labels:points.map(p=>p.x), datasets:[{label:'Peso (kg)', data:points.map(p=>p.y),
-          borderColor:'#ff8a5c', backgroundColor:'#ff8a5c33', tension:.3, fill:true, pointRadius:4}]},
-        options:{plugins:{legend:{labels:{color:'#eef0f3'}}}, scales:{
-          x:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}},
-          y:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}}
-        }}
-      });
-    }
-  }
+  </div>
+  <p class="empty" style="padding:6px 4px;">Trovi lo storico delle rilevazioni in "Storico" e i grafici in "Statistiche".</p>`;
 }
 
 // Ridimensiona/comprime l'immagine lato client cosi' il base64 resta ben sotto il limite di 1MB per documento Firestore
@@ -778,8 +1028,10 @@ async function salvaMisura(){
   const vita = document.getElementById('mVita').value;
   const petto = document.getElementById('mPetto').value;
   const fianchi = document.getElementById('mFianchi').value;
-  const braccio = document.getElementById('mBraccio').value;
-  const coscia = document.getElementById('mCoscia').value;
+  const braccioDx = document.getElementById('mBraccioDx').value;
+  const braccioSx = document.getElementById('mBraccioSx').value;
+  const cosciaDx = document.getElementById('mCosciaDx').value;
+  const cosciaSx = document.getElementById('mCosciaSx').value;
   const fotoInput = document.getElementById('mFoto');
   const btn = document.getElementById('saveMisuraBtn');
   const errBox = document.getElementById('misuraError');
@@ -796,14 +1048,16 @@ async function salvaMisura(){
       vita: vita ? Number(vita) : null,
       petto: petto ? Number(petto) : null,
       fianchi: fianchi ? Number(fianchi) : null,
-      braccio: braccio ? Number(braccio) : null,
-      coscia: coscia ? Number(coscia) : null,
+      braccioDx: braccioDx ? Number(braccioDx) : null,
+      braccioSx: braccioSx ? Number(braccioSx) : null,
+      cosciaDx: cosciaDx ? Number(cosciaDx) : null,
+      cosciaSx: cosciaSx ? Number(cosciaSx) : null,
       foto: fotoDataUrl
     };
     const ref = await userCollection('misure').add(payload);
     cache.misure.push({ id: ref.id, ...payload });
     cache.misure.sort((a,b)=> new Date(a.data)-new Date(b.data));
-    setRoute({name:'misure'});
+    setRoute({name:'storico-misure', justSaved:true});
   }catch(e){
     errBox.innerHTML = `<div class="error-banner">${e.message}</div>`;
     btn.disabled = false; btn.textContent = 'Salva rilevazione';
@@ -815,7 +1069,7 @@ async function eliminaMisura(id){
   try{
     await userCollection('misure').doc(id).delete();
     cache.misure = cache.misure.filter(m=>m.id!==id);
-    setRoute({name:'misure'});
+    setRoute({name:'storico-misure'});
   }catch(e){ alert('Errore: '+e.message); }
 }
 
@@ -844,22 +1098,36 @@ async function avviaApp(){
   }
 }
 
-auth.onAuthStateChanged(user=>{
-  if(user){
-    currentUid = user.uid;
-    boot();
-  } else {
-    currentUid = null;
-    profiloUtente = null;
-    document.getElementById('loginScreen').style.display = 'block';
-    document.getElementById('onboardingScreen').style.display = 'none';
-    document.getElementById('app').style.display = 'none';
-    const btn = document.getElementById('loginBtn');
-    btn.disabled = false; btn.textContent = 'Accedi';
-  }
-});
+/* ============ LOGIN TEMPORANEAMENTE DISATTIVATO ============
+   Per riattivare il login: rimetti LOGIN_ENABLED a true.
+   Il codice di autenticazione sopra resta invariato, viene solo bypassato qui sotto. */
+const LOGIN_ENABLED = true;
+const DEV_UID = 'dev-local-user';
 
-document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+if(LOGIN_ENABLED){
+  auth.onAuthStateChanged(user=>{
+    if(user){
+      currentUid = user.uid;
+      boot();
+    } else {
+      currentUid = null;
+      profiloUtente = null;
+      document.getElementById('loginScreen').style.display = 'block';
+      document.getElementById('onboardingScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'none';
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = false; btn.textContent = 'Accedi';
+    }
+  });
+
+  document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+} else {
+  document.getElementById('loginScreen').style.display = 'none';
+  const logoutBtn = document.querySelector('.logout-btn');
+  if(logoutBtn) logoutBtn.style.display = 'none';
+  currentUid = DEV_UID;
+  boot();
+}
 </script>
 </body>
 </html>
