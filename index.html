@@ -28,7 +28,7 @@
     --text-dim:#838ba0;
     --accent:#39ff94;
     --accent-2:#ff9d4d;
-    --accent-3:#39ff94;
+    --accent-3:#8b6bff;
     --danger:#ff5470;
     --radius:22px;
     --radius-sm:18px;
@@ -288,6 +288,76 @@
     font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid var(--border);
   }
   .chip.active{background:var(--accent);color:#04140d;border-color:transparent;box-shadow:0 0 16px -5px #39ff9488;}
+
+  /* ===== DIETA ===== */
+  .diet-summary{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-card);padding:20px;margin-bottom:16px;
+  }
+  .diet-summary .tlt{font-size:15px;font-weight:800;margin-bottom:2px;}
+  .diet-summary .tsb{font-size:12px;color:var(--text-dim);font-weight:600;line-height:1.5;margin-bottom:16px;}
+  .diet-kcal-hero{
+    display:flex;align-items:baseline;gap:8px;justify-content:center;
+    padding:14px 0 16px;margin-bottom:14px;border-bottom:1px solid var(--border);
+  }
+  .diet-kcal-hero .n{
+    font-size:36px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1;
+    background:linear-gradient(90deg,var(--accent),#1fae63);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .diet-kcal-hero .u{font-size:14px;color:var(--text-dim);font-weight:700;}
+  .macro-chip-row{display:flex;gap:10px;}
+  .macro-chip{
+    flex:1;text-align:center;padding:14px 8px;border-radius:16px;
+    background:var(--panel-2);border:1px solid var(--border);
+  }
+  .macro-chip .mc-dot{width:9px;height:9px;border-radius:50%;margin:0 auto 8px;}
+  .macro-chip .mc-n{font-size:16.5px;font-weight:900;color:var(--text);line-height:1;}
+  .macro-chip .mc-l{font-size:10.5px;color:var(--text-dim);font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:.3px;}
+  .meal-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-card);margin-bottom:12px;overflow:hidden;
+  }
+  .meal-head{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;}
+  .meal-head .icon{
+    width:44px;height:44px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:20px;
+    background:var(--panel-2);border:1.5px solid var(--accent);box-shadow:0 0 14px -5px #39ff94aa;
+  }
+  .meal-head .mh-info{flex:1;min-width:0;}
+  .meal-head .mh-name{font-size:15px;font-weight:800;}
+  .meal-head .mh-time{font-size:12px;color:var(--text-dim);font-weight:600;margin-top:1px;}
+  .meal-head .mh-kcal{font-size:14.5px;font-weight:900;color:var(--accent);white-space:nowrap;}
+  .meal-head .mh-chev{color:var(--text-dim);font-size:13px;margin-left:2px;transition:transform .25s ease;flex-shrink:0;}
+  .meal-card.open .mh-chev{transform:rotate(180deg);}
+  .meal-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+  .meal-card.open .meal-body{max-height:2000px;}
+  .meal-body-in{padding:0 18px 18px;}
+  .meal-macro-mini{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+  .meal-macro-mini span{font-size:11.5px;font-weight:700;color:var(--text-dim);display:flex;align-items:center;gap:5px;}
+  .meal-macro-mini span b{color:var(--text);font-weight:800;}
+  .meal-macro-mini .mb-dot{width:8px;height:8px;border-radius:50%;}
+  .food-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .food-table th{text-align:left;color:var(--text-dim);font-weight:700;font-size:11px;padding:0 6px 8px;text-transform:uppercase;letter-spacing:.3px;}
+  .food-table td{padding:8px 6px;border-top:1px solid var(--border);color:var(--text);font-weight:600;}
+  .food-table td.qty{color:var(--text-dim);font-weight:600;}
+  .food-table th:not(:first-child),.food-table td:not(:first-child){text-align:right;}
+  .meal-prep{font-size:12.5px;color:var(--text-dim);line-height:1.6;margin-top:12px;font-weight:600;}
+  .meal-prep b{color:var(--text);}
+  .meal-alt{
+    margin-top:12px;padding:12px 14px;border-radius:14px;
+    background:var(--panel-2);border:1px solid var(--border);
+    font-size:12px;color:var(--text-dim);line-height:1.6;font-weight:600;
+  }
+  .meal-alt b{color:var(--accent-2);}
+  .diet-info-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-sm);
+    box-shadow:var(--shadow-card);padding:16px 18px;margin-bottom:12px;
+  }
+  .diet-info-card .dic-t{font-size:13.5px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:7px;}
+  .diet-info-card .dic-b{font-size:12.5px;color:var(--text-dim);line-height:1.65;font-weight:600;}
+  .diet-info-card.warn{border-color:#ff547055;}
+  .diet-info-card.warn .dic-t{color:var(--danger);}
   .success-banner{
     background:linear-gradient(135deg,var(--accent),#1fae63);color:#04140d;
     padding:22px;border-radius:var(--radius);text-align:center;font-weight:800;margin-bottom:16px;
@@ -936,7 +1006,7 @@ function renderHome(){
     </div>
     <div class="home-cat" onclick="setRoute({name:'alimentazione'})">
       <div class="icon">🍎</div>
-      <div><div class="label">Dieta</div><div class="sub">In arrivo</div></div>
+      <div><div class="label">Dieta</div><div class="sub">Piano nutrizionale e pasti</div></div>
     </div>
     <div class="home-cat" onclick="setRoute({name:'statistiche'})">
       <div class="icon">📈</div>
@@ -1753,11 +1823,163 @@ function toggleAssegnazione(uid, schedaId, chipEl){
 }
 
 /* ============ DIETA ============ */
+const DIETA_PIANO = {
+  aggiornato: '29/07/2026',
+  fase: 'Fase pre-settembre (pre-allenamento strutturato)',
+  target: { kcal:2250, prot:145, carb:277, grassi:62 },
+  reale:  { kcal:2224, prot:152, carb:269, grassi:63 },
+  pasti: [
+    {
+      nome:'Colazione', icona:'🌅', orario:'6:00 – 9:00',
+      kcal:517, prot:33, carb:73, grassi:12,
+      alimenti:[
+        {n:"Fiocchi d'avena", q:'65 g', kcal:242, prot:9, carb:43, grassi:5},
+        {n:'Yogurt greco 0%', q:'200 g', kcal:108, prot:21, carb:6, grassi:0},
+        {n:'Banana', q:'90 g (1 media)', kcal:80, prot:1, carb:21, grassi:0},
+        {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
+      ],
+      preparazione:"Overnight oats o porridge — avena con yogurt greco, banana a fette e mandorle sopra.",
+      alternativa:"Alternativa salata — Pane tipo 0 80g + 2 uova (100g) + pomodoro 100g + 1 cucchiaino olio EVO (5g): 425 kcal, 20 g P, 55 g C, 16 g F. Uova strapazzate o in camicia, pane tostato, pomodoro a fette con un filo d'olio."
+    },
+    {
+      nome:'Spuntino 1', icona:'🥤', orario:'Metà mattina',
+      kcal:227, prot:21, carb:21, grassi:8,
+      alimenti:[
+        {n:'Whey isolate', q:'15 g (1/2 misurino)', kcal:56, prot:14, carb:1, grassi:0},
+        {n:'Latte parz. scremato', q:'150 ml', kcal:69, prot:5, carb:7, grassi:2},
+        {n:'Banana', q:'50 g (1/2 piccola)', kcal:45, prot:1, carb:11, grassi:0},
+        {n:'Mandorle', q:'10 g (~8 pezzi)', kcal:58, prot:2, carb:2, grassi:5},
+      ],
+      preparazione:'Frullato whey + latte + banana; mandorle a parte.',
+      alternativa:'Alternativa senza shaker — Yogurt greco 0% 200g + mandorle 20g + banana 60g: 277 kcal, 26 g P, 24 g C, 10 g F.'
+    },
+    {
+      nome:'Pranzo', icona:'🍝', orario:'Ore 15:00 circa',
+      kcal:686, prot:43, carb:87, grassi:18,
+      alimenti:[
+        {n:'Pasta di semola', q:'110 g (crudo)', kcal:388, prot:14, carb:79, grassi:2},
+        {n:'Petto di pollo', q:'100 g (crudo)', kcal:100, prot:23, carb:0, grassi:1},
+        {n:"Olio extravergine d'oliva", q:'12 g (1 cucchiaio)', kcal:108, prot:0, carb:0, grassi:12},
+        {n:'Verdura mista (zucchine/insalata)', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
+        {n:'Parmigiano Reggiano grattugiato', q:'10 g (1 cucchiaio)', kcal:39, prot:3, carb:0, grassi:3},
+      ],
+      preparazione:"Pasta al pomodoro/in bianco + pollo alla piastra + verdure saltate o crude condite con l'olio.",
+      alternativa:'Alternativa riso + tonno — Riso 100g (crudo) + tonno al naturale sgocciolato 150g + olio EVO 10g + verdura mista 200g: 640 kcal, 43 g P, 87 g C, 12 g F.'
+    },
+    {
+      nome:'Spuntino 2', icona:'🍞', orario:'Metà pomeriggio',
+      kcal:245, prot:22, carb:23, grassi:9,
+      alimenti:[
+        {n:'Bresaola', q:'50 g (~6 fette)', kcal:76, prot:17, carb:0, grassi:1},
+        {n:'Pane tipo 0', q:'30 g (1 fetta)', kcal:83, prot:2, carb:19, grassi:0},
+        {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
+      ],
+      preparazione:'Bresaola su pane, mandorle a parte.',
+      alternativa:'Alternativa dolce — Ricotta vaccina 180g + kiwi 100g: 324 kcal, 17 g P, 22 g C, 20 g F (più grassa, adatta se serve più sazietà).'
+    },
+    {
+      nome:'Cena', icona:'🌙', orario:'Ore 21:00 circa',
+      kcal:548, prot:33, carb:66, grassi:17,
+      alimenti:[
+        {n:'Petto di tacchino', q:'100 g (crudo)', kcal:104, prot:24, carb:0, grassi:1},
+        {n:'Patate lesse', q:'320 g (~2-3 medie)', kcal:272, prot:6, carb:60, grassi:0},
+        {n:"Olio extravergine d'oliva", q:'15 g (1,5 cucchiai)', kcal:135, prot:0, carb:0, grassi:15},
+        {n:'Verdura mista (insalata/zucchine)', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
+      ],
+      preparazione:'Tacchino alla piastra o al forno, patate lesse condite con olio, verdura a piacere.',
+      alternativa:'Alternativa pollo + riso — Petto di pollo 180g + riso 45g (crudo) + olio EVO 10g + verdura mista 150g: 469 kcal, 47 g P, 42 g C, 12 g F (più proteica, meno carb — utile se il pranzo è stato più leggero).'
+    },
+  ]
+};
+
+let dietaOpenSet = new Set();
+
 function renderAlimentazione(){
   pageTitle.textContent = 'Dieta';
-  view.innerHTML = `<div class="card">
-    <p class="empty" style="padding:10px 0;">La sezione Dieta è in arrivo. Aggiungerò il piano alimentare più avanti, riprogrammando questa parte dell'app.</p>
-  </div>`;
+  const t = DIETA_PIANO.target, r = DIETA_PIANO.reale;
+
+  const macroDef = [
+    {key:'prot', label:'Proteine', color:'var(--accent)'},
+    {key:'carb', label:'Carboidrati', color:'var(--accent-2)'},
+    {key:'grassi', label:'Grassi', color:'var(--accent-3)'},
+  ];
+
+  const macroChipsHtml = macroDef.map(m=>`
+    <div class="macro-chip">
+      <div class="mc-dot" style="background:${m.color};"></div>
+      <div class="mc-n">${r[m.key]}g</div>
+      <div class="mc-l">${m.label}</div>
+    </div>`).join('');
+
+  const mealsHtml = DIETA_PIANO.pasti.map((p,i)=>{
+    const open = dietaOpenSet.has(i);
+    const foodRows = p.alimenti.map(a=>`
+      <tr>
+        <td>${a.n}<div class="qty" style="font-size:11px;color:var(--text-dim);font-weight:600;">${a.q}</div></td>
+        <td>${a.kcal}</td>
+        <td>${a.prot}g</td>
+        <td>${a.carb}g</td>
+        <td>${a.grassi}g</td>
+      </tr>`).join('');
+    return `
+    <div class="meal-card${open?' open':''}">
+      <div class="meal-head" onclick="toggleDietaPasto(${i})">
+        <div class="icon">${p.icona}</div>
+        <div class="mh-info">
+          <div class="mh-name">${p.nome}</div>
+          <div class="mh-time">${p.orario}</div>
+        </div>
+        <div class="mh-kcal">${p.kcal} kcal</div>
+        <div class="mh-chev">▾</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-in">
+        <div class="meal-macro-mini">
+          <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b>${p.prot}g</b></span>
+          <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b>${p.carb}g</b></span>
+          <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b>${p.grassi}g</b></span>
+        </div>
+        <table class="food-table">
+          <thead><tr><th>Alimento</th><th>Kcal</th><th>Prot.</th><th>Carb.</th><th>Grassi</th></tr></thead>
+          <tbody>${foodRows}</tbody>
+        </table>
+        <div class="meal-prep"><b>Preparazione:</b> ${p.preparazione}</div>
+        <div class="meal-alt"><b>${p.alternativa.split(' — ')[0]}</b> — ${p.alternativa.split(' — ').slice(1).join(' — ')}</div>
+      </div></div>
+    </div>`;
+  }).join('');
+
+  view.innerHTML = `
+    <div class="diet-summary">
+      <div class="tlt">Piano nutrizionale — v2</div>
+      <div class="tsb">Aggiornato ${DIETA_PIANO.aggiornato} · ${DIETA_PIANO.fase}<br>3 pasti principali + 2 spuntini</div>
+      <div class="diet-kcal-hero"><span class="n">${r.kcal}</span><span class="u">/ ${t.kcal} kcal</span></div>
+      <div class="macro-chip-row">${macroChipsHtml}</div>
+    </div>
+
+    ${mealsHtml}
+
+    <div class="diet-info-card">
+      <div class="dic-t">💧 Idratazione &amp; integrazione</div>
+      <div class="dic-b">2,5-3 L/die di acqua (obiettivo progressivo, si parte da ~1 L attuale). Whey isolate da subito; creatina 3-5 g/die da settembre; multivitaminico/vit. D in attesa delle nuove analisi.</div>
+    </div>
+    <div class="diet-info-card">
+      <div class="dic-t">📝 Note pratiche</div>
+      <div class="dic-b">Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 200g a pranzo / 150g a cena corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Birra (~130 kcal/die media) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
+    </div>
+    <div class="diet-info-card warn">
+      <div class="dic-t">⚠️ Note importanti</div>
+      <div class="dic-b">Questo piano non sostituisce una valutazione medica. Farmaci in corso (Lyrica, Zarelis) e ADHD sono stati considerati nel quadro generale ma non modificano direttamente il calcolo calorico. AST lievemente elevato nell'ultimo esame (06/09/2025), verosimilmente legato all'allenamento pre-prelievo: da ricontrollare. In caso di sintomi digestivi persistenti o variazioni cliniche, consulta il medico curante.</div>
+    </div>
+    <div class="diet-info-card">
+      <div class="dic-t">📅 Prossima rivalutazione</div>
+      <div class="dic-b">Tra 2-3 settimane (peso, circonferenza vita, foto), oppure al ricevimento del Blocco 2 della scheda di allenamento o di nuove analisi del sangue.</div>
+    </div>
+  `;
+}
+
+function toggleDietaPasto(i){
+  if(dietaOpenSet.has(i)) dietaOpenSet.delete(i); else dietaOpenSet.add(i);
+  renderAlimentazione();
 }
 
 /* ============ MISURE ============ */
