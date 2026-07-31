@@ -121,6 +121,14 @@
   .home-cat .sub{font-size:13px;color:var(--text-dim);margin-top:3px;font-weight:600;}
   .profile-link{font-size:12.5px;color:var(--text-dim);font-weight:700;margin:0 0 16px;}
   .profile-link span{cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+  .app-credit{
+    text-align:center;font-size:12px;color:var(--text-dim);font-weight:600;
+    margin:26px 0 10px;letter-spacing:.2px;
+  }
+  .app-credit span{
+    color:var(--accent);font-weight:800;
+    text-shadow:0 0 12px #39ff9466;
+  }
   .home-squares{display:flex;gap:12px;margin-bottom:12px;}
   .home-square{
     flex:1;padding:20px 10px;position:relative;
@@ -189,8 +197,18 @@
   }
   .exercise-card h3{margin:0 0 3px;font-size:16.5px;font-weight:800;}
   .ex-meta{font-size:12.5px;color:var(--text-dim);margin-bottom:12px;font-weight:700;}
+  .ex-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .ex-head .ex-head-info{flex:1;min-width:0;}
+  .ex-head .ex-head-info h3{margin:0 0 3px;}
+  .ex-thumb{
+    width:60px;height:60px;flex-shrink:0;border-radius:14px;
+    background:#f4f4f4;border:1px solid var(--border);overflow:hidden;
+  }
+  .ex-thumb img{width:100%;height:100%;object-fit:contain;display:block;}
+  .ex-attrib{font-size:10.5px;color:var(--text-dim);text-align:center;margin:6px 0 18px;font-weight:600;}
+  .ex-attrib a{color:var(--text-dim);}
   .set-row{
-    display:grid;grid-template-columns:28px 1fr 1fr 34px;gap:8px;align-items:center;
+    display:grid;grid-template-columns:22px 1fr 1fr 54px 30px;gap:6px;align-items:center;
     margin-bottom:8px;
   }
   .set-row span{font-size:13px;color:var(--text-dim);font-weight:700;}
@@ -200,6 +218,24 @@
   }
   .set-row input[type=number]:focus, .set-row input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px;}
   .set-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent);}
+  .set-row select{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:10px;padding:9px 2px;font-size:12.5px;font-weight:700;text-align:center;
+  }
+  .set-row select:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+  .rpe-legend{font-size:11px;color:var(--text-dim);font-weight:600;margin:2px 0 10px;line-height:1.5;}
+  .note-user{
+    width:100%;font-family:inherit;resize:vertical;min-height:46px;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:12px;padding:11px 13px;font-size:13px;font-weight:500;margin-top:10px;
+  }
+  .note-user:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+  .note-user::placeholder{color:var(--text-dim);}
+  .exercise-card.locked-ex{opacity:.55;}
+  .lock-banner{
+    display:flex;align-items:center;gap:8px;padding:14px;margin-top:4px;
+    background:var(--panel-2);border-radius:12px;color:var(--text-dim);font-size:12.5px;font-weight:700;
+  }
   .note-box{
     font-size:13px;color:var(--text-dim);background:var(--panel-2);
     border-radius:12px;padding:12px 14px;margin-top:10px;line-height:1.55;font-weight:500;
@@ -344,12 +380,8 @@
   .food-table th:not(:first-child),.food-table td:not(:first-child){text-align:right;}
   .meal-prep{font-size:12.5px;color:var(--text-dim);line-height:1.6;margin-top:12px;font-weight:600;}
   .meal-prep b{color:var(--text);}
-  .meal-alt{
-    margin-top:12px;padding:12px 14px;border-radius:14px;
-    background:var(--panel-2);border:1px solid var(--border);
-    font-size:12px;color:var(--text-dim);line-height:1.6;font-weight:600;
-  }
-  .meal-alt b{color:var(--accent-2);}
+  .meal-body-in .chip-select{margin-bottom:12px;}
+  .meal-body-in .chip{padding:7px 13px;font-size:11.5px;}
   .diet-info-card{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-sm);
     box-shadow:var(--shadow-card);padding:16px 18px;margin-bottom:12px;
@@ -358,6 +390,7 @@
   .diet-info-card .dic-b{font-size:12.5px;color:var(--text-dim);line-height:1.65;font-weight:600;}
   .diet-info-card.warn{border-color:#ff547055;}
   .diet-info-card.warn .dic-t{color:var(--danger);}
+  .supp-intro{font-size:12.5px;color:var(--text-dim);line-height:1.6;margin:2px 0 16px;font-weight:600;}
   .success-banner{
     background:linear-gradient(135deg,var(--accent),#1fae63);color:#04140d;
     padding:22px;border-radius:var(--radius);text-align:center;font-weight:800;margin-bottom:16px;
@@ -383,7 +416,7 @@
     .card, .list-item, .exercise-card, .home-cat, .home-square{
       box-shadow:none !important; border:1px solid #ccc !important; background:#fff !important; color:#000 !important;
     }
-    .list-item p, .ex-meta, .note-box, .field-hint{ color:#333 !important; }
+    .list-item p, .ex-meta, .note-box, .note-user, .field-hint{ color:#333 !important; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -500,6 +533,7 @@ const SCHEDE_DEFAULT = [
         note:'Spinta controllata, non bloccare le ginocchia in alto, talloni sempre a contatto con la pedana',
         alternativa:'Squat a corpo libero',
         video:'https://www.youtube.com/watch?v=z-6O7fi2uJA',
+        immagine:'https://wger.de/media/exercise-images/371/d2136f96-3a43-4d4c-9944-1919c4ca1ce1.webp',
         guida:{
           muscoli:'Quadricipiti, glutei, femorali (secondari).',
           esecuzione:'Siediti con schiena e bacino aderenti allo schienale. Piedi sulla pedana all\'altezza delle spalle. Scendi controllato fino a circa 90° di flessione senza staccare i talloni, poi spingi senza bloccare le ginocchia a fine corsa.',
@@ -511,6 +545,7 @@ const SCHEDE_DEFAULT = [
         note:'Scapole leggermente indietro, il gomito non si blocca in fondo alla spinta',
         alternativa:'Push-up sulle ginocchia',
         video:'https://www.youtube.com/watch?v=6mWAqa41eKI',
+        immagine:'https://wger.de/media/exercise-images/129/b263c968-e067-4750-916a-d8758a7df23e.webp',
         guida:{
           muscoli:'Pettorali, spalle anteriori e tricipiti (secondari).',
           esecuzione:'Sedile regolato con maniglie all\'altezza del petto. Scapole leggermente retratte. Spingi in avanti senza bloccare i gomiti, torna con controllo senza far cadere le spalle in avanti.',
@@ -522,6 +557,7 @@ const SCHEDE_DEFAULT = [
         note:'Tira con la schiena, non con le braccia; mai dietro la nuca',
         alternativa:'Pulldown con la corda',
         video:'https://www.youtube.com/watch?v=DTDvohtOxN0',
+        immagine:'https://wger.de/media/exercise-images/1136/5778a8e9-c606-4843-89c8-9d9469eeb6e4.PNG',
         guida:{
           muscoli:'Gran dorsale, bicipiti (secondari).',
           esecuzione:'Cosce bloccate sotto il supporto, presa neutra poco più larga delle spalle. Tira verso l\'alto del petto portando i gomiti in basso/indietro, busto quasi verticale. Torna su con controllo.',
@@ -533,6 +569,7 @@ const SCHEDE_DEFAULT = [
         note:'Eccentrica lenta (circa 3 secondi in fase di ritorno)',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=1zevKZn_n1E',
+        immagine:'https://wger.de/media/exercise-images/364/b318dde9-f5f2-489f-940a-cd864affb9e3.png',
         guida:{
           muscoli:'Femorali (parte posteriore della coscia).',
           esecuzione:'Cuscinetto superiore sopra le ginocchia, inferiore dietro le caviglie. Fletti portando il cuscinetto verso i glutei, torna con eccentrica lenta di circa 3 secondi.',
@@ -544,6 +581,7 @@ const SCHEDE_DEFAULT = [
         note:'Utile anche per chi sta tante ore in piedi: rinforza glutei e bacino',
         alternativa:'Ponte glutei a corpo libero',
         video:'https://www.youtube.com/watch?v=bxQCTxv8dhA',
+        immagine:'https://wger.de/media/exercise-images/1642/a81ad922-caf5-47f8-99b4-640cb0717436.webp',
         guida:{
           muscoli:'Glutei principalmente, femorali e core di supporto.',
           esecuzione:'Scapole appoggiate al bordo di una panca, ginocchia piegate. Bilanciere sopra le anche (con cuscinetto). Spingi le anche in alto fino ad allineare ginocchia-bacino-spalle, scendi con controllo.',
@@ -555,6 +593,7 @@ const SCHEDE_DEFAULT = [
         note:'Pancia in tensione, non inarcare la parte bassa della schiena',
         alternativa:'Plank sulle ginocchia',
         video:'https://www.youtube.com/watch?v=TDQQ93WtkJM',
+        immagine:'https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png',
         guida:{
           muscoli:'Addome nel complesso, spalle e glutei per la stabilità.',
           esecuzione:'Appoggio su avambracci e punte dei piedi, gomiti sotto le spalle. Corpo in linea retta da spalle a caviglie. Respira regolarmente.',
@@ -997,6 +1036,8 @@ function renderHome(){
   const links = (profiloUtente && profiloUtente.isTrainer)
     ? `<p class="profile-link"><span onclick="setRoute({name:'trainer'})">🛠️ Pannello trainer</span></p>`
     : '';
+  const haPianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
+  const dietaSub = haPianoPersonale ? 'Piano nutrizionale e pasti' : 'In attesa del tuo piano personale';
   view.innerHTML = `
     ${saluto}
     ${links}
@@ -1006,7 +1047,7 @@ function renderHome(){
     </div>
     <div class="home-cat" onclick="setRoute({name:'alimentazione'})">
       <div class="icon">🍎</div>
-      <div><div class="label">Dieta</div><div class="sub">Piano nutrizionale e pasti</div></div>
+      <div><div class="label">Dieta</div><div class="sub">${dietaSub}</div></div>
     </div>
     <div class="home-cat" onclick="setRoute({name:'statistiche'})">
       <div class="icon">📈</div>
@@ -1022,6 +1063,7 @@ function renderHome(){
         <div class="label">Registra progressi</div>
       </div>
     </div>
+    <p class="app-credit">Created by <span>SpinoDev96</span></p>
   `;
 }
 
@@ -1084,11 +1126,33 @@ function avviaSessione(schedaId){
     warmDone: scheda.riscaldamento.map(()=>false),
     esercizi: scheda.esercizi.map(e=>({
       nome: e.nome,
-      rpe: null,
-      sets: Array.from({length:e.serieTarget}, ()=>({peso:'', rip:'', fatta:false}))
+      noteUtente: '',
+      sets: Array.from({length:e.serieTarget}, ()=>({peso:'', rip:'', fatta:false, rpe:null}))
     }))
   };
   setRoute({name:'sessione'});
+}
+
+function esercizioCompletato(ei){
+  const ex = sessionDraft.esercizi[ei];
+  return !!ex && ex.sets.length>0 && ex.sets.every(s=>s.fatta && s.rpe!=null);
+}
+
+function refreshLocks(){
+  const nuovi = sessionDraft.esercizi.map((_,i)=> i>0 && !esercizioCompletato(i-1));
+  const precedenti = sessionDraft._locks || [];
+  const cambiati = nuovi.length !== precedenti.length || nuovi.some((v,i)=>v!==precedenti[i]);
+  sessionDraft._locks = nuovi;
+  if(cambiati) renderSessione();
+}
+
+function updateNotaEsercizio(ei, val){
+  sessionDraft.esercizi[ei].noteUtente = val;
+}
+
+function setRPESet(ei, si, val){
+  sessionDraft.esercizi[ei].sets[si].rpe = val ? Number(val) : null;
+  refreshLocks();
 }
 
 /* ============ SUGGERIMENTO PROGRESSIONE CARICO ============
@@ -1125,16 +1189,6 @@ function suggerimentoProgressione(nomeEsercizio, ripTargetStr){
     : 'Nelle ultime 2 sedute hai completato tutte le ripetizioni richieste: prova ad aumentare il peso di circa 2.5 kg.';
 }
 
-function setRPE(ei, val){
-  sessionDraft.esercizi[ei].rpe = val;
-  const wrap = document.getElementById('rpe-'+ei);
-  if(wrap){
-    wrap.querySelectorAll('.chip').forEach(c=>{
-      c.classList.toggle('active', Number(c.dataset.v)===val);
-    });
-  }
-}
-
 /* ============ SESSIONE (logbook + timer) ============ */
 function renderSessione(){
   const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
@@ -1168,29 +1222,50 @@ function renderSessione(){
 
   scheda.esercizi.forEach((e, ei)=>{
     const draft = sessionDraft.esercizi[ei];
+    const locked = ei>0 && !esercizioCompletato(ei-1);
+
+    if(locked){
+      html += `<div class="exercise-card locked-ex">
+        <div class="ex-head">
+          ${e.immagine ? `<div class="ex-thumb"><img src="${e.immagine}" alt="${e.nome}" loading="lazy"></div>` : ''}
+          <div class="ex-head-info">
+            <h3>${e.nome}</h3>
+            <div class="ex-meta" style="margin-bottom:0;">${e.serieTarget} x ${e.ripTarget} · recupero ${e.recupero}"</div>
+          </div>
+        </div>
+        <div class="lock-banner">🔒 Completa tutte le serie (segnate e valutate con RPE) dell'esercizio precedente per sbloccarlo</div>
+      </div>`;
+      return;
+    }
+
     const suggerimento = suggerimentoProgressione(e.nome, e.ripTarget);
     html += `<div class="exercise-card">
-      <h3>${e.nome}</h3>
-      <div class="ex-meta">${e.serieTarget} x ${e.ripTarget} · recupero ${e.recupero}"</div>`;
+      <div class="ex-head">
+        ${e.immagine ? `<div class="ex-thumb"><img src="${e.immagine}" alt="${e.nome}" loading="lazy"></div>` : ''}
+        <div class="ex-head-info">
+          <h3>${e.nome}</h3>
+          <div class="ex-meta" style="margin-bottom:0;">${e.serieTarget} x ${e.ripTarget} · recupero ${e.recupero}"</div>
+        </div>
+      </div>`;
+    html += `<p class="rpe-legend">RPE per ogni serie: 6 = leggero · 8 = a 2 rip dal cedimento · 10 = cedimento totale</p>`;
     draft.sets.forEach((set,si)=>{
       html += `<div class="set-row">
         <span>${si+1}</span>
         <input type="number" min="0" max="500" placeholder="peso kg" value="${set.peso}" oninput="updateSet(${ei},${si},'peso',this.value)">
         <input type="text" placeholder="rip / sec" value="${set.rip}" oninput="updateSet(${ei},${si},'rip',this.value)">
+        <select onchange="setRPESet(${ei},${si},this.value)">
+          <option value="">RPE</option>
+          ${[6,7,8,9,10].map(v=>`<option value="${v}" ${set.rpe===v?'selected':''}>${v}</option>`).join('')}
+        </select>
         <input type="checkbox" ${set.fatta?'checked':''} onchange="markSetDone(${ei},${si},${e.recupero},this.checked,this)">
       </div>`;
     });
     html += `<div class="note-box">${e.note}${e.alternativa && e.alternativa!=='—' ? ' · Alternativa: '+e.alternativa : ''}</div>`;
+    html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio (sensazioni, dolori, aggiustamenti...)" oninput="updateNotaEsercizio(${ei}, this.value)">${draft.noteUtente||''}</textarea>`;
     if(suggerimento){
       html += `<div class="progress-tip">💡 ${suggerimento}</div>`;
     }
-    html += `<div class="rpe-row">
-        <p class="rpe-label">Quanto ti sei sentito vicino al cedimento? (RPE: 6 = leggero, 8 = 2 rip in riserva, 10 = cedimento totale)</p>
-        <div class="chip-select rpe-chips" id="rpe-${ei}">
-          ${[6,7,8,9,10].map(v=>`<div class="chip ${draft.rpe===v?'active':''}" data-v="${v}" onclick="setRPE(${ei},${v})">${v}</div>`).join('')}
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    html += `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;">
         <button class="toggle-guide" onclick="toggleGuide(${ei})">Guida esercizio ▾</button>
         ${e.video ? `<a href="${e.video}" target="_blank" rel="noopener" class="video-link">▶ Guarda il video</a>` : ''}
       </div>
@@ -1202,6 +1277,7 @@ function renderSessione(){
     </div>`;
   });
 
+  html += `<div class="ex-attrib">Immagini illustrative degli esercizi: <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a> (CC BY-SA)</div>`;
   html += `<button class="btn" id="finishBtn" onclick="terminaSessione()">Termina e salva allenamento</button>`;
   view.innerHTML = html;
 }
@@ -1228,6 +1304,7 @@ function markSetDone(ei,si,recupero,checked,el){
   }
   set.fatta = checked;
   if(checked){ startRestTimer(recupero); }
+  refreshLocks();
 }
 
 let restState = null;
@@ -1438,12 +1515,13 @@ function csvEscape(v){
 function esportaCSV(){
   const righe = [];
   righe.push('=== ALLENAMENTI ===');
-  righe.push(['Data','Scheda','Esercizio','Serie','Peso (kg)','Rip','Completata','RPE'].join(','));
+  righe.push(['Data','Scheda','Esercizio','Serie','Peso (kg)','Rip','Completata','RPE','Note'].join(','));
   cache.sessioni.slice().sort((a,b)=> new Date(a.data)-new Date(b.data)).forEach(s=>{
     const data = new Date(s.data).toLocaleDateString('it-IT');
     s.esercizi.forEach(e=>{
       e.sets.forEach((set,i)=>{
-        righe.push([data, csvEscape(s.schedaNome), csvEscape(e.nome), i+1, set.peso||'', csvEscape(set.rip||''), set.fatta?'si':'no', e.rpe||''].join(','));
+        const rpeVal = set.rpe!=null ? set.rpe : (e.rpe||'');
+        righe.push([data, csvEscape(s.schedaNome), csvEscape(e.nome), i+1, set.peso||'', csvEscape(set.rip||''), set.fatta?'si':'no', rpeVal, csvEscape(e.noteUtente||'')].join(','));
       });
     });
   });
@@ -1527,12 +1605,18 @@ function renderStoricoMisure(){
 const METRICHE_ESERCIZIO = [
   {key:'pesoMax', label:'Peso max'},
   {key:'volume', label:'Volume totale'},
-  {key:'rm', label:'1RM stimato'}
+  {key:'rm', label:'1RM stimato'},
+  {key:'rpeMedio', label:'RPE medio'}
 ];
 
 function calcolaValoreEsercizio(sessione, nomeEsercizio, metrica){
   const e = sessione.esercizi.find(x=>x.nome===nomeEsercizio);
   if(!e) return null;
+  if(metrica==='rpeMedio'){
+    const rpes = (e.sets||[]).map(s=>s.rpe).filter(v=>v!=null && !isNaN(v));
+    if(rpes.length) return rpes.reduce((a,b)=>a+b,0)/rpes.length;
+    return (e.rpe!=null) ? e.rpe : null; // sessioni salvate prima dell'RPE per serie
+  }
   const validi = e.sets
     .map(x=>({peso:parseFloat(x.peso), rip:parseInt(x.rip)}))
     .filter(x=>!isNaN(x.peso) && !isNaN(x.rip) && x.rip>0);
@@ -1699,16 +1783,21 @@ function renderProgressiDetail(){
   let html = `<p style="color:var(--text-dim);font-size:13px;">${d.toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long', year:'numeric'})}</p>`;
   s.esercizi.forEach(e=>{
     html += `<div class="exercise-card"><h3>${e.nome}</h3>`;
+    const haRpePerSerie = (e.sets||[]).some(s=>s.rpe!=null);
     e.sets.forEach((set,i)=>{
       html += `<div style="display:flex;gap:10px;font-size:13.5px;padding:5px 0;color:var(--text-dim);">
         <span style="width:20px;">${i+1}</span>
         <span style="flex:1;">${set.peso ? set.peso+' kg' : '—'}</span>
         <span style="flex:1;">${set.rip ? set.rip+' rip' : '—'}</span>
+        <span style="width:50px;text-align:right;">${set.rpe!=null ? 'RPE '+set.rpe : '—'}</span>
         <span>${set.fatta?'✅':'—'}</span>
       </div>`;
     });
-    if(e.rpe){
+    if(!haRpePerSerie && e.rpe){
       html += `<p style="margin:8px 0 0;font-size:12.5px;color:var(--text-dim);">RPE: <b style="color:var(--text);">${e.rpe}</b></p>`;
+    }
+    if(e.noteUtente){
+      html += `<p style="margin:8px 0 0;font-size:12.5px;color:var(--text-dim);"><b style="color:var(--text);">Note:</b> ${e.noteUtente}</p>`;
     }
     html += `</div>`;
   });
@@ -1824,79 +1913,286 @@ function toggleAssegnazione(uid, schedaId, chipEl){
 
 /* ============ DIETA ============ */
 const DIETA_PIANO = {
-  aggiornato: '29/07/2026',
+  versione: 'v3',
+  aggiornato: '31/07/2026',
   fase: 'Fase pre-settembre (pre-allenamento strutturato)',
   target: { kcal:2250, prot:145, carb:277, grassi:62 },
-  reale:  { kcal:2224, prot:152, carb:269, grassi:63 },
   pasti: [
     {
       nome:'Colazione', icona:'🌅', orario:'6:00 – 9:00',
-      kcal:517, prot:33, carb:73, grassi:12,
-      alimenti:[
-        {n:"Fiocchi d'avena", q:'65 g', kcal:242, prot:9, carb:43, grassi:5},
-        {n:'Yogurt greco 0%', q:'200 g', kcal:108, prot:21, carb:6, grassi:0},
-        {n:'Banana', q:'90 g (1 media)', kcal:80, prot:1, carb:21, grassi:0},
-        {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
-      ],
-      preparazione:"Overnight oats o porridge — avena con yogurt greco, banana a fette e mandorle sopra.",
-      alternativa:"Alternativa salata — Pane tipo 0 80g + 2 uova (100g) + pomodoro 100g + 1 cucchiaino olio EVO (5g): 425 kcal, 20 g P, 55 g C, 16 g F. Uova strapazzate o in camicia, pane tostato, pomodoro a fette con un filo d'olio."
+      opzioni:[
+        { titolo:"Porridge classico", kcal:517, prot:33, carb:73, grassi:12,
+          alimenti:[
+            {n:"Fiocchi d'avena", q:'65 g', kcal:242, prot:9, carb:43, grassi:5},
+            {n:'Yogurt greco 0%', q:'200 g', kcal:108, prot:21, carb:6, grassi:0},
+            {n:'Banana', q:'90 g (1 media)', kcal:80, prot:1, carb:21, grassi:0},
+            {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
+          ],
+          preparazione:"Avena + yogurt greco + banana a fette + mandorle sopra (overnight oats o porridge caldo)." },
+        { titolo:'Salata (uova e pane)', kcal:425, prot:20, carb:55, grassi:16,
+          alimenti:[
+            {n:'Pane tipo 0', q:'80 g', kcal:220, prot:6, carb:51, grassi:0},
+            {n:'Uova', q:'100 g (2 uova)', kcal:143, prot:13, carb:1, grassi:10},
+            {n:'Pomodoro', q:'100 g', kcal:17, prot:1, carb:3, grassi:0},
+            {n:"Olio extravergine d'oliva", q:'5 g (1 cucchiaino)', kcal:45, prot:0, carb:0, grassi:5},
+          ],
+          preparazione:"Uova strapazzate o in camicia, pane tostato, pomodoro a fette con un filo d'olio." },
+        { titolo:'Fette biscottate e marmellata', kcal:510, prot:30, carb:82, grassi:9,
+          alimenti:[
+            {n:'Fette biscottate', q:'60 g (~8 fette)', kcal:245, prot:7, carb:49, grassi:4},
+            {n:'Marmellata', q:'20 g (1 cucchiaio colmo)', kcal:46, prot:0, carb:11, grassi:0},
+            {n:'Yogurt greco 0%', q:'200 g', kcal:108, prot:21, carb:6, grassi:0},
+            {n:'Banana', q:'60 g (1 piccola)', kcal:53, prot:1, carb:14, grassi:0},
+            {n:'Mandorle', q:'10 g (~8 pezzi)', kcal:58, prot:2, carb:2, grassi:5},
+          ],
+          preparazione:'Colazione "dolce da bar": fette con marmellata + yogurt greco a parte con banana e mandorle.' },
+        { titolo:'Cereali (tipo Coco Pops)', kcal:521, prot:31, carb:75, grassi:10,
+          alimenti:[
+            {n:'Cereali cioccolato/cocco (tipo Coco Pops)', q:'70 g', kcal:267, prot:5, carb:57, grassi:2},
+            {n:'Latte parz. scremato', q:'250 ml', kcal:115, prot:8, carb:12, grassi:4},
+            {n:'Yogurt greco 0%', q:'150 g', kcal:81, prot:15, carb:5, grassi:0},
+            {n:'Mandorle', q:'10 g (~8 pezzi)', kcal:58, prot:2, carb:2, grassi:5},
+          ],
+          preparazione:'Cereali con latte + yogurt greco a parte (per bilanciare le proteine dei cereali, poche).' },
+        { titolo:'Pancake proteici', kcal:493, prot:32, carb:71, grassi:11,
+          alimenti:[
+            {n:"Fiocchi d'avena (da frullare in farina)", q:'70 g', kcal:261, prot:9, carb:46, grassi:5},
+            {n:'Uovo', q:'55 g (1 uovo)', kcal:79, prot:7, carb:0, grassi:5},
+            {n:"Albume d'uovo", q:'150 g (~5 albumi)', kcal:65, prot:15, carb:1, grassi:0},
+            {n:'Banana', q:'100 g (1 media)', kcal:89, prot:1, carb:23, grassi:0},
+          ],
+          preparazione:'Frulla avena, uovo, albumi e banana; cuoci in padella antiaderente come pancake.' },
+      ]
     },
     {
       nome:'Spuntino 1', icona:'🥤', orario:'Metà mattina',
-      kcal:227, prot:21, carb:21, grassi:8,
-      alimenti:[
-        {n:'Whey isolate', q:'15 g (1/2 misurino)', kcal:56, prot:14, carb:1, grassi:0},
-        {n:'Latte parz. scremato', q:'150 ml', kcal:69, prot:5, carb:7, grassi:2},
-        {n:'Banana', q:'50 g (1/2 piccola)', kcal:45, prot:1, carb:11, grassi:0},
-        {n:'Mandorle', q:'10 g (~8 pezzi)', kcal:58, prot:2, carb:2, grassi:5},
-      ],
-      preparazione:'Frullato whey + latte + banana; mandorle a parte.',
-      alternativa:'Alternativa senza shaker — Yogurt greco 0% 200g + mandorle 20g + banana 60g: 277 kcal, 26 g P, 24 g C, 10 g F.'
+      opzioni:[
+        { titolo:'Shake proteico', kcal:227, prot:21, carb:21, grassi:8,
+          alimenti:[
+            {n:'Whey isolate', q:'15 g (1/2 misurino)', kcal:56, prot:14, carb:1, grassi:0},
+            {n:'Latte parz. scremato', q:'150 ml', kcal:69, prot:5, carb:7, grassi:2},
+            {n:'Banana', q:'50 g (1/2 piccola)', kcal:45, prot:1, carb:11, grassi:0},
+            {n:'Mandorle', q:'10 g (~8 pezzi)', kcal:58, prot:2, carb:2, grassi:5},
+          ],
+          preparazione:'Frullato whey + latte + banana; mandorle a parte.' },
+        { titolo:'Yogurt e frutta secca', kcal:277, prot:26, carb:24, grassi:10,
+          alimenti:[
+            {n:'Yogurt greco 0%', q:'200 g', kcal:108, prot:21, carb:6, grassi:0},
+            {n:'Mandorle', q:'20 g (~16 pezzi)', kcal:116, prot:4, carb:4, grassi:10},
+            {n:'Banana', q:'60 g (1 piccola)', kcal:53, prot:1, carb:14, grassi:0},
+          ],
+          preparazione:'Senza shaker: yogurt greco con mandorle e banana a fette.' },
+        { titolo:'Gallette e affettato', kcal:228, prot:20, carb:21, grassi:7,
+          alimenti:[
+            {n:'Gallette di riso', q:'20 g (2 pezzi)', kcal:78, prot:2, carb:16, grassi:1},
+            {n:'Fesa di tacchino affettata', q:'100 g (~5 fette)', kcal:104, prot:17, carb:3, grassi:2},
+            {n:'Mandorle', q:'8 g (~6 pezzi)', kcal:46, prot:2, carb:2, grassi:4},
+          ],
+          preparazione:'Gallette con fesa di tacchino sopra, mandorle a parte.' },
+        { titolo:'Skyr e kiwi', kcal:237, prot:24, carb:19, grassi:8,
+          alimenti:[
+            {n:'Skyr', q:'180 g', kcal:113, prot:20, carb:7, grassi:0},
+            {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
+            {n:'Kiwi', q:'60 g (1 piccolo)', kcal:37, prot:1, carb:9, grassi:0},
+          ],
+          preparazione:'Skyr con mandorle e kiwi a pezzi.' },
+      ]
     },
     {
       nome:'Pranzo', icona:'🍝', orario:'Ore 15:00 circa',
-      kcal:686, prot:43, carb:87, grassi:18,
-      alimenti:[
-        {n:'Pasta di semola', q:'110 g (crudo)', kcal:388, prot:14, carb:79, grassi:2},
-        {n:'Petto di pollo', q:'100 g (crudo)', kcal:100, prot:23, carb:0, grassi:1},
-        {n:"Olio extravergine d'oliva", q:'12 g (1 cucchiaio)', kcal:108, prot:0, carb:0, grassi:12},
-        {n:'Verdura mista (zucchine/insalata)', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
-        {n:'Parmigiano Reggiano grattugiato', q:'10 g (1 cucchiaio)', kcal:39, prot:3, carb:0, grassi:3},
-      ],
-      preparazione:"Pasta al pomodoro/in bianco + pollo alla piastra + verdure saltate o crude condite con l'olio.",
-      alternativa:'Alternativa riso + tonno — Riso 100g (crudo) + tonno al naturale sgocciolato 150g + olio EVO 10g + verdura mista 200g: 640 kcal, 43 g P, 87 g C, 12 g F.'
+      opzioni:[
+        { titolo:'Pasta e pollo', kcal:686, prot:43, carb:87, grassi:18,
+          alimenti:[
+            {n:'Pasta di semola', q:'110 g (a crudo)', kcal:388, prot:14, carb:79, grassi:2},
+            {n:'Petto di pollo', q:'100 g (a crudo)', kcal:100, prot:23, carb:0, grassi:1},
+            {n:"Olio extravergine d'oliva", q:'12 g (1 cucchiaio)', kcal:108, prot:0, carb:0, grassi:12},
+            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
+            {n:'Parmigiano grattugiato', q:'10 g (1 cucchiaio)', kcal:39, prot:3, carb:0, grassi:3},
+          ],
+          preparazione:"Pasta al pomodoro/in bianco + pollo alla piastra + verdure saltate o crude condite con l'olio." },
+        { titolo:'Riso e tonno', kcal:640, prot:43, carb:87, grassi:12,
+          alimenti:[
+            {n:'Riso', q:'100 g (a crudo)', kcal:358, prot:7, carb:79, grassi:1},
+            {n:'Tonno al naturale sgocciolato', q:'150 g', kcal:143, prot:33, carb:0, grassi:0},
+            {n:"Olio extravergine d'oliva", q:'10 g', kcal:90, prot:0, carb:0, grassi:10},
+            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
+          ],
+          preparazione:'Riso bollito + tonno + verdura, condito con olio (ottimo anche freddo, portabile al lavoro).' },
+        { titolo:'Insalata di farro, ceci e tonno', kcal:719, prot:43, carb:89, grassi:20,
+          alimenti:[
+            {n:'Farro perlato', q:'80 g (a crudo)', kcal:292, prot:12, carb:54, grassi:2},
+            {n:'Ceci lessati (in scatola, scolati)', q:'200 g', kcal:200, prot:13, carb:28, grassi:5},
+            {n:'Tonno al naturale sgocciolato', q:'50 g', kcal:48, prot:11, carb:0, grassi:0},
+            {n:"Olio extravergine d'oliva", q:'10 g', kcal:90, prot:0, carb:0, grassi:10},
+            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
+            {n:'Parmigiano grattugiato', q:'10 g', kcal:39, prot:3, carb:0, grassi:3},
+          ],
+          preparazione:'Farro bollito freddo con ceci, tonno, verdura e una spolverata di parmigiano: piatto unico da portare al lavoro.' },
+        { titolo:'Piadina con fesa di tacchino', kcal:700, prot:45, carb:86, grassi:19,
+          alimenti:[
+            {n:'Piadina', q:'160 g (1 piadina grande)', kcal:448, prot:12, carb:75, grassi:11},
+            {n:'Fesa di tacchino affettata', q:'150 g (~8 fette)', kcal:156, prot:26, carb:4, grassi:3},
+            {n:'Parmigiano grattugiato', q:'15 g', kcal:59, prot:5, carb:0, grassi:4},
+            {n:'Verdura mista (insalata/pomodoro)', q:'150 g', kcal:38, prot:2, carb:6, grassi:0},
+          ],
+          preparazione:'Piadina farcita con fesa di tacchino, verdura e una spolverata di parmigiano.' },
+        { titolo:'Quinoa e salmone', kcal:695, prot:40, carb:86, grassi:21,
+          alimenti:[
+            {n:'Quinoa', q:'120 g (a crudo)', kcal:442, prot:17, carb:77, grassi:7},
+            {n:'Salmone fresco', q:'110 g (a crudo)', kcal:204, prot:20, carb:1, grassi:13},
+            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
+          ],
+          preparazione:'Quinoa bollita + salmone al forno/piastra + verdura; il salmone ha già grassi buoni, non serve aggiungere olio.' },
+      ]
     },
     {
       nome:'Spuntino 2', icona:'🍞', orario:'Metà pomeriggio',
-      kcal:245, prot:22, carb:23, grassi:9,
-      alimenti:[
-        {n:'Bresaola', q:'50 g (~6 fette)', kcal:76, prot:17, carb:0, grassi:1},
-        {n:'Pane tipo 0', q:'30 g (1 fetta)', kcal:83, prot:2, carb:19, grassi:0},
-        {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
-      ],
-      preparazione:'Bresaola su pane, mandorle a parte.',
-      alternativa:'Alternativa dolce — Ricotta vaccina 180g + kiwi 100g: 324 kcal, 17 g P, 22 g C, 20 g F (più grassa, adatta se serve più sazietà).'
+      opzioni:[
+        { titolo:'Bresaola e pane', kcal:245, prot:22, carb:23, grassi:9,
+          alimenti:[
+            {n:'Bresaola', q:'50 g (~6 fette)', kcal:76, prot:17, carb:0, grassi:1},
+            {n:'Pane tipo 0', q:'30 g (1 fetta)', kcal:83, prot:2, carb:19, grassi:0},
+            {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
+          ],
+          preparazione:'Bresaola su pane, mandorle a parte.' },
+        { titolo:'Ricotta e kiwi', kcal:324, prot:17, carb:22, grassi:20,
+          alimenti:[
+            {n:'Ricotta vaccina', q:'180 g', kcal:263, prot:16, carb:7, grassi:20},
+            {n:'Kiwi', q:'100 g (1-2 pezzi)', kcal:61, prot:1, carb:15, grassi:0},
+          ],
+          preparazione:'Ricotta con kiwi a pezzi (opzione più grassa, adatta se serve più sazietà).' },
+        { titolo:'Skyr, gallette e miele', kcal:254, prot:24, carb:23, grassi:8,
+          alimenti:[
+            {n:'Skyr', q:'180 g', kcal:113, prot:20, carb:7, grassi:0},
+            {n:'Gallette di riso', q:'10 g (1 pezzo)', kcal:39, prot:1, carb:8, grassi:0},
+            {n:'Miele', q:'5 g (1 cucchiaino)', kcal:15, prot:0, carb:4, grassi:0},
+            {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
+          ],
+          preparazione:'Skyr con galletta sbriciolata, un filo di miele e mandorle.' },
+        { titolo:'Uova sode e pane', kcal:260, prot:20, carb:22, grassi:11,
+          alimenti:[
+            {n:'Uova', q:'100 g (2 uova)', kcal:143, prot:13, carb:1, grassi:10},
+            {n:'Pane tipo 0', q:'30 g (1 fetta)', kcal:83, prot:2, carb:19, grassi:0},
+            {n:'Pomodoro', q:'50 g', kcal:9, prot:1, carb:2, grassi:0},
+            {n:'Prosciutto cotto magro', q:'20 g (1 fetta)', kcal:26, prot:4, carb:0, grassi:1},
+          ],
+          preparazione:'2 uova sode + pane + pomodoro + una fetta di prosciutto cotto magro.' },
+        { titolo:'Hummus e gallette', kcal:262, prot:22, carb:26, grassi:8,
+          alimenti:[
+            {n:'Hummus di ceci', q:'50 g (~3 cucchiai)', kcal:85, prot:4, carb:7, grassi:5},
+            {n:'Gallette di riso', q:'15 g (1-2 pezzi)', kcal:58, prot:1, carb:12, grassi:1},
+            {n:'Verdura (carote/finocchi a pinzimonio)', q:'100 g', kcal:25, prot:2, carb:4, grassi:0},
+            {n:'Fesa di tacchino affettata', q:'90 g (~5 fette)', kcal:94, prot:15, carb:3, grassi:2},
+          ],
+          preparazione:'Hummus con gallette e verdure a pinzimonio, più fesa di tacchino per completare le proteine.' },
+      ]
     },
     {
       nome:'Cena', icona:'🌙', orario:'Ore 21:00 circa',
-      kcal:548, prot:33, carb:66, grassi:17,
-      alimenti:[
-        {n:'Petto di tacchino', q:'100 g (crudo)', kcal:104, prot:24, carb:0, grassi:1},
-        {n:'Patate lesse', q:'320 g (~2-3 medie)', kcal:272, prot:6, carb:60, grassi:0},
-        {n:"Olio extravergine d'oliva", q:'15 g (1,5 cucchiai)', kcal:135, prot:0, carb:0, grassi:15},
-        {n:'Verdura mista (insalata/zucchine)', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
-      ],
-      preparazione:'Tacchino alla piastra o al forno, patate lesse condite con olio, verdura a piacere.',
-      alternativa:'Alternativa pollo + riso — Petto di pollo 180g + riso 45g (crudo) + olio EVO 10g + verdura mista 150g: 469 kcal, 47 g P, 42 g C, 12 g F (più proteica, meno carb — utile se il pranzo è stato più leggero).'
+      opzioni:[
+        { titolo:'Tacchino e patate', kcal:548, prot:33, carb:66, grassi:17,
+          alimenti:[
+            {n:'Petto di tacchino', q:'100 g (a crudo)', kcal:104, prot:24, carb:0, grassi:1},
+            {n:'Patate lesse', q:'320 g (~2-3 patate medie)', kcal:272, prot:6, carb:60, grassi:0},
+            {n:"Olio extravergine d'oliva", q:'15 g (1,5 cucchiai)', kcal:135, prot:0, carb:0, grassi:15},
+            {n:'Verdura mista', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
+          ],
+          preparazione:'Tacchino alla piastra o al forno, patate lesse condite con olio, verdura a piacere.' },
+        { titolo:'Pollo e riso', kcal:469, prot:47, carb:42, grassi:12,
+          alimenti:[
+            {n:'Petto di pollo', q:'180 g (a crudo)', kcal:180, prot:42, carb:0, grassi:1},
+            {n:'Riso', q:'45 g (a crudo)', kcal:161, prot:3, carb:36, grassi:0},
+            {n:"Olio extravergine d'oliva", q:'10 g', kcal:90, prot:0, carb:0, grassi:10},
+            {n:'Verdura mista', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
+          ],
+          preparazione:'Più proteica, meno carboidrati — utile se il pranzo è stato più leggero/ricco di carbo.' },
+        { titolo:'Merluzzo e patate', kcal:550, prot:35, carb:62, grassi:17,
+          alimenti:[
+            {n:'Merluzzo/nasello', q:'150 g (a crudo)', kcal:123, prot:27, carb:0, grassi:1},
+            {n:'Patate lesse', q:'300 g (~2 patate medie)', kcal:255, prot:6, carb:56, grassi:0},
+            {n:"Olio extravergine d'oliva", q:'15 g (1,5 cucchiai)', kcal:135, prot:0, carb:0, grassi:15},
+            {n:'Verdura mista', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
+          ],
+          preparazione:'Pesce bianco al forno/vapore, patate lesse condite con olio, verdura a piacere.' },
+        { titolo:'Manzo e pane integrale', kcal:540, prot:34, carb:66, grassi:16,
+          alimenti:[
+            {n:'Fesa di manzo magra', q:'100 g (a crudo)', kcal:113, prot:22, carb:0, grassi:3},
+            {n:'Pane integrale', q:'120 g', kcal:269, prot:9, carb:58, grassi:2},
+            {n:"Olio extravergine d'oliva", q:'12 g (1 cucchiaio)', kcal:108, prot:0, carb:0, grassi:12},
+            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
+          ],
+          preparazione:'Fesa di manzo alla piastra + pane integrale al posto di patate/riso + verdura condita con olio.' },
+        { titolo:'Frittata e pane', kcal:550, prot:33, carb:68, grassi:18,
+          alimenti:[
+            {n:'Uova', q:'120 g (2 uova)', kcal:172, prot:15, carb:1, grassi:12},
+            {n:"Albume d'uovo", q:'80 g (~2-3 albumi)', kcal:34, prot:8, carb:1, grassi:0},
+            {n:'Pane tipo 0', q:'95 g', kcal:261, prot:8, carb:60, grassi:0},
+            {n:"Olio extravergine d'oliva", q:'5 g (1 cucchiaino)', kcal:45, prot:0, carb:0, grassi:5},
+            {n:'Verdura mista', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
+          ],
+          preparazione:'Frittata (uova intere + albumi) con verdura, pane a parte.' },
+      ]
     },
   ]
 };
 
+const INTEGRAZIONE_PIANO = {
+  intro: "Nessuno degli integratori sostituisce il cibo: il piano alimentare resta la base, l'integrazione colma solo eventuali gap pratici (proteine, creatina, micronutrienti). Tocca un integratore per vedere quantità, indicazioni d'uso e particolarità.",
+  integratori: [
+    { nome:'Whey isolate', icona:'🥛',
+      dose:'15-25 g/die (1 misurino ≈ 25 g)',
+      indicazioni:"Nello spuntino di metà mattina o metà pomeriggio, secondo l'opzione scelta nel piano alimentare. Aiuta a raggiungere il target proteico (145 g/die) senza appesantire i pasti.",
+      particolarita:"Versione isolate: pochissimo lattosio, compatibile con l'intolleranza lieve." },
+    { nome:'Omega 3 (EPA/DHA)', icona:'🐟',
+      dose:'1-2 g/die di EPA+DHA combinati (2-3 capsule: controlla la concentrazione reale in etichetta, varia molto da prodotto a prodotto).',
+      indicazioni:"Ai pasti principali (pranzo o cena), per migliorare l'assorbimento essendo un grasso. Supporto anti-infiammatorio e cardiovascolare.",
+      particolarita:'Utile perché il pesce grasso (es. salmone) compare solo in alcune opzioni del piano e non tutti i giorni.' },
+    { nome:'ZMA (Zinco-Magnesio-B6)', icona:'🌙',
+      dose:'1 dose serale (indicativamente zinco 15-30 mg, magnesio 300-450 mg, B6 5-10 mg — verifica il dosaggio specifico in etichetta).',
+      indicazioni:"Sera, 30-60 minuti prima di dormire, a stomaco vuoto, lontano da latticini (riducono l'assorbimento dello zinco). Supporto al recupero muscolare e alla qualità del sonno.",
+      particolarita:'Da distanziare di almeno 2 ore da Lyrica e Zarelis, per evitare interferenze di assorbimento tra i minerali e i farmaci.' },
+    { nome:'Creatina monoidrato', icona:'💪',
+      dose:'3-5 g/die, dose fissa e costante (non a cicli, non serve fase di carico).',
+      indicazioni:'In qualsiasi momento della giornata, sciolta in acqua o nello shake proteico — non è vincolata al pre/post allenamento. Migliora forza e recupero.',
+      particolarita:"Pensata per l'avvio dell'allenamento strutturato, ma l'effetto è cumulativo: puoi iniziarla quando preferisci, non serve aspettare un momento preciso." },
+    { nome:'Vitamina D', icona:'☀️',
+      dose:'Da definire in base al valore ematico (range comune 1000-2000 UI/die se carente — non stimare senza il dato).',
+      indicazioni:'Mattina, con un pasto che contenga grassi (es. con la colazione).',
+      particolarita:'Da avviare solo dopo aver misurato il valore nel sangue: non va integrata "alla cieca" senza un riferimento.' },
+    { nome:'Multivitaminico/minerali', icona:'💊',
+      dose:"Da valutare — non prioritario se l'alimentazione resta varia come da piano.",
+      indicazioni:'Mattina, ai pasti.',
+      particolarita:'Da considerare solo se le analisi mostrano carenze specifiche (es. ferritina bassa); il piano alimentare copre già la maggior parte dei micronutrienti se seguito con costanza.' },
+  ],
+  noteImportanti: "Sei in terapia con Lyrica (pregabalin) e Zarelis (venlafaxina): non sono note interazioni rilevanti con whey isolate, omega 3 o creatina monoidrato. Per lo ZMA, distanzia l'assunzione di almeno 2 ore dai farmaci per sicurezza. Qualunque nuovo integratore — in particolare multivitaminici a dosaggi elevati o prodotti \"pre-workout\" con stimolanti — andrebbe comunque verificato con il medico o il farmacista prima dell'introduzione. Questo piano di integrazione non sostituisce una valutazione medica."
+};
+
 let dietaOpenSet = new Set();
+let suppOpenSet = new Set();
+
+function toggleIntegratore(idx){
+  if(suppOpenSet.has(idx)) suppOpenSet.delete(idx); else suppOpenSet.add(idx);
+  renderAlimentazione();
+}
+let dietaOpzioneSel = {};
 
 function renderAlimentazione(){
   pageTitle.textContent = 'Dieta';
-  const t = DIETA_PIANO.target, r = DIETA_PIANO.reale;
+
+  // Il piano alimentare e l'integrazione qui sotto sono personali, costruiti
+  // sui dati e sulle analisi di Antonio: seguono la stessa logica delle schede
+  // di allenamento (schedeAssegnate === null → account storico di Antonio).
+  // Ai nuovi profili non viene mostrato nulla finché il trainer non assegnerà
+  // un piano dedicato a ciascuno di loro.
+  const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
+  if(!pianoPersonale){
+    view.innerHTML = `<div class="card">
+      <p class="empty" style="padding:10px 0;">Il tuo trainer non ti ha ancora assegnato un piano alimentare personale. Questa sezione si popolerà con la tua dieta e la tua integrazione quando saranno pronte.</p>
+    </div>`;
+    return;
+  }
+
+  const t = DIETA_PIANO.target;
 
   const macroDef = [
     {key:'prot', label:'Proteine', color:'var(--accent)'},
@@ -1907,13 +2203,15 @@ function renderAlimentazione(){
   const macroChipsHtml = macroDef.map(m=>`
     <div class="macro-chip">
       <div class="mc-dot" style="background:${m.color};"></div>
-      <div class="mc-n">${r[m.key]}g</div>
+      <div class="mc-n">${t[m.key]}g</div>
       <div class="mc-l">${m.label}</div>
     </div>`).join('');
 
   const mealsHtml = DIETA_PIANO.pasti.map((p,i)=>{
     const open = dietaOpenSet.has(i);
-    const foodRows = p.alimenti.map(a=>`
+    const selIdx = dietaOpzioneSel[i] || 0;
+    const opz = p.opzioni[selIdx];
+    const foodRows = opz.alimenti.map(a=>`
       <tr>
         <td>${a.n}<div class="qty" style="font-size:11px;color:var(--text-dim);font-weight:600;">${a.q}</div></td>
         <td>${a.kcal}</td>
@@ -1921,50 +2219,85 @@ function renderAlimentazione(){
         <td>${a.carb}g</td>
         <td>${a.grassi}g</td>
       </tr>`).join('');
+    const chipsHtml = p.opzioni.map((o,oi)=>
+      `<div class="chip${oi===selIdx?' active':''}" onclick="event.stopPropagation();selectDietaOpzione(${i},${oi})">${o.titolo}</div>`
+    ).join('');
     return `
     <div class="meal-card${open?' open':''}">
       <div class="meal-head" onclick="toggleDietaPasto(${i})">
         <div class="icon">${p.icona}</div>
         <div class="mh-info">
           <div class="mh-name">${p.nome}</div>
-          <div class="mh-time">${p.orario}</div>
+          <div class="mh-time">${p.orario} · ${p.opzioni.length} opzioni</div>
         </div>
-        <div class="mh-kcal">${p.kcal} kcal</div>
+        <div class="mh-kcal">${opz.kcal} kcal</div>
         <div class="mh-chev">▾</div>
       </div>
       <div class="meal-body"><div class="meal-body-in">
+        <div class="chip-select">${chipsHtml}</div>
         <div class="meal-macro-mini">
-          <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b>${p.prot}g</b></span>
-          <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b>${p.carb}g</b></span>
-          <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b>${p.grassi}g</b></span>
+          <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b>${opz.prot}g</b></span>
+          <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b>${opz.carb}g</b></span>
+          <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b>${opz.grassi}g</b></span>
         </div>
         <table class="food-table">
           <thead><tr><th>Alimento</th><th>Kcal</th><th>Prot.</th><th>Carb.</th><th>Grassi</th></tr></thead>
           <tbody>${foodRows}</tbody>
         </table>
-        <div class="meal-prep"><b>Preparazione:</b> ${p.preparazione}</div>
-        <div class="meal-alt"><b>${p.alternativa.split(' — ')[0]}</b> — ${p.alternativa.split(' — ').slice(1).join(' — ')}</div>
+        <div class="meal-prep"><b>Preparazione:</b> ${opz.preparazione}</div>
+      </div></div>
+    </div>`;
+  }).join('');
+
+  const suppHtml = INTEGRAZIONE_PIANO.integratori.map((s,i)=>{
+    const open = suppOpenSet.has(i);
+    return `
+    <div class="meal-card${open?' open':''}">
+      <div class="meal-head" onclick="toggleIntegratore(${i})">
+        <div class="icon">${s.icona}</div>
+        <div class="mh-info">
+          <div class="mh-name">${s.nome}</div>
+          <div class="mh-time">${s.dose}</div>
+        </div>
+        <div class="mh-chev">▾</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-in">
+        <div class="meal-prep" style="margin-top:0;"><b>Indicazioni d'uso:</b> ${s.indicazioni}</div>
+        ${s.particolarita ? `<div class="meal-prep"><b>Particolarità:</b> ${s.particolarita}</div>` : ''}
       </div></div>
     </div>`;
   }).join('');
 
   view.innerHTML = `
     <div class="diet-summary">
-      <div class="tlt">Piano nutrizionale — v2</div>
-      <div class="tsb">Aggiornato ${DIETA_PIANO.aggiornato} · ${DIETA_PIANO.fase}<br>3 pasti principali + 2 spuntini</div>
-      <div class="diet-kcal-hero"><span class="n">${r.kcal}</span><span class="u">/ ${t.kcal} kcal</span></div>
+      <div class="tlt">Piano nutrizionale</div>
+      <div class="tsb">${DIETA_PIANO.fase}<br>3 pasti principali + 2 spuntini · più opzioni intercambiabili per ogni pasto</div>
+      <div class="diet-kcal-hero"><span class="n">${t.kcal}</span><span class="u">kcal / giorno</span></div>
       <div class="macro-chip-row">${macroChipsHtml}</div>
     </div>
 
     ${mealsHtml}
 
     <div class="diet-info-card">
-      <div class="dic-t">💧 Idratazione &amp; integrazione</div>
-      <div class="dic-b">2,5-3 L/die di acqua (obiettivo progressivo, si parte da ~1 L attuale). Whey isolate da subito; creatina 3-5 g/die da settembre; multivitaminico/vit. D in attesa delle nuove analisi.</div>
+      <div class="dic-t">💧 Idratazione</div>
+      <div class="dic-b">2,5-3 L/die di acqua, obiettivo progressivo partendo da ~1 L attuale.</div>
     </div>
+
+    <div class="diet-summary" style="margin-top:20px;margin-bottom:12px;">
+      <div class="tlt">Integrazione</div>
+      <div class="supp-intro" style="margin-bottom:0;">${INTEGRAZIONE_PIANO.intro}</div>
+    </div>
+
+    ${suppHtml}
+
+    <div class="diet-info-card warn">
+      <div class="dic-t">⚠️ Integrazione e farmaci</div>
+      <div class="dic-b">${INTEGRAZIONE_PIANO.noteImportanti}</div>
+    </div>
+
     <div class="diet-info-card">
       <div class="dic-t">📝 Note pratiche</div>
-      <div class="dic-b">Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 200g a pranzo / 150g a cena corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Birra (~130 kcal/die media) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
+      <div class="dic-b">Ogni opzione di un pasto è intercambiabile con le altre dello stesso pasto (macro equivalenti, tolleranza ±10%): componi la settimana come preferisci, anche ripetendo o mescolando le opzioni. Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 150-200g corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Birra (~130 kcal/die media) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
     </div>
     <div class="diet-info-card warn">
       <div class="dic-t">⚠️ Note importanti</div>
@@ -1979,6 +2312,12 @@ function renderAlimentazione(){
 
 function toggleDietaPasto(i){
   if(dietaOpenSet.has(i)) dietaOpenSet.delete(i); else dietaOpenSet.add(i);
+  renderAlimentazione();
+}
+
+function selectDietaOpzione(i, oi){
+  dietaOpzioneSel[i] = oi;
+  if(!dietaOpenSet.has(i)) dietaOpenSet.add(i);
   renderAlimentazione();
 }
 
