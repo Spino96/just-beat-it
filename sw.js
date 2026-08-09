@@ -1,9 +1,10 @@
 /* Service worker per Beat Yourself.
    Obiettivo: far funzionare l'app anche in palestra con poco segnale,
-   servendo l'app shell dalla cache e aggiornandola in background quando
-   la rete è disponibile (stale-while-revalidate). */
+   servendo l'app shell dalla cache quando manca rete, ma senza mai mostrare
+   una versione vecchia dell'HTML quando la rete c'è (network-first per la
+   pagina; stale-while-revalidate solo per gli asset statici come le icone). */
 
-const CACHE_NAME = 'beat-yourself-v2';
+const CACHE_NAME = 'beat-yourself-v3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -39,6 +40,28 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
+  const isPagina = req.mode === 'navigate' || req.url.endsWith('/index.html') || req.url.endsWith('/');
+
+  if (isPagina) {
+    // Network-first: se c'è rete, l'utente vede sempre l'ultima versione
+    // pubblicata al primo caricamento, non a quello dopo. Se manca rete
+    // (es. poco segnale in palestra), si torna alla copia in cache.
+    event.respondWith(
+      fetch(req)
+        .then(res => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Asset statici (icone, manifest): stale-while-revalidate va benissimo,
+  // non serve che siano freschi all'istante.
   event.respondWith(
     caches.match(req).then(cached => {
       const network = fetch(req)

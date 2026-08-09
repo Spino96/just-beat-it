@@ -25,7 +25,7 @@
     --panel-2:#191c24;
     --border:#1c2029;
     --text:#f5f7fa;
-    --text-dim:#838ba0;
+    --text-dim:#949cb2;
     --accent:#39ff94;
     --accent-2:#ff9d4d;
     --accent-3:#8b6bff;
@@ -188,6 +188,26 @@
   .btn:active{transform:scale(.98);}
   .btn.secondary{background:var(--panel-2);color:var(--text);box-shadow:none;border:1px solid var(--border);}
   .btn.small{width:auto;padding:9px 16px;font-size:13.5px;}
+  .btn.tap-glow{animation:btnGlow .26s ease;}
+  @keyframes btnGlow{
+    0%{box-shadow:0 0 0 2px var(--accent), 0 0 26px 6px #39ff9466;}
+    100%{box-shadow:var(--shadow-btn);}
+  }
+  .btn.secondary.tap-glow{animation:btnGlowSecondary .26s ease;}
+  @keyframes btnGlowSecondary{
+    0%{box-shadow:0 0 0 2px var(--accent), 0 0 20px 5px #39ff9440;}
+    100%{box-shadow:none;}
+  }
+  .btn.danger.tap-glow{animation:btnGlowDanger .26s ease;}
+  @keyframes btnGlowDanger{
+    0%{box-shadow:0 0 0 2px var(--danger), 0 0 26px 6px #ff547066;}
+    100%{box-shadow:0 10px 24px -8px #ff547055;}
+  }
+  .alt-tag{
+    display:inline-block;font-size:10px;font-weight:800;color:var(--accent-2);
+    background:#ff9d4d22;padding:3px 8px;border-radius:20px;vertical-align:middle;
+    text-transform:uppercase;letter-spacing:.3px;margin-left:4px;
+  }
   .btn.danger{background:linear-gradient(135deg,var(--danger),#c92548);color:#fff;box-shadow:0 10px 24px -8px #ff547055;}
   .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
   .exercise-card{
@@ -252,6 +272,11 @@
     font-size:12.5px;font-weight:600;padding:10px 12px;border-radius:12px;
     margin-top:10px;line-height:1.5;
   }
+  .reminder-banner{
+    background:#ff9d4d1a;border:1px solid #ff9d4d40;color:var(--accent-2);
+    font-size:12.5px;font-weight:600;padding:12px 14px;border-radius:14px;
+    margin-bottom:14px;line-height:1.5;
+  }
   .rpe-row{margin-top:14px;}
   .rpe-label{font-size:12px;color:var(--text-dim);font-weight:700;margin:0 0 8px;line-height:1.4;}
   .rpe-chips .chip{padding:7px 14px;font-size:12.5px;}
@@ -315,7 +340,8 @@
   .avatar-choice:active{transform:scale(.92);}
   .avatar-choice.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent), 0 0 16px -4px var(--accent);}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .empty{text-align:center;color:var(--text-dim);font-size:13.5px;padding:34px 10px;font-weight:600;}
+  .empty{text-align:center;color:var(--text-dim);font-size:13.5px;padding:34px 10px;font-weight:600;line-height:1.6;}
+  .empty-icon{display:block;font-size:34px;margin-bottom:10px;opacity:.85;}
   .photo-thumb{width:56px;height:56px;border-radius:12px;object-fit:cover;}
   canvas.chart-canvas{max-width:100%;}
   .chip-select{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
@@ -391,6 +417,25 @@
   .diet-info-card.warn{border-color:#ff547055;}
   .diet-info-card.warn .dic-t{color:var(--danger);}
   .supp-intro{font-size:12.5px;color:var(--text-dim);line-height:1.6;margin:2px 0 16px;font-weight:600;}
+  .done-tick{font-size:12px;vertical-align:middle;}
+  .done-toggle{
+    display:flex;align-items:center;gap:9px;margin-top:14px;padding-top:12px;
+    border-top:1px solid var(--border);font-size:12.5px;color:var(--text-dim);font-weight:700;cursor:pointer;
+  }
+  .done-toggle input{width:19px;height:19px;accent-color:var(--accent);flex-shrink:0;}
+  .water-row{display:flex;align-items:center;gap:10px;}
+  .water-bar{flex:1;height:10px;border-radius:20px;background:#ffffff10;overflow:hidden;}
+  .water-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#2ac7ff,#5be0ff);transition:width .5s ease;}
+  .water-val{font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;}
+  .water-btns{display:flex;gap:10px;margin-top:12px;}
+  .water-btns .btn{flex:1;}
+  .week-stat{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;
+  }
+  .week-stat:last-child{border-bottom:none;}
+  .week-stat span{color:var(--text-dim);}
+  .week-stat b{color:var(--text);font-size:14px;}
   .success-banner{
     background:linear-gradient(135deg,var(--accent),#1fae63);color:#04140d;
     padding:22px;border-radius:var(--radius);text-align:center;font-weight:800;margin-bottom:16px;
@@ -713,7 +758,7 @@ async function scegliAvatarFoto(input){
 }
 
 /* ============ AUTH + FIRESTORE ============ */
-const cache = { sessioni: [], misure: [] };
+const cache = { sessioni: [], misure: [], dietaLog: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{} } };
 let currentUid = null;
 let profiloUtente = null;
 let blocchiIniziati = {};
@@ -888,13 +933,56 @@ async function registrati(){
   }
 }
 
+function todayKey(){
+  const d = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
 async function loadData(){
-  const [sessioniSnap, misureSnap] = await Promise.all([
+  const [sessioniSnap, misureSnap, dietaLogSnap] = await Promise.all([
     userCollection('sessioni').orderBy('data','asc').get(),
-    userCollection('misure').orderBy('data','asc').get()
+    userCollection('misure').orderBy('data','asc').get(),
+    userCollection('dietaLog').get().catch(()=>({docs:[]}))
   ]);
   cache.sessioni = sessioniSnap.docs.map(d => ({ id:d.id, ...d.data() }));
   cache.misure = misureSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+  cache.dietaLog = dietaLogSnap.docs
+    .map(d => ({ id:d.id, ...d.data() }))
+    .sort((a,b)=> a.id.localeCompare(b.id));
+  const oggi = cache.dietaLog.find(d=>d.id===todayKey());
+  cache.dietaLogOggi = {
+    pastiFatti: (oggi && oggi.pastiFatti) || {},
+    acquaMl: (oggi && oggi.acquaMl) || 0,
+    integratoriFatti: (oggi && oggi.integratoriFatti) || {}
+  };
+}
+
+function salvaDietaLogOggi(){
+  if(!currentUid) return;
+  const key = todayKey();
+  userCollection('dietaLog').doc(key).set(cache.dietaLogOggi, { merge:true }).catch(()=>{});
+  const idx = cache.dietaLog.findIndex(d=>d.id===key);
+  const entry = { id:key, ...cache.dietaLogOggi };
+  if(idx>=0) cache.dietaLog[idx] = entry; else cache.dietaLog.push(entry);
+}
+
+function toggleMealDone(i){
+  cache.dietaLogOggi.pastiFatti[i] = !cache.dietaLogOggi.pastiFatti[i];
+  salvaDietaLogOggi();
+  renderAlimentazione();
+}
+
+function aggiungiAcqua(delta){
+  cache.dietaLogOggi.acquaMl = Math.max(0, (cache.dietaLogOggi.acquaMl||0) + delta);
+  salvaDietaLogOggi();
+  renderAlimentazione();
+}
+
+function toggleIntegratoreFatto(nome){
+  cache.dietaLogOggi.integratoriFatti[nome] = !cache.dietaLogOggi.integratoriFatti[nome];
+  salvaDietaLogOggi();
+  renderAlimentazione();
 }
 
 /* ============ STATO / NAVIGAZIONE ============ */
@@ -968,6 +1056,18 @@ view.addEventListener('click', function(e){
   }
 }, true);
 
+/* Micro-feedback coerente: lo stesso glow al tap delle card home
+   si estende ai bottoni principali (senza toccare la logica di
+   navigazione/animazione sopra: qui aggiungiamo solo una classe
+   temporanea per l'effetto visivo, l'onclick del bottone parte normalmente). */
+document.body.addEventListener('click', function(e){
+  const b = e.target.closest('.btn');
+  if(b){
+    b.classList.add('tap-glow');
+    setTimeout(()=>b.classList.remove('tap-glow'), 260);
+  }
+}, true);
+
 function setViewOrigin(origin){
   if(origin){
     const viewRect = view.getBoundingClientRect();
@@ -1030,6 +1130,27 @@ function render(){
 }
 
 /* ============ HOME ============ */
+function promemoriaCostanza(){
+  const blocchiAttivi = schedeAssegnateUtente().filter(s=> blocchiIniziati[s.id] && !schedaScaduta(s));
+  if(!blocchiAttivi.length) return '';
+  let peggiore = null;
+  blocchiAttivi.forEach(s=>{
+    const sessioniScheda = cache.sessioni.filter(sess=>sess.schedaId===s.id);
+    const ultima = sessioniScheda.length
+      ? new Date(Math.max(...sessioniScheda.map(x=> new Date(x.data).getTime())))
+      : new Date(blocchiIniziati[s.id]);
+    const giorni = Math.floor((new Date() - ultima) / 86400000);
+    const freqMatch = s.periodo && s.periodo.match(/(\d+)x\/settimana/);
+    const freq = freqMatch ? Number(freqMatch[1]) : 3;
+    const soglia = Math.max(4, Math.ceil((7/freq) * 1.8));
+    if(giorni >= soglia && (!peggiore || giorni > peggiore.giorni)){
+      peggiore = { nome: s.nome, giorni };
+    }
+  });
+  if(!peggiore) return '';
+  return `<div class="reminder-banner">⏰ Sono passati ${peggiore.giorni} giorni dal tuo ultimo allenamento (${peggiore.nome}). Quando puoi, rimettiti in moto 💪</div>`;
+}
+
 function renderHome(){
   pageTitle.textContent = 'Beat Yourself';
   const saluto = profiloUtente ? `<p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0 0 4px;">Ciao, ${profiloUtente.nome} 👋</p>` : '';
@@ -1038,8 +1159,10 @@ function renderHome(){
     : '';
   const haPianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
   const dietaSub = haPianoPersonale ? 'Piano nutrizionale e pasti' : 'In attesa del tuo piano personale';
+  const promemoria = promemoriaCostanza();
   view.innerHTML = `
     ${saluto}
+    ${promemoria}
     ${links}
     <div class="home-cat" onclick="setRoute({name:'allenamento-list'})">
       <div class="icon">🏋️</div>
@@ -1126,11 +1249,22 @@ function avviaSessione(schedaId){
     warmDone: scheda.riscaldamento.map(()=>false),
     esercizi: scheda.esercizi.map(e=>({
       nome: e.nome,
+      usaAlternativa: false,
       noteUtente: '',
       sets: Array.from({length:e.serieTarget}, ()=>({peso:'', rip:'', fatta:false, rpe:null}))
     }))
   };
   setRoute({name:'sessione'});
+}
+
+function toggleAlternativa(ei){
+  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const e = scheda.esercizi[ei];
+  const draft = sessionDraft.esercizi[ei];
+  if(!e.alternativa || e.alternativa==='—') return;
+  draft.usaAlternativa = !draft.usaAlternativa;
+  draft.nome = draft.usaAlternativa ? e.alternativa : e.nome;
+  renderSessione();
 }
 
 function esercizioCompletato(ei){
@@ -1177,16 +1311,40 @@ function suggerimentoProgressione(nomeEsercizio, ripTargetStr){
     .filter(Boolean)
     .slice(0,2);
   if(ultime.length < 2) return null;
+
   const entrambeOk = ultime.every(es=>
     es.sets.length>0 && es.sets.every(set=>{
       const rip = parseInt(set.rip);
       return set.fatta && !isNaN(rip) && rip >= target.max;
     })
   );
-  if(!entrambeOk) return null;
-  return target.isTime
-    ? 'Nelle ultime 2 sedute hai completato tutta la durata richiesta: prova ad aumentare di qualche secondo.'
-    : 'Nelle ultime 2 sedute hai completato tutte le ripetizioni richieste: prova ad aumentare il peso di circa 2.5 kg.';
+  const entrambeFallite = ultime.every(es=>
+    es.sets.length>0 && es.sets.some(set=>{
+      const rip = parseInt(set.rip);
+      return !set.fatta || isNaN(rip) || rip < target.max;
+    })
+  );
+
+  if(entrambeOk){
+    // Auto-regolazione: se hai completato le rip ma con RPE già molto alto,
+    // meglio consolidare il carico un'altra seduta prima di alzarlo ancora.
+    const tuttiRpe = ultime.flatMap(es=> es.sets.map(s=>s.rpe)).filter(v=>v!=null && !isNaN(v));
+    const rpeMedio = tuttiRpe.length ? tuttiRpe.reduce((a,b)=>a+b,0)/tuttiRpe.length : null;
+    if(rpeMedio!=null && rpeMedio>=9){
+      return `Nelle ultime 2 sedute hai completato ${target.isTime?'tutta la durata richiesta':'tutte le ripetizioni richieste'}, ma con un RPE medio alto (${rpeMedio.toFixed(1)}/10): meglio mantenere questo carico un'altra seduta prima di aumentare.`;
+    }
+    return target.isTime
+      ? 'Nelle ultime 2 sedute hai completato tutta la durata richiesta: prova ad aumentare di qualche secondo.'
+      : 'Nelle ultime 2 sedute hai completato tutte le ripetizioni richieste: prova ad aumentare il peso di circa 2.5 kg.';
+  }
+
+  if(entrambeFallite){
+    return target.isTime
+      ? "Nelle ultime 2 sedute non hai completato la durata richiesta: valuta di scendere leggermente d'intensità o di recuperare un po' di più tra le serie."
+      : 'Nelle ultime 2 sedute non hai completato le ripetizioni richieste: valuta di scendere leggermente di peso per tornare a muoverti con buona tecnica.';
+  }
+
+  return null;
 }
 
 /* ============ SESSIONE (logbook + timer) ============ */
@@ -1238,12 +1396,14 @@ function renderSessione(){
       return;
     }
 
-    const suggerimento = suggerimentoProgressione(e.nome, e.ripTarget);
+    const usaAlt = !!draft.usaAlternativa;
+    const nomeAttivo = draft.nome || e.nome;
+    const suggerimento = suggerimentoProgressione(nomeAttivo, e.ripTarget);
     html += `<div class="exercise-card">
       <div class="ex-head">
-        ${e.immagine ? `<div class="ex-thumb"><img src="${e.immagine}" alt="${e.nome}" loading="lazy"></div>` : ''}
+        ${(!usaAlt && e.immagine) ? `<div class="ex-thumb"><img src="${e.immagine}" alt="${e.nome}" loading="lazy"></div>` : ''}
         <div class="ex-head-info">
-          <h3>${e.nome}</h3>
+          <h3>${nomeAttivo}${usaAlt ? ' <span class="alt-tag">alternativa</span>' : ''}</h3>
           <div class="ex-meta" style="margin-bottom:0;">${e.serieTarget} x ${e.ripTarget} · recupero ${e.recupero}"</div>
         </div>
       </div>`;
@@ -1260,21 +1420,26 @@ function renderSessione(){
         <input type="checkbox" ${set.fatta?'checked':''} onchange="markSetDone(${ei},${si},${e.recupero},this.checked,this)">
       </div>`;
     });
-    html += `<div class="note-box">${e.note}${e.alternativa && e.alternativa!=='—' ? ' · Alternativa: '+e.alternativa : ''}</div>`;
+    html += `<div class="note-box">${usaAlt ? `Stai facendo l'alternativa al posto di <b>${e.nome}</b>. ${e.note}` : e.note}</div>`;
+    if(e.alternativa && e.alternativa!=='—'){
+      html += `<button class="btn small secondary" style="margin-top:10px;" onclick="toggleAlternativa(${ei})">${usaAlt ? '↺ Torna a '+e.nome : '🔁 Usa alternativa: '+e.alternativa}</button>`;
+    }
     html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio (sensazioni, dolori, aggiustamenti...)" oninput="updateNotaEsercizio(${ei}, this.value)">${draft.noteUtente||''}</textarea>`;
     if(suggerimento){
       html += `<div class="progress-tip">💡 ${suggerimento}</div>`;
     }
-    html += `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;">
-        <button class="toggle-guide" onclick="toggleGuide(${ei})">Guida esercizio ▾</button>
-        ${e.video ? `<a href="${e.video}" target="_blank" rel="noopener" class="video-link">▶ Guarda il video</a>` : ''}
-      </div>
-      <div class="guide-body" id="guide-${ei}">
-        <b>Muscoli:</b> ${e.guida.muscoli}<br><br>
-        <b>Esecuzione:</b> ${e.guida.esecuzione}<br><br>
-        <b>Errori da evitare:</b> ${e.guida.errori}
-      </div>
-    </div>`;
+    if(!usaAlt){
+      html += `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;">
+          <button class="toggle-guide" onclick="toggleGuide(${ei})">Guida esercizio ▾</button>
+          ${e.video ? `<a href="${e.video}" target="_blank" rel="noopener" class="video-link">▶ Guarda il video</a>` : ''}
+        </div>
+        <div class="guide-body" id="guide-${ei}">
+          <b>Muscoli:</b> ${e.guida.muscoli}<br><br>
+          <b>Esecuzione:</b> ${e.guida.esecuzione}<br><br>
+          <b>Errori da evitare:</b> ${e.guida.errori}
+        </div>`;
+    }
+    html += `</div>`;
   });
 
   html += `<div class="ex-attrib">Immagini illustrative degli esercizi: <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a> (CC BY-SA)</div>`;
@@ -1551,7 +1716,7 @@ function renderStoricoAllenamento(){
     html += `<div class="success-banner">Allenamento salvato ✅</div>`;
   }
   if(sessioni.length===0){
-    html += `<p class="empty">Nessun allenamento salvato ancora. Completa una seduta in "Allenamento" per vederla qui.</p>`;
+    html += `<p class="empty"><span class="empty-icon">📋</span>Nessun allenamento salvato ancora.<br>Completa una seduta in "Allenamento" per vederla qui.</p>`;
     view.innerHTML = html;
     return;
   }
@@ -1578,7 +1743,7 @@ function renderStoricoMisure(){
     html += `<div class="success-banner">Rilevazione salvata ✅</div>`;
   }
   if(misure.length===0){
-    html += `<p class="empty">Nessuna misura registrata ancora.</p>`;
+    html += `<p class="empty"><span class="empty-icon">📏</span>Nessuna misura registrata ancora.</p>`;
     view.innerHTML = html;
     return;
   }
@@ -1655,17 +1820,52 @@ function renderAderenzaCard(){
   return html;
 }
 
+function renderRiepilogoSettimanale(){
+  const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
+  const seiGiorniFa = new Date(); seiGiorniFa.setDate(seiGiorniFa.getDate()-6); seiGiorniFa.setHours(0,0,0,0);
+  const sessioniSettimana = cache.sessioni.filter(s=> new Date(s.data) >= seiGiorniFa);
+
+  const rpeValori = sessioniSettimana.flatMap(s=> (s.esercizi||[]).flatMap(e=> (e.sets||[]).map(x=>x.rpe))).filter(v=>v!=null && !isNaN(v));
+  const rpeMedio = rpeValori.length ? (rpeValori.reduce((a,b)=>a+b,0)/rpeValori.length).toFixed(1) : null;
+
+  let aderenzaHtml = '';
+  if(pianoPersonale){
+    const giorniLog = cache.dietaLog.filter(d=> new Date(d.id) >= seiGiorniFa);
+    const numPasti = DIETA_PIANO.pasti.length;
+    const numIntegratori = INTEGRAZIONE_PIANO.integratori.length;
+    if(giorniLog.length){
+      const pastiPctTot = giorniLog.reduce((sum,g)=> sum + (Object.values(g.pastiFatti||{}).filter(Boolean).length/numPasti)*100, 0);
+      const integrPctTot = giorniLog.reduce((sum,g)=> sum + (Object.values(g.integratoriFatti||{}).filter(Boolean).length/numIntegratori)*100, 0);
+      aderenzaHtml = `
+        <div class="week-stat"><span>Aderenza pasti</span><b>${Math.round(pastiPctTot/giorniLog.length)}%</b></div>
+        <div class="week-stat"><span>Aderenza integratori</span><b>${Math.round(integrPctTot/giorniLog.length)}%</b></div>`;
+    }
+  }
+
+  if(!sessioniSettimana.length && !aderenzaHtml) return '';
+
+  return `<div class="card">
+    <h3 style="margin-top:0;font-size:15px;">Ultimi 7 giorni</h3>
+    <div class="week-stat"><span>Allenamenti fatti</span><b>${sessioniSettimana.length}</b></div>
+    ${rpeMedio!=null ? `<div class="week-stat"><span>RPE medio</span><b>${rpeMedio}/10</b></div>` : ''}
+    ${aderenzaHtml}
+  </div>`;
+}
+
 function renderStatistiche(){
   pageTitle.textContent = 'Statistiche';
   const haveSessioni = cache.sessioni.length>0;
   const haveMisureStats = cache.misure.length>0;
+  const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
+  const haveAderenza = pianoPersonale && cache.dietaLog.length>0;
 
-  if(!haveSessioni && !haveMisureStats){
-    view.innerHTML = `<p class="empty">Non ci sono ancora dati sufficienti. Completa un allenamento o registra una misura per vedere le statistiche qui.</p>`;
+  if(!haveSessioni && !haveMisureStats && !haveAderenza){
+    view.innerHTML = `<p class="empty"><span class="empty-icon">📈</span>Non ci sono ancora dati sufficienti.<br>Completa un allenamento o registra una misura per vedere le statistiche qui.</p>`;
     return;
   }
 
-  let html = renderAderenzaCard();
+  let html = renderRiepilogoSettimanale();
+  html += renderAderenzaCard();
   if(haveSessioni){
     html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Carichi esercizi</h3>
       <div class="chip-select" id="metricaChips">
@@ -1679,6 +1879,11 @@ function renderStatistiche(){
     html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Misure corporee</h3>
       <div class="chip-select" id="misureChips"></div>
       <canvas class="chart-canvas" id="misureChart" height="180"></canvas>
+    </div>`;
+  }
+  if(haveAderenza){
+    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Aderenza nutrizione</h3>
+      <canvas class="chart-canvas" id="aderenzaChart" height="180"></canvas>
     </div>`;
   }
   view.innerHTML = html;
@@ -1773,6 +1978,31 @@ function renderStatistiche(){
       });
     });
     if(selected2) drawMisuraChart(selected2);
+  }
+
+  if(haveAderenza){
+    const numPasti = DIETA_PIANO.pasti.length;
+    const numIntegratori = INTEGRAZIONE_PIANO.integratori.length;
+    const punti = cache.dietaLog.slice(-30).map(g=>({
+      data: new Date(g.id).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}),
+      pasti: Math.round((Object.values(g.pastiFatti||{}).filter(Boolean).length/numPasti)*100),
+      integr: Math.round((Object.values(g.integratoriFatti||{}).filter(Boolean).length/numIntegratori)*100)
+    }));
+    const ctx = document.getElementById('aderenzaChart');
+    if(window._aderenzaChart) window._aderenzaChart.destroy();
+    if(ctx && punti.length){
+      window._aderenzaChart = new Chart(ctx, {
+        type:'line',
+        data:{ labels: punti.map(p=>p.data), datasets:[
+          { label:'Pasti seguiti %', data: punti.map(p=>p.pasti), borderColor:'#39ff94', backgroundColor:'#39ff9433', tension:.3, fill:true, pointRadius:3 },
+          { label:'Integratori presi %', data: punti.map(p=>p.integr), borderColor:'#2ac7ff', backgroundColor:'#2ac7ff33', tension:.3, fill:true, pointRadius:3 }
+        ]},
+        options:{ plugins:{legend:{labels:{color:'#eef0f3'}}}, scales:{
+          x:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}},
+          y:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}, min:0, max:100}
+        }}
+      });
+    }
   }
 }
 
@@ -2222,12 +2452,13 @@ function renderAlimentazione(){
     const chipsHtml = p.opzioni.map((o,oi)=>
       `<div class="chip${oi===selIdx?' active':''}" onclick="event.stopPropagation();selectDietaOpzione(${i},${oi})">${o.titolo}</div>`
     ).join('');
+    const fatto = !!cache.dietaLogOggi.pastiFatti[i];
     return `
     <div class="meal-card${open?' open':''}">
       <div class="meal-head" onclick="toggleDietaPasto(${i})">
         <div class="icon">${p.icona}</div>
         <div class="mh-info">
-          <div class="mh-name">${p.nome}</div>
+          <div class="mh-name">${p.nome}${fatto ? ' <span class="done-tick">✅</span>' : ''}</div>
           <div class="mh-time">${p.orario} · ${p.opzioni.length} opzioni</div>
         </div>
         <div class="mh-kcal">${opz.kcal} kcal</div>
@@ -2245,18 +2476,23 @@ function renderAlimentazione(){
           <tbody>${foodRows}</tbody>
         </table>
         <div class="meal-prep"><b>Preparazione:</b> ${opz.preparazione}</div>
+        <label class="done-toggle">
+          <input type="checkbox" ${fatto?'checked':''} onchange="event.stopPropagation();toggleMealDone(${i})">
+          Ho seguito questo pasto oggi
+        </label>
       </div></div>
     </div>`;
   }).join('');
 
   const suppHtml = INTEGRAZIONE_PIANO.integratori.map((s,i)=>{
     const open = suppOpenSet.has(i);
+    const preso = !!cache.dietaLogOggi.integratoriFatti[s.nome];
     return `
     <div class="meal-card${open?' open':''}">
       <div class="meal-head" onclick="toggleIntegratore(${i})">
         <div class="icon">${s.icona}</div>
         <div class="mh-info">
-          <div class="mh-name">${s.nome}</div>
+          <div class="mh-name">${s.nome}${preso ? ' <span class="done-tick">✅</span>' : ''}</div>
           <div class="mh-time">${s.dose}</div>
         </div>
         <div class="mh-chev">▾</div>
@@ -2264,9 +2500,18 @@ function renderAlimentazione(){
       <div class="meal-body"><div class="meal-body-in">
         <div class="meal-prep" style="margin-top:0;"><b>Indicazioni d'uso:</b> ${s.indicazioni}</div>
         ${s.particolarita ? `<div class="meal-prep"><b>Particolarità:</b> ${s.particolarita}</div>` : ''}
+        <label class="done-toggle">
+          <input type="checkbox" ${preso?'checked':''} onchange="event.stopPropagation();toggleIntegratoreFatto('${s.nome.replace(/'/g,"\\'")}')">
+          Preso oggi
+        </label>
       </div></div>
     </div>`;
   }).join('');
+
+  const acquaMl = cache.dietaLogOggi.acquaMl || 0;
+  const acquaTargetMl = 2750;
+  const acquaPct = Math.min(100, Math.round((acquaMl/acquaTargetMl)*100));
+  const acquaL = (acquaMl/1000).toFixed(2).replace('.', ',');
 
   view.innerHTML = `
     <div class="diet-summary">
@@ -2279,8 +2524,16 @@ function renderAlimentazione(){
     ${mealsHtml}
 
     <div class="diet-info-card">
-      <div class="dic-t">💧 Idratazione</div>
-      <div class="dic-b">2,5-3 L/die di acqua, obiettivo progressivo partendo da ~1 L attuale.</div>
+      <div class="dic-t">💧 Idratazione di oggi</div>
+      <div class="dic-b" style="margin-bottom:10px;">Obiettivo 2,5-3 L/die, progressivo partendo da ~1 L attuale.</div>
+      <div class="water-row">
+        <div class="water-bar"><div class="water-fill" style="width:${acquaPct}%;"></div></div>
+        <span class="water-val">${acquaL} L</span>
+      </div>
+      <div class="water-btns">
+        <button class="btn small secondary" onclick="aggiungiAcqua(-250)">−250 ml</button>
+        <button class="btn small secondary" onclick="aggiungiAcqua(250)">+250 ml</button>
+      </div>
     </div>
 
     <div class="diet-summary" style="margin-top:20px;margin-bottom:12px;">
@@ -2330,7 +2583,8 @@ const MISURE_METRICHE = [
   {key:'braccioDx', label:'Braccio Dx', unit:'cm', color:'#4ef0c8'},
   {key:'braccioSx', label:'Braccio Sx', unit:'cm', color:'#38d6b0'},
   {key:'cosciaDx', label:'Coscia Dx', unit:'cm', color:'#ff5470'},
-  {key:'cosciaSx', label:'Coscia Sx', unit:'cm', color:'#c92548'}
+  {key:'cosciaSx', label:'Coscia Sx', unit:'cm', color:'#c92548'},
+  {key:'sonno', label:'Ore di sonno', unit:'h', color:'#8b6bff'}
 ];
 
 function renderMisure(){
@@ -2380,6 +2634,10 @@ function renderMisure(){
         <p class="field-hint">Stesso punto della coscia destra, per un confronto corretto.</p>
       </div>
     </div>
+    <div class="field">
+      <label>Ore di sonno la notte scorsa (facoltativo)</label><input type="number" step="0.5" id="mSonno">
+      <p class="field-hint">Anche solo una stima. Utile da incrociare con l'RPE nelle sedute, dato il sonno frammentato.</p>
+    </div>
     <div class="field"><label>Foto progressi (facoltativa)</label><input type="file" accept="image/*" id="mFoto"></div>
     <button class="btn" id="saveMisuraBtn" onclick="salvaMisura()">Salva rilevazione</button>
   </div>
@@ -2419,6 +2677,7 @@ async function salvaMisura(){
   const braccioSx = document.getElementById('mBraccioSx').value;
   const cosciaDx = document.getElementById('mCosciaDx').value;
   const cosciaSx = document.getElementById('mCosciaSx').value;
+  const sonno = document.getElementById('mSonno').value;
   const fotoInput = document.getElementById('mFoto');
   const btn = document.getElementById('saveMisuraBtn');
   const errBox = document.getElementById('misuraError');
@@ -2427,7 +2686,8 @@ async function salvaMisura(){
   const RANGE_PLAUSIBILI = {
     'Peso':[peso,20,400], 'Vita':[vita,40,200], 'Petto':[petto,40,200], 'Fianchi':[fianchi,40,200],
     'Braccio Dx':[braccioDx,10,80], 'Braccio Sx':[braccioSx,10,80],
-    'Coscia Dx':[cosciaDx,20,100], 'Coscia Sx':[cosciaSx,20,100]
+    'Coscia Dx':[cosciaDx,20,100], 'Coscia Sx':[cosciaSx,20,100],
+    'Ore di sonno':[sonno,0,16]
   };
   for(const label in RANGE_PLAUSIBILI){
     const [valore, min, max] = RANGE_PLAUSIBILI[label];
@@ -2456,6 +2716,7 @@ async function salvaMisura(){
       braccioSx: braccioSx ? Number(braccioSx) : null,
       cosciaDx: cosciaDx ? Number(cosciaDx) : null,
       cosciaSx: cosciaSx ? Number(cosciaSx) : null,
+      sonno: sonno ? Number(sonno) : null,
       foto: fotoDataUrl
     };
     const ref = await userCollection('misure').add(payload);
