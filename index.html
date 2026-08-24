@@ -18,6 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <style>
   :root{
     --bg:#08090c;
@@ -272,6 +273,17 @@
     font-size:12.5px;font-weight:600;padding:10px 12px;border-radius:12px;
     margin-top:10px;line-height:1.5;
   }
+  .oggi-panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-card);padding:16px 18px;margin-bottom:14px;
+  }
+  .oggi-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 0;font-size:13px;font-weight:700;border-bottom:1px solid var(--border);
+  }
+  .oggi-row:last-child{border-bottom:none;}
+  .oggi-row span{color:var(--text-dim);}
+  .oggi-row b{color:var(--text);font-size:14px;}
   .reminder-banner{
     background:#ff9d4d1a;border:1px solid #ff9d4d40;color:var(--accent-2);
     font-size:12.5px;font-weight:600;padding:12px 14px;border-radius:14px;
@@ -376,6 +388,23 @@
   .macro-chip .mc-dot{width:9px;height:9px;border-radius:50%;margin:0 auto 8px;}
   .macro-chip .mc-n{font-size:16.5px;font-weight:900;color:var(--text);line-height:1;}
   .macro-chip .mc-l{font-size:10.5px;color:var(--text-dim);font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:.3px;}
+  .kcal-ring-wrap{position:relative;width:150px;height:150px;margin:6px auto 20px;}
+  .kcal-ring{width:100%;height:100%;transform:rotate(-90deg);}
+  .kr-bg{fill:none;stroke:#ffffff14;stroke-width:10;}
+  .kr-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s ease, stroke .3s ease;}
+  .kr-center{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;
+  }
+  .kr-n{font-size:27px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1;transition:color .3s ease;}
+  .kr-u{font-size:11px;color:var(--text-dim);font-weight:700;margin-top:6px;}
+  .macro-bars{margin-top:4px;}
+  .macro-bar-row{margin-bottom:14px;}
+  .macro-bar-row:last-child{margin-bottom:0;}
+  .mbr-top{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--text-dim);margin-bottom:7px;}
+  .mbr-top span:first-child{color:var(--text);}
+  .mbr-track{height:9px;border-radius:20px;background:#ffffff10;overflow:hidden;}
+  .mbr-fill{height:100%;border-radius:20px;transition:width .6s ease;}
   .meal-card{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
     box-shadow:var(--shadow-card);margin-bottom:12px;overflow:hidden;
@@ -417,6 +446,78 @@
   .diet-info-card.warn{border-color:#ff547055;}
   .diet-info-card.warn .dic-t{color:var(--danger);}
   .supp-intro{font-size:12.5px;color:var(--text-dim);line-height:1.6;margin:2px 0 16px;font-weight:600;}
+  .extra-food-list{margin-bottom:12px;}
+  .extra-food-item{
+    display:flex;align-items:center;gap:10px;padding:10px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .extra-food-list .extra-food-item:last-child{border-bottom:none;}
+  .efi-info{flex:1;min-width:0;}
+  .efi-n{font-size:13.5px;font-weight:700;color:var(--text);}
+  .efi-brand{color:var(--text-dim);font-weight:600;}
+  .efi-m{font-size:11.5px;color:var(--text-dim);font-weight:600;margin-top:3px;}
+  .efi-remove{
+    flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1px solid var(--border);
+    background:var(--panel-2);color:var(--text-dim);font-size:13px;cursor:pointer;
+  }
+  .food-search-item{
+    display:flex;align-items:center;gap:12px;padding:14px 16px;
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-sm);
+    margin-bottom:10px;cursor:pointer;box-shadow:var(--shadow-card);
+  }
+  .food-search-item:active{transform:scale(.98);}
+  .fsi-info{flex:1;min-width:0;}
+  .fsi-n{font-size:14px;font-weight:700;color:var(--text);}
+  .fsi-brand{font-size:11.5px;color:var(--text-dim);font-weight:600;margin-top:2px;}
+  .fsi-kcal{font-size:12.5px;color:var(--accent);font-weight:800;white-space:nowrap;}
+  .barcode-reader{
+    width:100%;min-height:260px;border-radius:16px;overflow:hidden;background:#000;
+  }
+  .barcode-reader video{width:100%;display:block;border-radius:16px;}
+  .barcode-reader img{display:none;}
+  .tab-bar{
+    display:flex;gap:6px;background:var(--panel-2);border:1px solid var(--border);
+    padding:5px;border-radius:16px;margin-bottom:16px;
+  }
+  .tab-btn{
+    flex:1;text-align:center;padding:10px 6px;border-radius:12px;
+    font-size:12.5px;font-weight:800;color:var(--text-dim);cursor:pointer;
+    transition:background .2s ease,color .2s ease;white-space:nowrap;
+  }
+  .tab-btn.active{background:var(--accent);color:#04140d;box-shadow:0 6px 16px -6px #39ff9466;}
+  .confirm-overlay{
+    position:fixed;inset:0;background:#00000099;backdrop-filter:blur(3px);
+    display:flex;align-items:center;justify-content:center;z-index:999;padding:24px;
+    animation:confirmFadeIn .18s ease;
+  }
+  @keyframes confirmFadeIn{ from{opacity:0;} to{opacity:1;} }
+  .confirm-box{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-card);padding:22px;max-width:340px;width:100%;
+    animation:confirmPopIn .18s ease;
+  }
+  @keyframes confirmPopIn{ from{transform:scale(.94);opacity:0;} to{transform:scale(1);opacity:1;} }
+  .confirm-msg{font-size:14px;font-weight:600;color:var(--text);line-height:1.55;margin:0 0 20px;}
+  .confirm-actions{display:flex;gap:10px;}
+  .confirm-actions .btn{flex:1;}
+  .spinner{
+    width:32px;height:32px;border-radius:50%;margin:0 auto 14px;
+    border:3px solid #ffffff1a;border-top-color:var(--accent);
+    animation:spin .7s linear infinite;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .loading-block{text-align:center;padding:34px 10px;color:var(--text-dim);font-size:13px;font-weight:600;}
+  .micro-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;}
+  .micro-row{
+    display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;
+    color:var(--text-dim);padding:6px 0;border-bottom:1px solid var(--border);
+  }
+  .micro-row b{color:var(--text);font-weight:800;white-space:nowrap;}
+  .spinner-inline{
+    display:inline-block;width:13px;height:13px;border-radius:50%;vertical-align:middle;margin-right:7px;
+    border:2px solid #ffffff22;border-top-color:var(--accent);
+    animation:spin .7s linear infinite;
+  }
   .done-tick{font-size:12px;vertical-align:middle;}
   .done-toggle{
     display:flex;align-items:center;gap:9px;margin-top:14px;padding-top:12px;
@@ -555,6 +656,56 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+/* ============ NOTIFICHE PUSH (promemoria pasti/integratori/idratazione) ============
+   Richiede una chiave VAPID generata nella console Firebase del progetto:
+   Impostazioni progetto → Cloud Messaging → Certificati web push → Genera coppia
+   di chiavi. Finché questa costante resta vuota, il pulsante "Attiva notifiche"
+   in Profilo mostra un avviso invece di provare ad attivarle. */
+const VAPID_KEY = '';
+
+function messagingSupportata(){
+  return !!(firebase.messaging && firebase.messaging.isSupported && firebase.messaging.isSupported() && 'Notification' in window);
+}
+
+async function attivaNotifichePush(){
+  const stato = document.getElementById('notificheStato');
+  if(!VAPID_KEY){
+    if(stato) stato.innerHTML = `<div class="error-banner">Manca ancora la chiave VAPID nel codice (va generata nella console Firebase e incollata in VAPID_KEY). Finché non c'è, le notifiche non possono attivarsi.</div>`;
+    return;
+  }
+  if(!messagingSupportata()){
+    if(stato) stato.innerHTML = `<div class="error-banner">Il tuo browser non supporta le notifiche push, o l'app non è installata sulla schermata Home (richiesto su iPhone).</div>`;
+    return;
+  }
+  try{
+    const permesso = await Notification.requestPermission();
+    if(permesso !== 'granted'){
+      if(stato) stato.innerHTML = `<div class="error-banner">Permesso non concesso. Puoi riattivarlo dalle impostazioni di notifica del browser/telefono.</div>`;
+      return;
+    }
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({ vapidKey: VAPID_KEY });
+    if(!token) throw new Error('Nessun token ottenuto');
+    await db.collection('users').doc(currentUid).set({ fcmToken: token }, { merge:true });
+    if(profiloUtente) profiloUtente.fcmToken = token;
+    if(stato) stato.innerHTML = `<div class="success-banner" style="margin:0;padding:14px;">Notifiche attivate ✅</div>`;
+  }catch(e){
+    if(stato) stato.innerHTML = `<div class="error-banner">Non sono riuscito ad attivare le notifiche: ${e.message}</div>`;
+  }
+}
+
+/* Le notifiche in primo piano (app aperta) non vengono mostrate in automatico
+   dal sistema come quelle in background: le intercettiamo e le mostriamo noi. */
+if(messagingSupportata()){
+  try{
+    firebase.messaging().onMessage(payload=>{
+      const titolo = (payload.notification && payload.notification.title) || 'Beat Yourself';
+      const corpo = (payload.notification && payload.notification.body) || '';
+      if(Notification.permission==='granted') new Notification(titolo, { body: corpo, icon:'icon-192.png' });
+    });
+  }catch(e){}
+}
 
 /* ============ DATI SCHEDA DI DEFAULT (usati per popolare Firestore al primo avvio) ============ */
 const SCHEDE_DEFAULT = [
@@ -703,6 +854,16 @@ function schedeAssegnateUtente(){
   return SCHEDE.filter(s=>profiloUtente.schedeAssegnate.includes(s.id));
 }
 
+/* Obiettivi nutrizionali attivi: quelli personalizzati dall'utente in Profilo
+   se presenti, altrimenti quelli di default del piano (DIETA_PIANO.target)
+   più 2750ml di acqua. Così se il trainer aggiorna i target col tempo, basta
+   modificarli in Profilo senza dover toccare il codice. */
+function obiettiviAttivi(){
+  const def = { kcal:DIETA_PIANO.target.kcal, prot:DIETA_PIANO.target.prot, carb:DIETA_PIANO.target.carb, grassi:DIETA_PIANO.target.grassi, acquaMl:2750 };
+  if(profiloUtente && profiloUtente.obiettivi) return { ...def, ...profiloUtente.obiettivi };
+  return def;
+}
+
 /* ============ AVATAR UTENTE ============ */
 const AVATAR_PRESET = [
   {id:'p1', emoji:'🏋️'}, {id:'p2', emoji:'🔥'}, {id:'p3', emoji:'💪'}, {id:'p4', emoji:'⚡'},
@@ -758,7 +919,7 @@ async function scegliAvatarFoto(input){
 }
 
 /* ============ AUTH + FIRESTORE ============ */
-const cache = { sessioni: [], misure: [], dietaLog: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{} } };
+const cache = { sessioni: [], misure: [], dietaLog: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{} } };
 let currentUid = null;
 let profiloUtente = null;
 let blocchiIniziati = {};
@@ -787,7 +948,10 @@ async function checkProfilo(){
       attenzioni: data.attenzioni || '',
       schedeAssegnate: ('schedeAssegnate' in data) ? data.schedeAssegnate : null,
       isTrainer: data.isTrainer === true,
-      avatar: data.avatar || null
+      avatar: data.avatar || null,
+      fcmToken: data.fcmToken || null,
+      alimentiRecenti: data.alimentiRecenti || [],
+      obiettivi: data.obiettivi || null
     };
     return true;
   }
@@ -954,7 +1118,9 @@ async function loadData(){
   cache.dietaLogOggi = {
     pastiFatti: (oggi && oggi.pastiFatti) || {},
     acquaMl: (oggi && oggi.acquaMl) || 0,
-    integratoriFatti: (oggi && oggi.integratoriFatti) || {}
+    integratoriFatti: (oggi && oggi.integratoriFatti) || {},
+    alimentiExtra: (oggi && oggi.alimentiExtra) || [],
+    pastiSnapshot: (oggi && oggi.pastiSnapshot) || {}
   };
 }
 
@@ -968,7 +1134,19 @@ function salvaDietaLogOggi(){
 }
 
 function toggleMealDone(i){
-  cache.dietaLogOggi.pastiFatti[i] = !cache.dietaLogOggi.pastiFatti[i];
+  const nuovoStato = !cache.dietaLogOggi.pastiFatti[i];
+  cache.dietaLogOggi.pastiFatti[i] = nuovoStato;
+  // Salviamo anche un'istantanea dell'opzione scelta in quel momento, così il
+  // diario storico può mostrare cosa hai mangiato davvero quel giorno, non
+  // solo "pasto segnato sì/no".
+  if(!cache.dietaLogOggi.pastiSnapshot) cache.dietaLogOggi.pastiSnapshot = {};
+  if(nuovoStato){
+    const p = DIETA_PIANO.pasti[i];
+    const opz = p.opzioni[dietaOpzioneSel[i] || 0];
+    cache.dietaLogOggi.pastiSnapshot[i] = { titolo:opz.titolo, kcal:opz.kcal, prot:opz.prot, carb:opz.carb, grassi:opz.grassi };
+  } else {
+    delete cache.dietaLogOggi.pastiSnapshot[i];
+  }
   salvaDietaLogOggi();
   renderAlimentazione();
 }
@@ -985,6 +1163,21 @@ function toggleIntegratoreFatto(nome){
   renderAlimentazione();
 }
 
+/* Alimenti "extra" di oggi: cercati per nome (Open Food Facts) e aggiunti con
+   una grammatura scelta, si sommano ai macro/kcal acquisiti del giorno oltre
+   ai pasti del piano fisso. */
+function aggiungiAlimentoExtra(voce){
+  if(!cache.dietaLogOggi.alimentiExtra) cache.dietaLogOggi.alimentiExtra = [];
+  cache.dietaLogOggi.alimentiExtra.push(voce);
+  salvaDietaLogOggi();
+}
+
+function rimuoviAlimentoExtra(id){
+  cache.dietaLogOggi.alimentiExtra = (cache.dietaLogOggi.alimentiExtra||[]).filter(a=>a.id!==id);
+  salvaDietaLogOggi();
+  renderAlimentazione();
+}
+
 /* ============ STATO / NAVIGAZIONE ============ */
 let route = {name:'home'};
 let sessionDraft = null;
@@ -997,6 +1190,10 @@ const backBtn = document.getElementById('backBtn');
 const BACK_MAP = {
   'allenamento-list':'home',
   'alimentazione':'home',
+  'cerca-alimento':'alimentazione',
+  'scansiona-barcode':'cerca-alimento',
+  'diario':'alimentazione',
+  'lista-spesa':'alimentazione',
   'misure':'home',
   'storico':'home',
   'statistiche':'home',
@@ -1007,9 +1204,9 @@ const BACK_MAP = {
   'trainer':'home'
 };
 
-backBtn.addEventListener('click', ()=>{
+backBtn.addEventListener('click', async ()=>{
   if(route.name==='sessione'){
-    if(!confirm('Uscire? Il progresso di questa sessione andrà perso se non la salvi.')) return;
+    if(!(await mostraConferma('Uscire? Il progresso di questa sessione andrà perso se non la salvi.'))) return;
     goHome();
     return;
   }
@@ -1022,6 +1219,36 @@ window.addEventListener('scroll', ()=>{
 });
 
 function goHome(){ route={name:'home'}; render(); }
+
+/* Modale di conferma coerente con il tema (sostituisce il confirm() nativo
+   del browser, che stona con lo stile dell'app). variant:'danger' per azioni
+   distruttive (bottone rosso), 'accent' per conferme neutre (bottone verde). */
+function mostraConferma(messaggio, variant){
+  variant = variant || 'danger';
+  return new Promise(resolve=>{
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <p class="confirm-msg">${messaggio}</p>
+        <div class="confirm-actions">
+          <button class="btn secondary" id="confirmCancelBtn">Annulla</button>
+          <button class="btn ${variant==='danger'?'danger':''}" id="confirmOkBtn">Conferma</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const chiudi = esito => { overlay.remove(); resolve(esito); };
+    overlay.querySelector('#confirmCancelBtn').onclick = ()=>chiudi(false);
+    overlay.querySelector('#confirmOkBtn').onclick = ()=>chiudi(true);
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudi(false); });
+  });
+}
+
+/* Blocco di caricamento a tutta larghezza, stile app (sostituisce i semplici
+   testi "Cerco..." con uno spinner coerente col resto dell'interfaccia). */
+function spinnerHtml(testo){
+  return `<div class="loading-block"><div class="spinner"></div>${testo||'Caricamento...'}</div>`;
+}
 
 /* ============ TRANSIZIONE "APRI/CHIUDI" STILE IOS ============
    Quando si tocca una card (categoria, voce di lista) la schermata successiva
@@ -1114,9 +1341,16 @@ function setRoute(r){
 function render(){
   clearRestTimer();
   renderHeaderAvatar();
+  // Se stiamo lasciando la pagina dello scanner, spegni sempre la fotocamera:
+  // niente stream attivo in background, né per batteria né per privacy.
+  if(route.name!=='scansiona-barcode' && typeof fermaScannerBarcode==='function') fermaScannerBarcode();
   backBtn.style.visibility = route.name==='home' ? 'hidden':'visible';
   if(route.name==='home') renderHome();
   else if(route.name==='allenamento-list') renderAllenamentoList();
+  else if(route.name==='cerca-alimento') renderCercaAlimento();
+  else if(route.name==='scansiona-barcode') renderScansionaBarcode();
+  else if(route.name==='diario') renderDiario();
+  else if(route.name==='lista-spesa') renderListaSpesa();
   else if(route.name==='sessione') renderSessione();
   else if(route.name==='alimentazione') renderAlimentazione();
   else if(route.name==='misure') renderMisure();
@@ -1151,6 +1385,89 @@ function promemoriaCostanza(){
   return `<div class="reminder-banner">⏰ Sono passati ${peggiore.giorni} giorni dal tuo ultimo allenamento (${peggiore.nome}). Quando puoi, rimettiti in moto 💪</div>`;
 }
 
+/* Pannello "oggi": i numeri chiave a colpo d'occhio in home, senza dover
+   entrare in ogni sezione per saperli. */
+/* Giorni consecutivi (a ritroso da oggi) in cui è stata registrata almeno
+   un'attività nella dieta (pasto segnato, integratore preso, o acqua bevuta).
+   Se oggi non hai ancora aperto l'app, non rompe lo streak: si parte da ieri. */
+function calcolaStreakDieta(){
+  const attivi = new Set(cache.dietaLog.filter(g=>{
+    const pastiOk = Object.values(g.pastiFatti||{}).some(Boolean);
+    const integrOk = Object.values(g.integratoriFatti||{}).some(Boolean);
+    const acquaOk = (g.acquaMl||0) > 0;
+    return pastiOk || integrOk || acquaOk;
+  }).map(g=>g.id));
+  if(!attivi.size) return 0;
+  const pad = n=>String(n).padStart(2,'0');
+  const chiave = d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  let streak = 0;
+  const cursor = new Date();
+  if(!attivi.has(chiave(cursor))) cursor.setDate(cursor.getDate()-1);
+  while(attivi.has(chiave(cursor))){
+    streak++;
+    cursor.setDate(cursor.getDate()-1);
+  }
+  return streak;
+}
+
+/* Settimane (lun-dom) consecutive e già concluse, a ritroso dalla scorsa,
+   con almeno un allenamento registrato. */
+function calcolaStreakSettimaneAllenamento(){
+  if(!cache.sessioni.length) return 0;
+  let streak = 0;
+  const inizio = new Date();
+  const giornoSett = (inizio.getDay()+6)%7; // 0=lunedì
+  inizio.setDate(inizio.getDate()-giornoSett);
+  inizio.setHours(0,0,0,0);
+  inizio.setDate(inizio.getDate()-7); // la settimana corrente non è ancora conclusa, si parte dalla scorsa
+  while(true){
+    const fine = new Date(inizio); fine.setDate(fine.getDate()+7);
+    const count = cache.sessioni.filter(s=>{ const d=new Date(s.data); return d>=inizio && d<fine; }).length;
+    if(count>0){ streak++; inizio.setDate(inizio.getDate()-7); }
+    else break;
+  }
+  return streak;
+}
+
+function renderOggiPanel(){
+  if(!profiloUtente) return '';
+  const pianoPersonale = profiloUtente.schedeAssegnate === null;
+
+  const seiGiorniFa = new Date(); seiGiorniFa.setDate(seiGiorniFa.getDate()-6); seiGiorniFa.setHours(0,0,0,0);
+  const sessioniSettimana = cache.sessioni.filter(s=> new Date(s.data) >= seiGiorniFa).length;
+
+  let kcalRow = '', pastoRow = '';
+  if(pianoPersonale){
+    const t = obiettiviAttivi();
+    let kcalOggi = 0;
+    DIETA_PIANO.pasti.forEach((p,i)=>{
+      if(cache.dietaLogOggi.pastiFatti[i]){
+        kcalOggi += p.opzioni[dietaOpzioneSel[i] || 0].kcal;
+      }
+    });
+    (cache.dietaLogOggi.alimentiExtra||[]).forEach(a=> kcalOggi += a.kcal);
+    const residue = t.kcal - kcalOggi;
+    kcalRow = `<div class="oggi-row"><span>🔥 Kcal ${residue>=0?'restanti':'oltre il target'} oggi</span><b>${Math.abs(residue)}</b></div>`;
+
+    const idxProssimo = DIETA_PIANO.pasti.findIndex((p,i)=> !cache.dietaLogOggi.pastiFatti[i]);
+    const prossimo = idxProssimo>=0 ? DIETA_PIANO.pasti[idxProssimo].nome : 'Tutto segnato ✅';
+    pastoRow = `<div class="oggi-row"><span>🍽️ Prossimo da segnare</span><b>${prossimo}</b></div>`;
+  }
+
+  const streakDieta = pianoPersonale ? calcolaStreakDieta() : 0;
+  const streakSettimane = calcolaStreakSettimaneAllenamento();
+  let streakRow = '';
+  if(streakSettimane>0) streakRow += `<div class="oggi-row"><span>🔥 Settimane di fila con allenamento</span><b>${streakSettimane}</b></div>`;
+  if(streakDieta>1) streakRow += `<div class="oggi-row"><span>🔥 Giorni di fila con dieta tracciata</span><b>${streakDieta}</b></div>`;
+
+  return `<div class="oggi-panel">
+    <div class="oggi-row"><span>🏋️ Allenamenti questa settimana</span><b>${sessioniSettimana}</b></div>
+    ${kcalRow}
+    ${pastoRow}
+    ${streakRow}
+  </div>`;
+}
+
 function renderHome(){
   pageTitle.textContent = 'Beat Yourself';
   const saluto = profiloUtente ? `<p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0 0 4px;">Ciao, ${profiloUtente.nome} 👋</p>` : '';
@@ -1160,8 +1477,10 @@ function renderHome(){
   const haPianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
   const dietaSub = haPianoPersonale ? 'Piano nutrizionale e pasti' : 'In attesa del tuo piano personale';
   const promemoria = promemoriaCostanza();
+  const oggiPanel = renderOggiPanel();
   view.innerHTML = `
     ${saluto}
+    ${oggiPanel}
     ${promemoria}
     ${links}
     <div class="home-cat" onclick="setRoute({name:'allenamento-list'})">
@@ -1582,7 +1901,7 @@ function beep(){
 }
 
 async function terminaSessione(){
-  if(!confirm('Salvare questo allenamento in Progressi?')) return;
+  if(!(await mostraConferma('Salvare questo allenamento in Progressi?', 'accent'))) return;
   const btn = document.getElementById('finishBtn');
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try{
@@ -2036,7 +2355,7 @@ function renderProgressiDetail(){
 }
 
 async function eliminaSessione(id){
-  if(!confirm('Eliminare questa seduta dallo storico?')) return;
+  if(!(await mostraConferma('Eliminare questa seduta dallo storico?'))) return;
   try{
     await userCollection('sessioni').doc(id).delete();
     cache.sessioni = cache.sessioni.filter(s=>s.id!==id);
@@ -2066,7 +2385,62 @@ function renderProfilo(){
     <button class="btn" id="salvaProfiloBtn" onclick="salvaProfiloModifiche()">Salva modifiche</button>
   </div>
   <p class="empty" style="padding:0 4px 6px;">Le note infortuni vengono mostrate all'inizio di ogni sessione di allenamento.</p>
+
+  ${p.schedeAssegnate===null ? renderObiettiviCard() : ''}
+
+  <div class="card">
+    <div class="dic-t" style="font-size:13.5px;font-weight:800;margin-bottom:6px;">🔔 Promemoria</div>
+    <p class="field-hint" style="margin:0 0 14px;">Ricevi una notifica se dimentichi di segnare un pasto, un integratore serale o se hai bevuto poca acqua durante la giornata.</p>
+    <div id="notificheStato"></div>
+    <button class="btn secondary" style="width:100%;" onclick="attivaNotifichePush()">${p.fcmToken ? '🔔 Notifiche attive — riattiva' : 'Attiva notifiche'}</button>
+  </div>
+
   <button class="btn danger" onclick="logout()">Esci</button>`;
+}
+
+function renderObiettiviCard(){
+  const o = obiettiviAttivi();
+  return `<div class="card">
+    <div class="dic-t" style="font-size:13.5px;font-weight:800;margin-bottom:6px;">🎯 Obiettivi nutrizionali</div>
+    <p class="field-hint" style="margin:0 0 14px;">Kcal e macro di riferimento usati nell'anello e nelle barre in Dieta. Lasciali come sono se il tuo trainer non ti ha detto altro.</p>
+    <div id="obiettiviError"></div>
+    <div class="field"><label>Kcal / giorno</label><input type="number" id="oKcal" min="0" value="${o.kcal}"></div>
+    <div class="grid2">
+      <div class="field"><label>Proteine (g)</label><input type="number" id="oProt" min="0" value="${o.prot}"></div>
+      <div class="field"><label>Carboidrati (g)</label><input type="number" id="oCarb" min="0" value="${o.carb}"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Grassi (g)</label><input type="number" id="oGrassi" min="0" value="${o.grassi}"></div>
+      <div class="field"><label>Acqua (L)</label><input type="number" id="oAcqua" min="0" step="0.1" value="${(o.acquaMl/1000).toFixed(1)}"></div>
+    </div>
+    <button class="btn secondary" style="width:100%;" id="salvaObiettiviBtn" onclick="salvaObiettivi()">Salva obiettivi</button>
+  </div>`;
+}
+
+async function salvaObiettivi(){
+  const kcal = Number(document.getElementById('oKcal').value);
+  const prot = Number(document.getElementById('oProt').value);
+  const carb = Number(document.getElementById('oCarb').value);
+  const grassi = Number(document.getElementById('oGrassi').value);
+  const acquaL = Number(document.getElementById('oAcqua').value);
+  const errBox = document.getElementById('obiettiviError');
+  const btn = document.getElementById('salvaObiettiviBtn');
+  errBox.innerHTML = '';
+  if([kcal,prot,carb,grassi,acquaL].some(v=> isNaN(v) || v<0)){
+    errBox.innerHTML = '<div class="error-banner">Controlla i valori inseriti.</div>';
+    return;
+  }
+  const obiettivi = { kcal, prot, carb, grassi, acquaMl: Math.round(acquaL*1000) };
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try{
+    await db.collection('users').doc(currentUid).set({ obiettivi }, { merge:true });
+    profiloUtente.obiettivi = obiettivi;
+    btn.disabled = false; btn.textContent = 'Obiettivi salvati ✅';
+    setTimeout(()=>{ if(document.getElementById('salvaObiettiviBtn')) { btn.textContent='Salva obiettivi'; } }, 1800);
+  }catch(e){
+    errBox.innerHTML = `<div class="error-banner">${e.message}</div>`;
+    btn.disabled = false; btn.textContent = 'Salva obiettivi';
+  }
 }
 
 async function salvaProfiloModifiche(){
@@ -2366,6 +2740,139 @@ const DIETA_PIANO = {
   ]
 };
 
+/* ============ MICRONUTRIENTI (vitamine, minerali, acqua) ============
+   Valori indicativi per 100g, presi da tabelle nutrizionali standard
+   (riferimento generico tipo CREA/USDA per l'alimento "medio" nella
+   preparazione indicata: crudo per carne/pesce/pasta/riso/farro/quinoa,
+   lesso per le patate, ecc.) — NON sono valori misurati sui prodotti
+   specifici che usi tu, servono come stima indicativa, non come dato
+   di laboratorio. acqua=g/100g; vitA/vitD/vitB12/folati in mcg; il resto in mg. */
+const MICRO_DEF = [
+  {key:'vitA', label:'Vitamina A', unit:'mcg'},
+  {key:'vitC', label:'Vitamina C', unit:'mg'},
+  {key:'vitD', label:'Vitamina D', unit:'mcg'},
+  {key:'vitE', label:'Vitamina E', unit:'mg'},
+  {key:'vitB12', label:'Vitamina B12', unit:'mcg'},
+  {key:'folati', label:'Folati (B9)', unit:'mcg'},
+  {key:'calcio', label:'Calcio', unit:'mg'},
+  {key:'ferro', label:'Ferro', unit:'mg'},
+  {key:'magnesio', label:'Magnesio', unit:'mg'},
+  {key:'potassio', label:'Potassio', unit:'mg'},
+  {key:'zinco', label:'Zinco', unit:'mg'},
+  {key:'sodio', label:'Sodio', unit:'mg'},
+];
+
+const MICRO_DB = {
+  "Fiocchi d'avena":            { acqua:8,  vitA:0,   vitC:0,   vitD:0,   vitE:0.7, vitB12:0,   folati:56,  calcio:54,   ferro:4.7, magnesio:138, potassio:429, zinco:4,   sodio:2 },
+  'Yogurt greco 0%':            { acqua:85, vitA:2,   vitC:0,   vitD:0,   vitE:0,   vitB12:0.5, folati:7,   calcio:110,  ferro:0.1, magnesio:11,  potassio:141, zinco:0.5, sodio:36 },
+  'Banana':                     { acqua:75, vitA:3,   vitC:8.7, vitD:0,   vitE:0.1, vitB12:0,   folati:20,  calcio:5,    ferro:0.3, magnesio:27,  potassio:358, zinco:0.15,sodio:1 },
+  'Mandorle':                   { acqua:4,  vitA:0,   vitC:0,   vitD:0,   vitE:25.6,vitB12:0,   folati:44,  calcio:269,  ferro:3.7, magnesio:270, potassio:733, zinco:3.1, sodio:1 },
+  'Pane tipo 0':                { acqua:35, vitA:0,   vitC:0,   vitD:0,   vitE:0.2, vitB12:0,   folati:40,  calcio:30,   ferro:1.8, magnesio:25,  potassio:100, zinco:0.7, sodio:500 },
+  'Uova':                       { acqua:76, vitA:140, vitC:0,   vitD:1.8, vitE:1,   vitB12:0.9, folati:47,  calcio:50,   ferro:1.8, magnesio:12,  potassio:138, zinco:1.3, sodio:140 },
+  'Pomodoro':                   { acqua:94, vitA:42,  vitC:14,  vitD:0,   vitE:0.5, vitB12:0,   folati:15,  calcio:10,   ferro:0.5, magnesio:11,  potassio:237, zinco:0.2, sodio:5 },
+  "Olio extravergine d'oliva":  { acqua:0,  vitA:0,   vitC:0,   vitD:0,   vitE:14,  vitB12:0,   folati:0,   calcio:1,    ferro:0.6, magnesio:0,   potassio:1,   zinco:0,   sodio:2 },
+  'Fette biscottate':           { acqua:4,  vitA:0,   vitC:0,   vitD:0,   vitE:0.3, vitB12:0,   folati:20,  calcio:30,   ferro:2,   magnesio:20,  potassio:130, zinco:0.6, sodio:400 },
+  'Marmellata':                 { acqua:30, vitA:2,   vitC:3,   vitD:0,   vitE:0.1, vitB12:0,   folati:2,   calcio:15,   ferro:0.3, magnesio:5,   potassio:60,  zinco:0.1, sodio:15 },
+  'Cereali cioccolato/cocco (tipo Coco Pops)': { acqua:3, vitA:100, vitC:10, vitD:1.5, vitE:1, vitB12:0.5, folati:100, calcio:20, ferro:8, magnesio:30, potassio:150, zinco:3, sodio:350 },
+  'Latte parz. scremato':       { acqua:89, vitA:45,  vitC:1,   vitD:0.05,vitE:0.05,vitB12:0.4, folati:5,   calcio:120,  ferro:0.05,magnesio:11,  potassio:150, zinco:0.4, sodio:44 },
+  "Albume d'uovo":              { acqua:88, vitA:0,   vitC:0,   vitD:0,   vitE:0,   vitB12:0.1, folati:4,   calcio:5,    ferro:0.1, magnesio:11,  potassio:163, zinco:0,   sodio:166 },
+  'Whey isolate':                { acqua:4,  vitA:0,   vitC:0,   vitD:0,   vitE:0,   vitB12:1,   folati:0,   calcio:130,  ferro:0.2, magnesio:20,  potassio:180, zinco:1,   sodio:150 },
+  'Gallette di riso':           { acqua:6,  vitA:0,   vitC:0,   vitD:0,   vitE:0.2, vitB12:0,   folati:10,  calcio:10,   ferro:0.5, magnesio:40,  potassio:130, zinco:0.8, sodio:5 },
+  'Fesa di tacchino affettata':  { acqua:70, vitA:0,   vitC:0,   vitD:0,   vitE:0.2, vitB12:0.3, folati:5,   calcio:10,   ferro:0.7, magnesio:20,  potassio:300, zinco:1,   sodio:900 },
+  'Skyr':                        { acqua:84, vitA:1,   vitC:0,   vitD:0,   vitE:0,   vitB12:0.4, folati:5,   calcio:120,  ferro:0.1, magnesio:10,  potassio:130, zinco:0.6, sodio:45 },
+  'Kiwi':                        { acqua:83, vitA:4,   vitC:93,  vitD:0,   vitE:1.5, vitB12:0,   folati:25,  calcio:34,   ferro:0.3, magnesio:17,  potassio:312, zinco:0.1, sodio:3 },
+  'Pasta di semola':             { acqua:11, vitA:0,   vitC:0,   vitD:0,   vitE:0.3, vitB12:0,   folati:18,  calcio:20,   ferro:1.3, magnesio:45,  potassio:190, zinco:1,   sodio:3 },
+  'Petto di pollo':              { acqua:74, vitA:5,   vitC:0,   vitD:0.1, vitE:0.3, vitB12:0.3, folati:4,   calcio:5,    ferro:0.4, magnesio:25,  potassio:256, zinco:0.6, sodio:45 },
+  'Verdura mista':                { acqua:92, vitA:200, vitC:20,  vitD:0,   vitE:0.8, vitB12:0,   folati:40,  calcio:30,   ferro:0.6, magnesio:15,  potassio:250, zinco:0.3, sodio:30 },
+  'Parmigiano grattugiato':      { acqua:30, vitA:220, vitC:0,   vitD:0.5, vitE:0.3, vitB12:1.4, folati:8,   calcio:1160, ferro:0.8, magnesio:40,  potassio:90,  zinco:4,   sodio:650 },
+  'Riso':                        { acqua:12, vitA:0,   vitC:0,   vitD:0,   vitE:0.1, vitB12:0,   folati:8,   calcio:10,   ferro:0.5, magnesio:25,  potassio:100, zinco:1,   sodio:5 },
+  'Tonno al naturale sgocciolato': { acqua:70, vitA:5, vitC:0,   vitD:3,   vitE:1,   vitB12:2.5, folati:3,   calcio:10,   ferro:1,   magnesio:30,  potassio:250, zinco:0.5, sodio:300 },
+  'Farro perlato':                { acqua:11, vitA:0,   vitC:0,   vitD:0,   vitE:1,   vitB12:0,   folati:30,  calcio:25,   ferro:3,   magnesio:100, potassio:300, zinco:2,   sodio:5 },
+  'Ceci lessati (in scatola, scolati)': { acqua:65, vitA:1, vitC:1.5, vitD:0, vitE:0.3, vitB12:0, folati:100, calcio:45,   ferro:2,   magnesio:40,  potassio:240, zinco:1.2, sodio:240 },
+  'Piadina':                      { acqua:25, vitA:0,   vitC:0,   vitD:0,   vitE:1,   vitB12:0,   folati:20,  calcio:40,   ferro:1.5, magnesio:20,  potassio:130, zinco:0.6, sodio:600 },
+  'Quinoa':                       { acqua:13, vitA:1,   vitC:0,   vitD:0,   vitE:2.4, vitB12:0,   folati:184, calcio:47,   ferro:4.6, magnesio:197, potassio:563, zinco:3.1, sodio:5 },
+  'Salmone fresco':               { acqua:68, vitA:12,  vitC:0,   vitD:11,  vitE:3.6, vitB12:3.2, folati:26,  calcio:12,   ferro:0.3, magnesio:27,  potassio:384, zinco:0.6, sodio:60 },
+  'Bresaola':                     { acqua:60, vitA:0,   vitC:0,   vitD:0,   vitE:0.3, vitB12:3,   folati:5,   calcio:10,   ferro:2.5, magnesio:25,  potassio:350, zinco:3,   sodio:1500 },
+  'Ricotta vaccina':              { acqua:74, vitA:140, vitC:0,   vitD:0.1, vitE:0.2, vitB12:0.3, folati:12,  calcio:195,  ferro:0.4, magnesio:11,  potassio:105, zinco:0.6, sodio:80 },
+  'Miele':                        { acqua:17, vitA:0,   vitC:0.5, vitD:0,   vitE:0,   vitB12:0,   folati:2,   calcio:6,    ferro:0.4, magnesio:2,   potassio:52,  zinco:0.2, sodio:4 },
+  'Prosciutto cotto magro':       { acqua:70, vitA:0,   vitC:0,   vitD:0,   vitE:0.2, vitB12:0.6, folati:3,   calcio:6,    ferro:0.8, magnesio:18,  potassio:350, zinco:1.5, sodio:1000 },
+  'Hummus di ceci':               { acqua:65, vitA:1,   vitC:2,   vitD:0,   vitE:1,   vitB12:0,   folati:60,  calcio:40,   ferro:1.5, magnesio:35,  potassio:200, zinco:1,   sodio:350 },
+  'Verdura (carote/finocchi a pinzimonio)': { acqua:90, vitA:850, vitC:10, vitD:0, vitE:0.5, vitB12:0, folati:25, calcio:35, ferro:0.4, magnesio:15, potassio:300, zinco:0.2, sodio:60 },
+  'Petto di tacchino':            { acqua:74, vitA:0,   vitC:0,   vitD:0,   vitE:0.1, vitB12:0.3, folati:6,   calcio:10,   ferro:0.6, magnesio:28,  potassio:260, zinco:1,   sodio:55 },
+  'Patate lesse':                 { acqua:77, vitA:0,   vitC:8,   vitD:0,   vitE:0,   vitB12:0,   folati:8,   calcio:5,    ferro:0.3, magnesio:20,  potassio:320, zinco:0.3, sodio:3 },
+  'Merluzzo/nasello':             { acqua:82, vitA:10,  vitC:0,   vitD:1,   vitE:0.5, vitB12:1,   folati:7,   calcio:12,   ferro:0.3, magnesio:24,  potassio:350, zinco:0.4, sodio:70 },
+  'Fesa di manzo magra':          { acqua:74, vitA:0,   vitC:0,   vitD:0,   vitE:0.3, vitB12:2,   folati:8,   calcio:5,    ferro:2,   magnesio:22,  potassio:350, zinco:4,   sodio:55 },
+  'Pane integrale':               { acqua:38, vitA:0,   vitC:0,   vitD:0,   vitE:0.5, vitB12:0,   folati:30,  calcio:40,   ferro:2.5, magnesio:60,  potassio:250, zinco:1.5, sodio:480 },
+};
+const MICRO_ALIAS = {
+  "Fiocchi d'avena (da frullare in farina)": "Fiocchi d'avena",
+  'Uovo': 'Uova',
+  'Verdura mista (insalata/pomodoro)': 'Verdura mista',
+};
+
+function microPer100(nome){
+  return MICRO_DB[nome] || MICRO_DB[MICRO_ALIAS[nome]] || null;
+}
+
+function calcolaMicroOpzione(opz){
+  const tot = { acqua:0 };
+  MICRO_DEF.forEach(m=> tot[m.key]=0);
+  opz.alimenti.forEach(a=>{
+    const profilo = microPer100(a.n);
+    if(!profilo) return;
+    const match = String(a.q).match(/^(\d+(?:[.,]\d+)?)/);
+    const grammi = match ? parseFloat(match[1].replace(',','.')) : 0;
+    const fattore = grammi/100;
+    tot.acqua += (profilo.acqua||0)*fattore;
+    MICRO_DEF.forEach(m=> tot[m.key] += (profilo[m.key]||0)*fattore);
+  });
+  return tot;
+}
+
+/* Estrazione micronutrienti dai risultati Open Food Facts. Nella loro API i
+   nutrienti "traccia" (vitamine, minerali) nel campo *_100g sono normalizzati
+   in grammi (es. vitamin-c_100g:0.00006 = 60mg), a differenza dei macro
+   (proteine/carboidrati/grassi) che sono già in grammi diretti: per questo
+   qui vanno moltiplicati per riportarli in mg/mcg leggibili. Copertura non
+   garantita: essendo un database collaborativo, molti prodotti non hanno
+   tutti questi campi compilati. */
+const OFF_MICRO_MAP = {
+  vitA:{off:'vitamin-a', factor:1e6}, vitC:{off:'vitamin-c', factor:1e3}, vitD:{off:'vitamin-d', factor:1e6},
+  vitE:{off:'vitamin-e', factor:1e3}, vitB12:{off:'vitamin-b12', factor:1e6}, folati:{off:'vitamin-b9', factor:1e6},
+  calcio:{off:'calcium', factor:1e3}, ferro:{off:'iron', factor:1e3}, magnesio:{off:'magnesium', factor:1e3},
+  potassio:{off:'potassium', factor:1e3}, zinco:{off:'zinc', factor:1e3}, sodio:{off:'sodium', factor:1e3}
+};
+function estraiMicroOFF(nutrimenti){
+  nutrimenti = nutrimenti || {};
+  const micro100 = {};
+  Object.keys(OFF_MICRO_MAP).forEach(key=>{
+    const cfg = OFF_MICRO_MAP[key];
+    const raw = nutrimenti[cfg.off+'_100g'];
+    micro100[key] = (raw!=null && !isNaN(raw)) ? raw*cfg.factor : null;
+  });
+  const acquaRaw = nutrimenti['water_100g'];
+  const acqua100 = (acquaRaw!=null && !isNaN(acquaRaw)) ? acquaRaw : null;
+  return { micro100, acqua100 };
+}
+
+/* Genera l'HTML della griglia micronutrienti scalata alla grammatura scelta,
+   riusato sia per il prodotto cercato/scansionato sia per il piano fisso. */
+function microGridHtmlDaOFF(micro100, acqua100, fattore){
+  const righe = MICRO_DEF.map(m=>{
+    const v100 = micro100[m.key];
+    if(v100==null) return '';
+    const v = v100*fattore;
+    if(!(v>0)) return '';
+    const vArr = v<10 ? Math.round(v*10)/10 : Math.round(v);
+    return `<div class="micro-row"><span>${m.label}</span><b>${vArr} ${m.unit}</b></div>`;
+  }).join('');
+  const acquaLine = acqua100!=null
+    ? `<p style="margin:0 0 10px;">💧 Acqua stimata: <b style="color:var(--text);">${Math.round(acqua100*fattore)} ml circa</b></p>`
+    : `<p style="margin:0 0 10px;color:var(--text-dim);">💧 Dato acqua non disponibile per questo prodotto.</p>`;
+  return `${acquaLine}<div class="micro-grid">${righe || '<p style="margin:0;">Nessun dato su vitamine/minerali per questo prodotto su Open Food Facts.</p>'}</div>
+    <p class="field-hint" style="margin-top:12px;">Dati Open Food Facts, database collaborativo: la copertura di vitamine e minerali varia da prodotto a prodotto.</p>`;
+}
+
 const INTEGRAZIONE_PIANO = {
   intro: "Nessuno degli integratori sostituisce il cibo: il piano alimentare resta la base, l'integrazione colma solo eventuali gap pratici (proteine, creatina, micronutrienti). Tocca un integratore per vedere quantità, indicazioni d'uso e particolarità.",
   integratori: [
@@ -2400,11 +2907,18 @@ const INTEGRAZIONE_PIANO = {
 let dietaOpenSet = new Set();
 let suppOpenSet = new Set();
 
+function toggleMicro(i){
+  const el = document.getElementById('micro-'+i);
+  if(el) el.classList.toggle('open');
+}
+
 function toggleIntegratore(idx){
   if(suppOpenSet.has(idx)) suppOpenSet.delete(idx); else suppOpenSet.add(idx);
   renderAlimentazione();
 }
 let dietaOpzioneSel = {};
+let dietaTab = 'piano';
+function setDietaTab(tab){ dietaTab = tab; renderAlimentazione(); }
 
 function renderAlimentazione(){
   pageTitle.textContent = 'Dieta';
@@ -2422,7 +2936,7 @@ function renderAlimentazione(){
     return;
   }
 
-  const t = DIETA_PIANO.target;
+  const t = obiettiviAttivi();
 
   const macroDef = [
     {key:'prot', label:'Proteine', color:'var(--accent)'},
@@ -2430,12 +2944,41 @@ function renderAlimentazione(){
     {key:'grassi', label:'Grassi', color:'var(--accent-3)'},
   ];
 
-  const macroChipsHtml = macroDef.map(m=>`
-    <div class="macro-chip">
-      <div class="mc-dot" style="background:${m.color};"></div>
-      <div class="mc-n">${t[m.key]}g</div>
-      <div class="mc-l">${m.label}</div>
-    </div>`).join('');
+  // Macro/kcal acquisiti oggi: somma delle opzioni dei pasti che hai spuntato
+  // come "seguiti", usando l'opzione al momento selezionata per ciascun pasto.
+  const acquisito = { kcal:0, prot:0, carb:0, grassi:0 };
+  DIETA_PIANO.pasti.forEach((p,i)=>{
+    if(cache.dietaLogOggi.pastiFatti[i]){
+      const opz = p.opzioni[dietaOpzioneSel[i] || 0];
+      acquisito.kcal += opz.kcal;
+      acquisito.prot += opz.prot;
+      acquisito.carb += opz.carb;
+      acquisito.grassi += opz.grassi;
+    }
+  });
+  const alimentiExtra = cache.dietaLogOggi.alimentiExtra || [];
+  alimentiExtra.forEach(a=>{
+    acquisito.kcal += a.kcal;
+    acquisito.prot += a.prot;
+    acquisito.carb += a.carb;
+    acquisito.grassi += a.grassi;
+  });
+
+  const kcalPct = t.kcal ? Math.min(100, Math.round((acquisito.kcal/t.kcal)*100)) : 0;
+  const kcalOver = acquisito.kcal > t.kcal;
+  const kcalColor = kcalOver ? 'var(--accent-2)' : 'var(--accent)';
+  const RING_R = 52, RING_C = 2*Math.PI*RING_R;
+  const ringOffset = RING_C * (1 - kcalPct/100);
+
+  const macroBarsHtml = macroDef.map(m=>{
+    const val = acquisito[m.key];
+    const goal = t[m.key];
+    const pct = goal ? Math.min(100, Math.round((val/goal)*100)) : 0;
+    return `<div class="macro-bar-row">
+      <div class="mbr-top"><span>${m.label}</span><span>${val}g / ${goal}g</span></div>
+      <div class="mbr-track"><div class="mbr-fill" style="width:${pct}%;background:${m.color};"></div></div>
+    </div>`;
+  }).join('');
 
   const mealsHtml = DIETA_PIANO.pasti.map((p,i)=>{
     const open = dietaOpenSet.has(i);
@@ -2453,6 +2996,13 @@ function renderAlimentazione(){
       `<div class="chip${oi===selIdx?' active':''}" onclick="event.stopPropagation();selectDietaOpzione(${i},${oi})">${o.titolo}</div>`
     ).join('');
     const fatto = !!cache.dietaLogOggi.pastiFatti[i];
+    const micro = calcolaMicroOpzione(opz);
+    const microRows = MICRO_DEF.map(m=>{
+      const v = micro[m.key];
+      if(!(v>0)) return '';
+      const vArr = v<10 ? Math.round(v*10)/10 : Math.round(v);
+      return `<div class="micro-row"><span>${m.label}</span><b>${vArr} ${m.unit}</b></div>`;
+    }).join('');
     return `
     <div class="meal-card${open?' open':''}">
       <div class="meal-head" onclick="toggleDietaPasto(${i})">
@@ -2476,6 +3026,12 @@ function renderAlimentazione(){
           <tbody>${foodRows}</tbody>
         </table>
         <div class="meal-prep"><b>Preparazione:</b> ${opz.preparazione}</div>
+        <button class="toggle-guide" onclick="event.stopPropagation();toggleMicro(${i})">💧🧪 Vitamine, minerali e acqua (stima) ▾</button>
+        <div class="guide-body" id="micro-${i}">
+          <p style="margin:0 0 10px;">💧 Acqua fornita da questi alimenti: <b style="color:var(--text);">${Math.round(micro.acqua)} ml circa</b></p>
+          <div class="micro-grid">${microRows || '<p style="margin:0;">Dati non disponibili per questi alimenti.</p>'}</div>
+          <p class="field-hint" style="margin-top:12px;">Valori indicativi da tabelle nutrizionali standard per 100g, non misurati sul prodotto/marca specifica che usi tu.</p>
+        </div>
         <label class="done-toggle">
           <input type="checkbox" ${fatto?'checked':''} onchange="event.stopPropagation();toggleMealDone(${i})">
           Ho seguito questo pasto oggi
@@ -2509,23 +3065,35 @@ function renderAlimentazione(){
   }).join('');
 
   const acquaMl = cache.dietaLogOggi.acquaMl || 0;
-  const acquaTargetMl = 2750;
+  const acquaTargetMl = t.acquaMl;
   const acquaPct = Math.min(100, Math.round((acquaMl/acquaTargetMl)*100));
   const acquaL = (acquaMl/1000).toFixed(2).replace('.', ',');
 
-  view.innerHTML = `
-    <div class="diet-summary">
-      <div class="tlt">Piano nutrizionale</div>
-      <div class="tsb">${DIETA_PIANO.fase}<br>3 pasti principali + 2 spuntini · più opzioni intercambiabili per ogni pasto</div>
-      <div class="diet-kcal-hero"><span class="n">${t.kcal}</span><span class="u">kcal / giorno</span></div>
-      <div class="macro-chip-row">${macroChipsHtml}</div>
-    </div>
-
+  const pianoTabHtml = `
     ${mealsHtml}
+    <div class="diet-info-card">
+      <div class="dic-t">📝 Note pratiche</div>
+      <div class="dic-b">Ogni opzione di un pasto è intercambiabile con le altre dello stesso pasto (macro equivalenti, tolleranza ±10%): componi la settimana come preferisci, anche ripetendo o mescolando le opzioni. Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 150-200g corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Birra (~130 kcal/die media) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
+    </div>`;
+
+  const extraTabHtml = `
+    <div class="diet-info-card">
+      <div class="dic-t">🔍 Alimenti extra di oggi</div>
+      <div class="dic-b" style="margin-bottom:${alimentiExtra.length?'10px':'14px'};">Qualcosa fuori dal piano? Cercalo e aggiungilo con la grammatura giusta: si somma ai macro qui sopra.</div>
+      ${alimentiExtra.length ? `<div class="extra-food-list">${alimentiExtra.map(a=>`
+        <div class="extra-food-item">
+          <div class="efi-info">
+            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
+            <div class="efi-m">${a.grammi}g · ${a.kcal} kcal · P ${a.prot}g · C ${a.carb}g · G ${a.grassi}g</div>
+          </div>
+          <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
+        </div>`).join('')}</div>` : ''}
+      <button class="btn small secondary" style="width:100%;margin-top:2px;" onclick="setRoute({name:'cerca-alimento'})">+ Cerca e aggiungi alimento</button>
+    </div>
 
     <div class="diet-info-card">
       <div class="dic-t">💧 Idratazione di oggi</div>
-      <div class="dic-b" style="margin-bottom:10px;">Obiettivo 2,5-3 L/die, progressivo partendo da ~1 L attuale.</div>
+      <div class="dic-b" style="margin-bottom:10px;">Obiettivo ${(acquaTargetMl/1000).toFixed(2).replace('.', ',')} L/die (modificabile in Profilo).</div>
       <div class="water-row">
         <div class="water-bar"><div class="water-fill" style="width:${acquaPct}%;"></div></div>
         <span class="water-val">${acquaL} L</span>
@@ -2534,9 +3102,10 @@ function renderAlimentazione(){
         <button class="btn small secondary" onclick="aggiungiAcqua(-250)">−250 ml</button>
         <button class="btn small secondary" onclick="aggiungiAcqua(250)">+250 ml</button>
       </div>
-    </div>
+    </div>`;
 
-    <div class="diet-summary" style="margin-top:20px;margin-bottom:12px;">
+  const integratoriTabHtml = `
+    <div class="diet-summary" style="margin-bottom:12px;">
       <div class="tlt">Integrazione</div>
       <div class="supp-intro" style="margin-bottom:0;">${INTEGRAZIONE_PIANO.intro}</div>
     </div>
@@ -2547,11 +3116,6 @@ function renderAlimentazione(){
       <div class="dic-t">⚠️ Integrazione e farmaci</div>
       <div class="dic-b">${INTEGRAZIONE_PIANO.noteImportanti}</div>
     </div>
-
-    <div class="diet-info-card">
-      <div class="dic-t">📝 Note pratiche</div>
-      <div class="dic-b">Ogni opzione di un pasto è intercambiabile con le altre dello stesso pasto (macro equivalenti, tolleranza ±10%): componi la settimana come preferisci, anche ripetendo o mescolando le opzioni. Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 150-200g corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Birra (~130 kcal/die media) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
-    </div>
     <div class="diet-info-card warn">
       <div class="dic-t">⚠️ Note importanti</div>
       <div class="dic-b">Questo piano non sostituisce una valutazione medica. Farmaci in corso (Lyrica, Zarelis) e ADHD sono stati considerati nel quadro generale ma non modificano direttamente il calcolo calorico. AST lievemente elevato nell'ultimo esame (06/09/2025), verosimilmente legato all'allenamento pre-prelievo: da ricontrollare. In caso di sintomi digestivi persistenti o variazioni cliniche, consulta il medico curante.</div>
@@ -2559,7 +3123,40 @@ function renderAlimentazione(){
     <div class="diet-info-card">
       <div class="dic-t">📅 Prossima rivalutazione</div>
       <div class="dic-b">Tra 2-3 settimane (peso, circonferenza vita, foto), oppure al ricevimento del Blocco 2 della scheda di allenamento o di nuove analisi del sangue.</div>
+    </div>`;
+
+  const tabContentHtml = dietaTab==='extra' ? extraTabHtml : dietaTab==='integratori' ? integratoriTabHtml : pianoTabHtml;
+
+  view.innerHTML = `
+    <div class="diet-summary">
+      <div class="tlt">Piano nutrizionale</div>
+      <div class="tsb">${DIETA_PIANO.fase}<br>3 pasti principali + 2 spuntini · più opzioni intercambiabili per ogni pasto</div>
+      <div class="kcal-ring-wrap">
+        <svg viewBox="0 0 120 120" class="kcal-ring">
+          <circle cx="60" cy="60" r="${RING_R}" class="kr-bg"></circle>
+          <circle cx="60" cy="60" r="${RING_R}" class="kr-fill" style="stroke:${kcalColor};stroke-dasharray:${RING_C};stroke-dashoffset:${ringOffset};"></circle>
+        </svg>
+        <div class="kr-center">
+          <span class="kr-n" style="color:${kcalColor};">${acquisito.kcal}</span>
+          <span class="kr-u">/ ${t.kcal} kcal oggi</span>
+        </div>
+      </div>
+      <div class="macro-bars">${macroBarsHtml}</div>
     </div>
+
+    <div class="tab-bar">
+      <div class="tab-btn${dietaTab==='piano'?' active':''}" onclick="setDietaTab('piano')">🍽️ Piano</div>
+      <div class="tab-btn${dietaTab==='extra'?' active':''}" onclick="setDietaTab('extra')">🔍 Extra</div>
+      <div class="tab-btn${dietaTab==='integratori'?' active':''}" onclick="setDietaTab('integratori')">💊 Integratori</div>
+    </div>
+
+    <p class="profile-link" style="text-align:center;">
+      <span onclick="setRoute({name:'diario'})">📖 Diario dei giorni passati</span>
+      &nbsp;·&nbsp;
+      <span onclick="setRoute({name:'lista-spesa'})">🛒 Lista della spesa</span>
+    </p>
+
+    ${tabContentHtml}
   `;
 }
 
@@ -2572,6 +3169,467 @@ function selectDietaOpzione(i, oi){
   dietaOpzioneSel[i] = oi;
   if(!dietaOpenSet.has(i)) dietaOpenSet.add(i);
   renderAlimentazione();
+}
+
+/* ============ DIARIO ALIMENTARE STORICO ============
+   Ripercorre i giorni passati usando cache.dietaLog. Per i pasti segnati da
+   quando esiste "pastiSnapshot" mostriamo anche titolo e kcal/macro reali;
+   per quelli segnati prima (o se manca lo snapshot per qualsiasi motivo)
+   contano comunque come "fatti" ma senza dettaglio nutrizionale nel totale. */
+let diarioOpenSet = new Set();
+
+function toggleDiarioGiorno(id){
+  if(diarioOpenSet.has(id)) diarioOpenSet.delete(id); else diarioOpenSet.add(id);
+  renderDiario();
+}
+
+function renderDiario(){
+  pageTitle.textContent = 'Diario';
+  const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
+  if(!pianoPersonale){
+    view.innerHTML = `<p class="empty">Questa sezione si popolerà quando avrai un piano alimentare personale.</p>`;
+    return;
+  }
+  const giorni = cache.dietaLog.slice().sort((a,b)=> b.id.localeCompare(a.id));
+  if(!giorni.length){
+    view.innerHTML = `<p class="empty"><span class="empty-icon">📖</span>Nessun giorno tracciato ancora.<br>Segna un pasto, un integratore o dell'acqua in Dieta per iniziare il diario.</p>`;
+    return;
+  }
+  const oggiK = todayKey();
+
+  const html = giorni.map(g=>{
+    const open = diarioOpenSet.has(g.id);
+    const pastiFatti = g.pastiFatti || {};
+    const pastiSnapshot = g.pastiSnapshot || {};
+    const integratoriFatti = g.integratoriFatti || {};
+    const alimentiExtra = g.alimentiExtra || [];
+
+    let kcalTot = 0, protTot = 0, carbTot = 0, grassiTot = 0, dettagliNonDisponibili = false;
+    Object.keys(pastiFatti).forEach(i=>{
+      if(!pastiFatti[i]) return;
+      const snap = pastiSnapshot[i];
+      if(snap){ kcalTot+=snap.kcal; protTot+=snap.prot; carbTot+=snap.carb; grassiTot+=snap.grassi; }
+      else dettagliNonDisponibili = true;
+    });
+    alimentiExtra.forEach(a=>{ kcalTot+=a.kcal; protTot+=a.prot; carbTot+=a.carb; grassiTot+=a.grassi; });
+
+    const numPastiFatti = Object.values(pastiFatti).filter(Boolean).length;
+    const numIntegrFatti = Object.values(integratoriFatti).filter(Boolean).length;
+    const dataLabel = g.id===oggiK ? 'Oggi' : new Date(g.id).toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'});
+
+    const pastiRighe = DIETA_PIANO.pasti.map((p,i)=>{
+      if(!pastiFatti[i]) return '';
+      const snap = pastiSnapshot[i];
+      return `<div class="micro-row"><span>${p.icona} ${p.nome}${snap?` — ${snap.titolo}`:''}</span><b>${snap?snap.kcal+' kcal':'segnato'}</b></div>`;
+    }).join('');
+
+    const integrRighe = INTEGRAZIONE_PIANO.integratori
+      .filter(s=> integratoriFatti[s.nome])
+      .map(s=>`<div class="micro-row"><span>${s.icona} ${s.nome}</span><b>✅</b></div>`).join('');
+
+    const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)</span><b>${a.kcal} kcal</b></div>`).join('');
+
+    return `<div class="meal-card${open?' open':''}">
+      <div class="meal-head" onclick="toggleDiarioGiorno('${g.id}')">
+        <div class="icon">📅</div>
+        <div class="mh-info">
+          <div class="mh-name">${dataLabel}</div>
+          <div class="mh-time">${numPastiFatti}/${DIETA_PIANO.pasti.length} pasti · ${numIntegrFatti} integratori · ${((g.acquaMl||0)/1000).toFixed(1).replace('.',',')} L</div>
+        </div>
+        <div class="mh-kcal">${kcalTot} kcal</div>
+        <div class="mh-chev">▾</div>
+      </div>
+      <div class="meal-body"><div class="meal-body-in">
+        ${pastiRighe || '<p style="margin:0 0 8px;color:var(--text-dim);font-size:12.5px;">Nessun pasto segnato.</p>'}
+        ${integrRighe}
+        ${extraRighe}
+        ${dettagliNonDisponibili ? '<p class="field-hint" style="margin-top:10px;">Alcuni pasti di questo giorno sono stati segnati prima che il diario registrasse i dettagli: contano come "fatti" ma senza kcal/macro nel totale qui sopra.</p>' : ''}
+      </div></div>
+    </div>`;
+  }).join('');
+
+  view.innerHTML = html;
+}
+
+/* ============ LISTA DELLA SPESA ============
+   Somma le quantità degli ingredienti delle opzioni attualmente selezionate
+   per ciascun pasto (le stesse che vedi nella scheda "Piano"), moltiplicate
+   per un numero di giorni scelto — utile se ripeti la stessa combinazione di
+   opzioni più giorni di fila, com'è già il modo in cui il piano è pensato
+   ("componi la settimana ripetendo o mescolando le opzioni"). */
+let listaSpesaGiorni = 7;
+let listaSpesaSpuntati = new Set();
+
+function calcolaListaSpesa(giorni){
+  const totali = {};
+  DIETA_PIANO.pasti.forEach((p,i)=>{
+    const opz = p.opzioni[dietaOpzioneSel[i] || 0];
+    opz.alimenti.forEach(a=>{
+      const match = String(a.q).match(/^(\d+(?:[.,]\d+)?)/);
+      const grammi = match ? parseFloat(match[1].replace(',','.')) : 0;
+      totali[a.n] = (totali[a.n]||0) + grammi;
+    });
+  });
+  return Object.keys(totali)
+    .map(nome=>({ nome, grammiTot: Math.round(totali[nome]*giorni) }))
+    .sort((a,b)=> a.nome.localeCompare(b.nome));
+}
+
+function formattaQuantitaSpesa(g){
+  if(g>=1000) return (g/1000).toFixed(g%1000===0?0:1).replace('.',',')+' kg';
+  return g+' g';
+}
+
+function renderListaSpesa(){
+  pageTitle.textContent = 'Lista della spesa';
+  const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
+  if(!pianoPersonale){
+    view.innerHTML = `<p class="empty">Questa sezione si popolerà quando avrai un piano alimentare personale.</p>`;
+    return;
+  }
+  const lista = calcolaListaSpesa(listaSpesaGiorni);
+  const righe = lista.map(item=>{
+    const spuntato = listaSpesaSpuntati.has(item.nome);
+    return `<div class="extra-food-item" onclick="toggleSpesaSpuntato('${item.nome.replace(/'/g,"\\'")}')" style="cursor:pointer;">
+      <div class="efi-info">
+        <div class="efi-n" style="${spuntato?'text-decoration:line-through;color:var(--text-dim);':''}">${item.nome}</div>
+      </div>
+      <b style="${spuntato?'color:var(--text-dim);text-decoration:line-through;':'color:var(--text);'}">${formattaQuantitaSpesa(item.grammiTot)}</b>
+    </div>`;
+  }).join('');
+
+  view.innerHTML = `
+    <div class="card">
+      <div class="dic-t" style="font-size:13.5px;font-weight:800;margin-bottom:10px;">🛒 Quanti giorni vuoi coprire?</div>
+      <div class="water-btns" style="margin-top:0;">
+        <button class="btn small secondary" onclick="cambiaGiorniSpesa(-1)">−1 giorno</button>
+        <span style="align-self:center;font-weight:800;font-size:15px;min-width:70px;text-align:center;">${listaSpesaGiorni} giorni</span>
+        <button class="btn small secondary" onclick="cambiaGiorniSpesa(1)">+1 giorno</button>
+      </div>
+      <p class="field-hint" style="margin:12px 0 0;">Calcolata sulle opzioni al momento selezionate per ogni pasto in "Piano" — se cambi opzione lì, torna qui per ricalcolare.</p>
+    </div>
+    <div class="card">
+      ${righe || '<p class="empty" style="padding:10px 0;">Nessun ingrediente da mostrare.</p>'}
+    </div>
+    <button class="btn secondary" style="width:100%;" onclick="condividiListaSpesa()">📋 Copia lista</button>
+  `;
+}
+
+function cambiaGiorniSpesa(delta){
+  listaSpesaGiorni = Math.max(1, Math.min(30, listaSpesaGiorni+delta));
+  renderListaSpesa();
+}
+
+function toggleSpesaSpuntato(nome){
+  if(listaSpesaSpuntati.has(nome)) listaSpesaSpuntati.delete(nome); else listaSpesaSpuntati.add(nome);
+  renderListaSpesa();
+}
+
+function condividiListaSpesa(){
+  const lista = calcolaListaSpesa(listaSpesaGiorni);
+  const testo = 'Lista della spesa (' + listaSpesaGiorni + ' giorni):\n' +
+    lista.map(item=> '- ' + item.nome + ': ' + formattaQuantitaSpesa(item.grammiTot)).join('\n');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(testo)
+      .then(()=> alert('Lista copiata negli appunti ✅'))
+      .catch(()=> alert(testo));
+  } else {
+    alert(testo);
+  }
+}
+
+/* ============ CERCA ALIMENTO (database Open Food Facts) ============
+   Ricerca testuale per aggiungere alla giornata un alimento che non fa parte
+   del piano fisso, con grammatura scelta liberamente. Nessuna chiave API:
+   Open Food Facts è un database aperto e gratuito, pensato per essere
+   interrogato direttamente dal browser. */
+let ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100 };
+
+function renderCercaAlimento(){
+  pageTitle.textContent = 'Cerca alimento';
+  const s = ricercaAlimentoState;
+
+  if(s.selezionato){
+    const p = s.selezionato;
+    const g = s.grammi || 0;
+    const fattore = g/100;
+    const kcal = Math.round(p.kcal100*fattore);
+    const prot = Math.round(p.prot100*fattore*10)/10;
+    const carb = Math.round(p.carb100*fattore*10)/10;
+    const grassi = Math.round(p.grassi100*fattore*10)/10;
+    view.innerHTML = `
+      <div class="card">
+        <h3 style="margin-top:0;">${p.nome}</h3>
+        ${p.marca?`<p style="color:var(--text-dim);font-size:12.5px;margin:0 0 14px;">${p.marca}</p>`:''}
+        <div class="field">
+          <label>Quantità (grammi)</label>
+          <input type="number" min="1" id="foodGrammiInput" value="${g}" oninput="aggiornaAnteprimaGrammi()">
+        </div>
+        <div class="meal-macro-mini" style="margin-bottom:16px;">
+          <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b id="fpProt">${prot}g</b></span>
+          <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b id="fpCarb">${carb}g</b></span>
+          <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b id="fpGrassi">${grassi}g</b></span>
+        </div>
+        <p style="font-size:13px;color:var(--text-dim);font-weight:700;margin:0 0 16px;" id="fpKcalLine">${kcal} kcal totali per ${g}g</p>
+        <button class="toggle-guide" onclick="toggleMicroSearch()">💧🧪 Vitamine, minerali e acqua ▾</button>
+        <div class="guide-body" id="micro-search-box">${microGridHtmlDaOFF(p.micro100||{}, p.acqua100, fattore)}</div>
+        <button class="btn" style="margin-top:16px;" onclick="confermaAggiungiAlimento()">Aggiungi a oggi</button>
+        <button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="ricercaAlimentoState.selezionato=null;renderCercaAlimento()">← Torna alla ricerca</button>
+      </div>`;
+    return;
+  }
+
+  let risultatiHtml = '';
+  if(s.loading){
+    risultatiHtml = spinnerHtml('Cerco...');
+  } else if(s.errore){
+    risultatiHtml = `<p class="empty">${s.errore}</p>`;
+  } else if(s.risultati.length){
+    risultatiHtml = s.risultati.map((p,i)=>`
+      <div class="food-search-item" onclick="selezionaAlimentoRicerca(${i})">
+        <div class="fsi-info">
+          <div class="fsi-n">${p.nome}</div>
+          ${p.marca?`<div class="fsi-brand">${p.marca}</div>`:''}
+        </div>
+        <div class="fsi-kcal">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
+      </div>`).join('');
+  } else if(s.query){
+    risultatiHtml = `<p class="empty">Nessun risultato per "${s.query}". Prova con un nome più semplice o generico.</p>`;
+  }
+
+  const recenti = (profiloUtente && profiloUtente.alimentiRecenti) || [];
+  const recentiHtml = (!s.query && recenti.length) ? `
+    <p class="section-label" style="margin-top:0;">Aggiunti di recente</p>
+    ${recenti.map((p,i)=>`
+      <div class="food-search-item" onclick="selezionaAlimentoRecente(${i})">
+        <div class="fsi-info">
+          <div class="fsi-n">${p.nome}</div>
+          ${p.marca?`<div class="fsi-brand">${p.marca}</div>`:''}
+        </div>
+        <div class="fsi-kcal">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
+      </div>`).join('')}
+  ` : '';
+
+  view.innerHTML = `
+    <div class="field">
+      <label>Cerca un alimento</label>
+      <input type="text" id="foodSearchInput" placeholder="Es. yogurt greco, pasta, mela..." value="${s.query}" onkeydown="if(event.key==='Enter')eseguiRicercaAlimento()">
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:6px;">
+      <button class="btn" style="flex:1;" onclick="eseguiRicercaAlimento()">Cerca</button>
+      <button class="btn secondary" style="flex:1;" onclick="setRoute({name:'scansiona-barcode'})">📷 Barcode</button>
+    </div>
+    <p class="field-hint" style="margin:0 0 18px;">I dati arrivano da Open Food Facts, un database alimentare aperto e gratuito.</p>
+    ${risultatiHtml}
+    ${recentiHtml}
+  `;
+  const input = document.getElementById('foodSearchInput');
+  if(input) setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
+}
+
+async function eseguiRicercaAlimento(){
+  const input = document.getElementById('foodSearchInput');
+  const query = input ? input.value.trim() : '';
+  if(!query) return;
+  ricercaAlimentoState.query = query;
+  ricercaAlimentoState.loading = true;
+  ricercaAlimentoState.errore = null;
+  ricercaAlimentoState.risultati = [];
+  renderCercaAlimento();
+  try{
+    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&fields=product_name,brands,nutriments`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('network');
+    const data = await res.json();
+    ricercaAlimentoState.risultati = (data.products||[])
+      .filter(p=>p.product_name && p.nutriments && p.nutriments['energy-kcal_100g']!=null)
+      .map(p=>{
+        const { micro100, acqua100 } = estraiMicroOFF(p.nutriments);
+        return {
+          nome: p.product_name,
+          marca: p.brands ? p.brands.split(',')[0].trim() : '',
+          kcal100: Math.round(p.nutriments['energy-kcal_100g']||0),
+          prot100: Math.round((p.nutriments['proteins_100g']||0)*10)/10,
+          carb100: Math.round((p.nutriments['carbohydrates_100g']||0)*10)/10,
+          grassi100: Math.round((p.nutriments['fat_100g']||0)*10)/10,
+          micro100, acqua100
+        };
+      })
+      .slice(0,20);
+  }catch(e){
+    ricercaAlimentoState.errore = 'Ricerca non riuscita: controlla la connessione e riprova.';
+  }
+  ricercaAlimentoState.loading = false;
+  renderCercaAlimento();
+}
+
+function selezionaAlimentoRicerca(i){
+  ricercaAlimentoState.selezionato = ricercaAlimentoState.risultati[i];
+  ricercaAlimentoState.grammi = 100;
+  renderCercaAlimento();
+}
+
+function aggiornaAnteprimaGrammi(){
+  const input = document.getElementById('foodGrammiInput');
+  const g = Math.max(0, Number(input.value)||0);
+  ricercaAlimentoState.grammi = g;
+  const p = ricercaAlimentoState.selezionato;
+  const fattore = g/100;
+  const kcal = Math.round(p.kcal100*fattore);
+  const prot = Math.round(p.prot100*fattore*10)/10;
+  const carb = Math.round(p.carb100*fattore*10)/10;
+  const grassi = Math.round(p.grassi100*fattore*10)/10;
+  document.getElementById('fpProt').textContent = prot+'g';
+  document.getElementById('fpCarb').textContent = carb+'g';
+  document.getElementById('fpGrassi').textContent = grassi+'g';
+  document.getElementById('fpKcalLine').textContent = kcal+' kcal totali per '+g+'g';
+  const microBox = document.getElementById('micro-search-box');
+  if(microBox) microBox.innerHTML = microGridHtmlDaOFF(p.micro100||{}, p.acqua100, fattore);
+}
+
+function toggleMicroSearch(){
+  const el = document.getElementById('micro-search-box');
+  if(el) el.classList.toggle('open');
+}
+
+function confermaAggiungiAlimento(){
+  const p = ricercaAlimentoState.selezionato;
+  const g = ricercaAlimentoState.grammi;
+  const fattore = g/100;
+  aggiungiAlimentoExtra({
+    id: 'extra-'+Date.now(),
+    nome: p.nome,
+    marca: p.marca,
+    grammi: g,
+    kcal: Math.round(p.kcal100*fattore),
+    prot: Math.round(p.prot100*fattore*10)/10,
+    carb: Math.round(p.carb100*fattore*10)/10,
+    grassi: Math.round(p.grassi100*fattore*10)/10
+  });
+  registraAlimentoRecente(p);
+  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100 };
+  setRoute({name:'alimentazione'});
+}
+
+/* Scorciatoia per i cibi che si ripetono spesso: tiene gli ultimi 8 alimenti
+   aggiunti (per valore/100g, non per grammatura specifica) sul profilo, così
+   la prossima volta non serve ricercarli da capo. */
+function registraAlimentoRecente(p){
+  if(!profiloUtente) return;
+  const chiave = a => (a.nome+'|'+(a.marca||'')).toLowerCase();
+  const voce = { nome:p.nome, marca:p.marca||'', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100, micro100:p.micro100||{}, acqua100:(p.acqua100!=null?p.acqua100:null) };
+  let lista = (profiloUtente.alimentiRecenti || []).filter(a=> chiave(a)!==chiave(voce));
+  lista.unshift(voce);
+  lista = lista.slice(0,8);
+  profiloUtente.alimentiRecenti = lista;
+  db.collection('users').doc(currentUid).set({ alimentiRecenti: lista }, { merge:true }).catch(()=>{});
+}
+
+function selezionaAlimentoRecente(i){
+  const p = (profiloUtente && profiloUtente.alimentiRecenti || [])[i];
+  if(!p) return;
+  ricercaAlimentoState.selezionato = p;
+  ricercaAlimentoState.grammi = 100;
+  renderCercaAlimento();
+}
+
+/* ============ SCANNER CODICE A BARRE ============
+   Libreria "html5-qrcode" caricata solo quando serve (non appesantisce il
+   caricamento iniziale dell'app), usa la fotocamera per leggere il codice
+   e poi cerca il prodotto per barcode su Open Food Facts. Funziona sia su
+   Android che su iOS/Safari (a differenza della BarcodeDetector nativa, non
+   supportata da Safari). */
+let barcodeScanner = null;
+let barcodeLibCaricata = false;
+
+function caricaLibreriaBarcode(){
+  return new Promise((resolve, reject)=>{
+    if(barcodeLibCaricata && window.Html5Qrcode){ resolve(); return; }
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+    script.onload = ()=>{ barcodeLibCaricata = true; resolve(); };
+    script.onerror = ()=> reject(new Error('lib non caricata'));
+    document.head.appendChild(script);
+  });
+}
+
+function renderScansionaBarcode(){
+  pageTitle.textContent = 'Scansiona codice a barre';
+  view.innerHTML = `
+    <div class="card" style="text-align:center;">
+      <p class="field-hint" style="margin:0 0 14px;">Inquadra il codice a barre del prodotto, tienilo fermo e ben illuminato.</p>
+      <div id="barcodeReader" class="barcode-reader"></div>
+      <p id="barcodeStatus" class="field-hint" style="margin-top:14px;min-height:18px;"></p>
+      <button class="btn secondary" style="width:100%;margin-top:6px;" onclick="setRoute({name:'cerca-alimento'})">Annulla</button>
+    </div>`;
+  avviaScannerBarcode();
+}
+
+async function avviaScannerBarcode(){
+  const stato = document.getElementById('barcodeStatus');
+  try{
+    if(stato) stato.innerHTML = '<span class="spinner-inline"></span>Avvio fotocamera...';
+    await caricaLibreriaBarcode();
+    if(route.name!=='scansiona-barcode') return; // l'utente ha già cambiato pagina
+    barcodeScanner = new Html5Qrcode('barcodeReader', {
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128
+      ],
+      verbose:false
+    });
+    await barcodeScanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 260, height: 150 } },
+      onBarcodeRilevato,
+      ()=>{} // "errore" per singolo frame non decodificato: normale mentre cerca il codice, si ignora
+    );
+    const stato2 = document.getElementById('barcodeStatus');
+    if(stato2) stato2.textContent = '';
+  }catch(e){
+    const stato3 = document.getElementById('barcodeStatus');
+    if(stato3) stato3.textContent = 'Non riesco ad accedere alla fotocamera: controlla di aver dato il permesso al browser, oppure usa la ricerca per nome.';
+  }
+}
+
+function fermaScannerBarcode(){
+  if(barcodeScanner){
+    const s = barcodeScanner;
+    barcodeScanner = null;
+    s.stop().then(()=> s.clear()).catch(()=>{});
+  }
+}
+
+async function onBarcodeRilevato(codice){
+  if(!barcodeScanner) return; // già gestito o pagina cambiata, evita doppio trigger
+  fermaScannerBarcode();
+  const stato = document.getElementById('barcodeStatus');
+  if(stato) stato.innerHTML = `<span class="spinner-inline"></span>Codice ${codice} trovato: cerco il prodotto...`;
+  try{
+    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${codice}.json`);
+    const data = await res.json();
+    const nutr = data.product && data.product.nutriments;
+    if(data.status !== 1 || !nutr || nutr['energy-kcal_100g']==null){
+      if(stato) stato.textContent = `Nessun dato nutrizionale trovato per il codice ${codice}. Prova con la ricerca per nome.`;
+      return;
+    }
+    const p = data.product;
+    const { micro100, acqua100 } = estraiMicroOFF(nutr);
+    ricercaAlimentoState.selezionato = {
+      nome: p.product_name || 'Prodotto senza nome',
+      marca: p.brands ? p.brands.split(',')[0].trim() : '',
+      kcal100: Math.round(nutr['energy-kcal_100g']||0),
+      prot100: Math.round((nutr['proteins_100g']||0)*10)/10,
+      carb100: Math.round((nutr['carbohydrates_100g']||0)*10)/10,
+      grassi100: Math.round((nutr['fat_100g']||0)*10)/10,
+      micro100, acqua100
+    };
+    ricercaAlimentoState.grammi = 100;
+    setRoute({name:'cerca-alimento'});
+  }catch(e){
+    if(stato) stato.textContent = 'Errore nella ricerca del prodotto. Riprova o usa la ricerca per nome.';
+  }
 }
 
 /* ============ MISURE ============ */
@@ -2730,7 +3788,7 @@ async function salvaMisura(){
 }
 
 async function eliminaMisura(id){
-  if(!confirm('Eliminare questa rilevazione?')) return;
+  if(!(await mostraConferma('Eliminare questa rilevazione?'))) return;
   try{
     await userCollection('misure').doc(id).delete();
     cache.misure = cache.misure.filter(m=>m.id!==id);

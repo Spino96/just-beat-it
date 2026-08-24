@@ -4,7 +4,7 @@
    una versione vecchia dell'HTML quando la rete c'è (network-first per la
    pagina; stale-while-revalidate solo per gli asset statici come le icone). */
 
-const CACHE_NAME = 'beat-yourself-v3';
+const CACHE_NAME = 'beat-yourself-v4';
 const APP_SHELL = [
   './',
   './index.html',
@@ -74,6 +74,33 @@ self.addEventListener('fetch', event => {
         })
         .catch(() => cached);
       return cached || network;
+    })
+  );
+});
+
+/* ============ NOTIFICHE PUSH (promemoria) ============
+   Le notifiche inviate da Firebase Cloud Messaging arrivano qui come normali
+   eventi "push" del browser: non serve importare l'SDK Firebase nel service
+   worker, basta leggere il payload e mostrare la notifica. */
+self.addEventListener('push', event => {
+  let dati = {};
+  try { dati = event.data ? event.data.json() : {}; } catch(e) {}
+  const titolo = (dati.notification && dati.notification.title) || 'Beat Yourself';
+  const opzioni = {
+    body: (dati.notification && dati.notification.body) || '',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    data: { url: './index.html' }
+  };
+  event.waitUntil(self.registration.showNotification(titolo, opzioni));
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then(elenco => {
+      for (const c of elenco) { if ('focus' in c) return c.focus(); }
+      if (clients.openWindow) return clients.openWindow('./index.html');
     })
   );
 });
