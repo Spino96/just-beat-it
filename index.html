@@ -342,7 +342,18 @@
     border-radius:12px;padding:12px 13px;font-size:14.5px;font-weight:500;
   }
   .field input:focus, .field textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+  .field-readonly{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:12px;padding:12px 13px;font-size:14.5px;font-weight:700;box-sizing:border-box;opacity:.85;
+  }
   .field-hint{font-size:12px;color:var(--text-dim);margin:5px 2px 0;line-height:1.45;font-weight:500;}
+  .obn-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+  .obn-row:last-of-type{border-bottom:none;}
+  .obn-label{font-size:13px;font-weight:700;color:var(--text);flex:0 0 auto;}
+  .obn-vals{display:flex;gap:16px;}
+  .obn-val{display:flex;flex-direction:column;align-items:flex-end;font-size:14.5px;font-weight:800;color:var(--text);min-width:56px;}
+  .obn-tag{font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px;margin-bottom:1px;}
+  .obn-tag-a{color:var(--accent);}
   .avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:280px;margin:0 auto;}
   .avatar-choice{
     aspect-ratio:1;border-radius:50%;background:var(--panel-2);border:1px solid var(--border);
@@ -910,17 +921,15 @@ function schedeAssegnateUtente(){
   return SCHEDE.filter(s=>profiloUtente.schedeAssegnate.includes(s.id));
 }
 
-/* Obiettivi nutrizionali attivi: quelli personalizzati dall'utente in Profilo
-   se presenti (e in quel caso restano fissi, indipendenti dal tipo di giorno:
-   sono un override esplicito), altrimenti quelli di default del piano —
-   DIETA_PIANO.target.riposo o .allenamento a seconda del parametro `allenamento`
-   — più 2750ml di acqua. Così se il trainer aggiorna i target col tempo, basta
-   modificarli in Profilo senza dover toccare il codice. */
+/* Obiettivi nutrizionali attivi: sempre quelli di DIETA_PIANO.target.riposo o
+   .allenamento a seconda del parametro `allenamento`, più 2750ml di acqua.
+   Non esiste più un override modificabile dall'utente in Profilo: la dieta
+   la aggiorna il trainer direttamente nel piano (DIETA_PIANO), così i target
+   restano sempre coerenti col tipo di giorno invece di restare bloccati su
+   un valore fisso. */
 function obiettiviAttivi(allenamento){
   const base = allenamento ? DIETA_PIANO.target.allenamento : DIETA_PIANO.target.riposo;
-  const def = { kcal:base.kcal, prot:base.prot, carb:base.carb, grassi:base.grassi, acquaMl:2750 };
-  if(profiloUtente && profiloUtente.obiettivi) return { ...def, ...profiloUtente.obiettivi };
-  return def;
+  return { kcal:base.kcal, prot:base.prot, carb:base.carb, grassi:base.grassi, acquaMl:2750 };
 }
 
 /* Proiezione di quando (con il trend recente) si raggiungerà un obiettivo corporeo
@@ -2945,21 +2954,24 @@ function renderProfilo(){
 }
 
 function renderObiettiviCard(){
-  const o = obiettiviAttivi(false);
+  const r = obiettiviAttivi(false);
+  const a = obiettiviAttivi(true);
+  const riga = (label, unit, kr, ka) => `
+    <div class="obn-row">
+      <div class="obn-label">${label}</div>
+      <div class="obn-vals">
+        <div class="obn-val"><span class="obn-tag">Riposo</span>${kr}${unit}</div>
+        <div class="obn-val"><span class="obn-tag obn-tag-a">Allenamento</span>${ka}${unit}</div>
+      </div>
+    </div>`;
   return `<div class="card">
     <div class="dic-t" style="font-size:13.5px;font-weight:800;margin-bottom:6px;">🎯 Obiettivi nutrizionali</div>
-    <p class="field-hint" style="margin:0 0 14px;">Kcal e macro di riferimento usati nell'anello e nelle barre in Dieta (valori di riposo, mostrati qui come riferimento). Se li personalizzi qui, questi valori fissi sostituiscono sia i giorni di riposo sia quelli di allenamento del piano. Lasciali come sono se il tuo trainer non ti ha detto altro.</p>
-    <div id="obiettiviError"></div>
-    <div class="field"><label>Kcal / giorno</label><input type="number" id="oKcal" min="0" value="${o.kcal}"></div>
-    <div class="grid2">
-      <div class="field"><label>Proteine (g)</label><input type="number" id="oProt" min="0" value="${o.prot}"></div>
-      <div class="field"><label>Carboidrati (g)</label><input type="number" id="oCarb" min="0" value="${o.carb}"></div>
-    </div>
-    <div class="grid2">
-      <div class="field"><label>Grassi (g)</label><input type="number" id="oGrassi" min="0" value="${o.grassi}"></div>
-      <div class="field"><label>Acqua (L)</label><input type="number" id="oAcqua" min="0" step="0.1" value="${(o.acquaMl/1000).toFixed(1)}"></div>
-    </div>
-    <button class="btn secondary" style="width:100%;" id="salvaObiettiviBtn" onclick="salvaObiettivi()">Salva obiettivi</button>
+    <p class="field-hint" style="margin:0 0 14px;">Kcal e macro di riferimento usati nell'anello e nelle barre in Dieta, differenziati per tipo di giorno. Vengono impostati dal trainer: qui puoi solo consultarli.</p>
+    ${riga('Kcal / giorno', '', r.kcal, a.kcal)}
+    ${riga('Proteine', ' g', r.prot, a.prot)}
+    ${riga('Carboidrati', ' g', r.carb, a.carb)}
+    ${riga('Grassi', ' g', r.grassi, a.grassi)}
+    <div class="field" style="margin-top:10px;margin-bottom:0;"><label>Acqua (L)</label><div class="field-readonly">${(r.acquaMl/1000).toFixed(1)}</div></div>
   </div>`;
 }
 
@@ -3002,31 +3014,7 @@ async function salvaObiettiviCorpo(){
   }
 }
 
-async function salvaObiettivi(){
-  const kcal = Number(document.getElementById('oKcal').value);
-  const prot = Number(document.getElementById('oProt').value);
-  const carb = Number(document.getElementById('oCarb').value);
-  const grassi = Number(document.getElementById('oGrassi').value);
-  const acquaL = Number(document.getElementById('oAcqua').value);
-  const errBox = document.getElementById('obiettiviError');
-  const btn = document.getElementById('salvaObiettiviBtn');
-  errBox.innerHTML = '';
-  if([kcal,prot,carb,grassi,acquaL].some(v=> isNaN(v) || v<0)){
-    errBox.innerHTML = '<div class="error-banner">Controlla i valori inseriti.</div>';
-    return;
-  }
-  const obiettivi = { kcal, prot, carb, grassi, acquaMl: Math.round(acquaL*1000) };
-  btn.disabled = true; btn.textContent = 'Salvataggio...';
-  try{
-    await db.collection('users').doc(currentUid).set({ obiettivi }, { merge:true });
-    profiloUtente.obiettivi = obiettivi;
-    btn.disabled = false; btn.textContent = 'Obiettivi salvati ✅';
-    setTimeout(()=>{ if(document.getElementById('salvaObiettiviBtn')) { btn.textContent='Salva obiettivi'; } }, 1800);
-  }catch(e){
-    errBox.innerHTML = `<div class="error-banner">${e.message}</div>`;
-    btn.disabled = false; btn.textContent = 'Salva obiettivi';
-  }
-}
+// salvaObiettivi() rimossa: gli obiettivi nutrizionali sono impostati dal trainer, non modificabili in app.
 
 async function salvaProfiloModifiche(){
   const nome = document.getElementById('pNome').value.trim();
