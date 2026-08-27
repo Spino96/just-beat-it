@@ -1351,7 +1351,9 @@ const BACK_MAP = {
   'storico-allenamento':'storico',
   'storico-misure':'storico',
   'progressi-detail':'storico-allenamento',
+  'sessione-modifica':'progressi-detail',
   'misura-detail':'storico-misure',
+  'misura-modifica':'misura-detail',
   'confronta-foto':'storico-misure',
   'profilo':'home',
   'trainer':'home'
@@ -1594,8 +1596,10 @@ function render(){
   else if(route.name==='storico-allenamento') renderStoricoAllenamento();
   else if(route.name==='storico-misure') renderStoricoMisure();
   else if(route.name==='misura-detail') renderMisuraDetail();
+  else if(route.name==='misura-modifica') renderMisuraModifica();
   else if(route.name==='confronta-foto') renderConfrontaFoto();
   else if(route.name==='progressi-detail') renderProgressiDetail();
+  else if(route.name==='sessione-modifica') renderSessioneModifica();
   else if(route.name==='statistiche') renderStatistiche();
   else if(route.name==='profilo') renderProfilo();
   else if(route.name==='trainer') renderTrainerPanel();
@@ -2718,9 +2722,14 @@ function renderStatistiche(){
 
 function renderProgressiDetail(){
   const s = cache.sessioni.find(x=>x.id===route.id);
+  if(!s){ setRoute({name:'storico-allenamento'}); return; }
   pageTitle.textContent = s.schedaNome;
   const d = new Date(s.data);
-  let html = `<p style="color:var(--text-dim);font-size:13px;">${d.toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long', year:'numeric'})}</p>`;
+  let html = '';
+  if(route.justSaved){
+    html += `<div class="success-banner">Modifiche salvate ✅</div>`;
+  }
+  html += `<p style="color:var(--text-dim);font-size:13px;">${d.toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long', year:'numeric'})}</p>`;
   s.esercizi.forEach(e=>{
     html += `<div class="exercise-card"><h3>${e.nome}</h3>`;
     const haRpePerSerie = (e.sets||[]).some(s=>s.rpe!=null);
@@ -2741,7 +2750,10 @@ function renderProgressiDetail(){
     }
     html += `</div>`;
   });
-  html += `<button class="btn secondary" onclick="eliminaSessione('${s.id}')">Elimina questa seduta</button>`;
+  html += `<div style="display:flex;gap:10px;">
+    <button class="btn secondary" style="flex:1;" onclick="setRoute({name:'sessione-modifica', id:'${s.id}'})">✏️ Modifica</button>
+    <button class="btn secondary" style="flex:1;" onclick="eliminaSessione('${s.id}')">Elimina</button>
+  </div>`;
   view.innerHTML = html;
 }
 
@@ -2752,6 +2764,89 @@ async function eliminaSessione(id){
     cache.sessioni = cache.sessioni.filter(s=>s.id!==id);
     setRoute({name:'storico-allenamento'});
   }catch(e){ alert('Errore: '+e.message); }
+}
+
+/* ============ MODIFICA SEDUTA PASSATA ============
+   Riusa lo stile della riga di logging live (.set-row) ma opera su una copia
+   di lavoro (modificaSessioneDraft) separata dal sessionDraft della seduta in
+   corso, cosi' non si mescolano un allenamento attivo e una modifica storica. */
+let modificaSessioneDraft = null;
+
+function renderSessioneModifica(){
+  const s = cache.sessioni.find(x=>x.id===route.id);
+  if(!s){ setRoute({name:'storico-allenamento'}); return; }
+  pageTitle.textContent = 'Modifica seduta';
+  modificaSessioneDraft = JSON.parse(JSON.stringify(s));
+
+  let html = `<div class="card">
+    <div id="sessioneModError"></div>
+    <div class="field"><label>Data</label><input type="date" id="smData" value="${new Date(s.data).toISOString().slice(0,10)}"></div>
+  </div>`;
+  modificaSessioneDraft.esercizi.forEach((e,ei)=>{
+    html += `<div class="exercise-card">
+      <h3>${e.nome}</h3>
+      <p class="rpe-legend">RPE per ogni serie: 6 = leggero · 8 = a 2 rip dal cedimento · 10 = cedimento totale</p>`;
+    e.sets.forEach((set,si)=>{
+      html += `<div class="set-row">
+        <span>${si+1}</span>
+        <input type="number" min="0" max="500" placeholder="peso kg" value="${set.peso??''}" oninput="updateSetModifica(${ei},${si},'peso',this.value)">
+        <input type="text" placeholder="rip / sec" value="${set.rip??''}" oninput="updateSetModifica(${ei},${si},'rip',this.value)">
+        <select onchange="setRPESetModifica(${ei},${si},this.value)">
+          <option value="">RPE</option>
+          ${[6,7,8,9,10].map(v=>`<option value="${v}" ${Number(set.rpe)===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+        <input type="checkbox" ${set.fatta?'checked':''} onchange="updateSetModifica(${ei},${si},'fatta',this.checked)">
+      </div>`;
+    });
+    html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio" oninput="updateNotaEsercizioModifica(${ei}, this.value)">${e.noteUtente||''}</textarea>`;
+    html += `</div>`;
+  });
+  html += `<button class="btn" id="saveSessioneModBtn" onclick="salvaModificaSessione('${s.id}')">Salva modifiche</button>`;
+  view.innerHTML = html;
+}
+
+function updateSetModifica(ei,si,field,val){
+  modificaSessioneDraft.esercizi[ei].sets[si][field] = val;
+}
+function setRPESetModifica(ei,si,val){
+  modificaSessioneDraft.esercizi[ei].sets[si].rpe = val ? Number(val) : null;
+}
+function updateNotaEsercizioModifica(ei,val){
+  modificaSessioneDraft.esercizi[ei].noteUtente = val;
+}
+
+async function salvaModificaSessione(id){
+  const data = document.getElementById('smData').value;
+  const btn = document.getElementById('saveSessioneModBtn');
+  const errBox = document.getElementById('sessioneModError');
+  errBox.innerHTML = '';
+
+  // Stessa soglia di plausibilita' usata al primo salvataggio della seduta dal vivo.
+  for(const e of modificaSessioneDraft.esercizi){
+    for(const set of e.sets){
+      if(set.peso!=='' && set.peso!=null){
+        const p = parseFloat(set.peso);
+        if(isNaN(p) || p<0 || p>500){
+          errBox.innerHTML = `<div class="error-banner">Il peso inserito per "${e.nome}" non sembra plausibile (0–500 kg). Controllalo prima di salvare.</div>`;
+          return;
+        }
+        set.peso = p;
+      }
+    }
+  }
+
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try{
+    const payload = { data, esercizi: modificaSessioneDraft.esercizi };
+    await userCollection('sessioni').doc(id).update(payload);
+    const idx = cache.sessioni.findIndex(x=>x.id===id);
+    if(idx>-1) cache.sessioni[idx] = { ...cache.sessioni[idx], ...payload };
+    cache.sessioni.sort((a,b)=> new Date(a.data)-new Date(b.data));
+    setRoute({name:'progressi-detail', id, justSaved:true});
+  }catch(e){
+    errBox.innerHTML = `<div class="error-banner">${e.message}</div>`;
+    btn.disabled = false; btn.textContent = 'Salva modifiche';
+  }
 }
 
 /* ============ PROFILO ============ */
@@ -4426,6 +4521,25 @@ function resizeImage(file, maxSize, quality){
   });
 }
 
+// Come resizeImage, ma parte gia' da un data URL (usato per ricalcolare la
+// miniatura in fase di modifica senza dover riscaricare/riconvertire un File).
+function resizeDataUrl(dataUrl, maxSize, quality){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let { width, height } = img;
+      if(width > height && width > maxSize){ height = height * (maxSize/width); width = maxSize; }
+      else if(height > maxSize){ width = width * (maxSize/height); height = maxSize; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality || 0.7));
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
 async function salvaMisura(){
   const data = document.getElementById('mData').value || new Date().toISOString().slice(0,10);
   const peso = document.getElementById('mPeso').value;
@@ -4535,6 +4649,7 @@ function renderMisuraDetail(){
   const m = cache.misure.find(x=>x.id===route.id);
   if(!m){ setRoute({name:'storico-misure'}); return; }
   pageTitle.textContent = new Date(m.data).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'});
+  const bannerSalvato = route.justSaved ? `<div class="success-banner">Modifiche salvate ✅</div>` : '';
 
   const righe = MISURA_DETTAGLIO_CAMPI
     .filter(c=> m[c.key]!=null && m[c.key]!=='')
@@ -4564,7 +4679,7 @@ function renderMisuraDetail(){
     <p class="field-hint" style="margin:6px 2px 0;">Una piccola differenza di lato dominante è normale: tienila d'occhio nel tempo, non è una diagnosi.</p>
   </div>` : '';
 
-  let html = `<div class="card">
+  let html = bannerSalvato + `<div class="card">
     <h3 style="margin-top:0;font-size:15px;">Valori registrati</h3>
     ${righe || `<p class="empty" style="padding:10px 0;">Nessun valore numerico per questa rilevazione.</p>`}
   </div>
@@ -4577,7 +4692,10 @@ function renderMisuraDetail(){
     <h3 style="margin-top:0;font-size:15px;">Foto</h3>
     <div id="misuraFotoGrid">${spinnerHtml('Carico le foto...')}</div>
   </div>
-  <button class="btn secondary" onclick="eliminaMisura('${m.id}')">Elimina questa rilevazione</button>`;
+  <div style="display:flex;gap:10px;">
+    <button class="btn secondary" style="flex:1;" onclick="setRoute({name:'misura-modifica', id:'${m.id}'})">✏️ Modifica</button>
+    <button class="btn secondary" style="flex:1;" onclick="eliminaMisura('${m.id}')">Elimina</button>
+  </div>`;
   view.innerHTML = html;
 
   caricaFotoMisura(m);
@@ -4601,6 +4719,213 @@ async function caricaFotoMisura(m){
     initCarosello('misuraFoto', foto.length);
   }catch(e){
     if(document.getElementById('misuraFotoGrid')) grid.innerHTML = `<div class="error-banner">Errore nel caricamento delle foto: ${e.message}</div>`;
+  }
+}
+
+/* ============ MODIFICA RILEVAZIONE PASSATA (valori + foto) ============
+   Ogni slot foto puo' essere in 4 stati mentre si modifica:
+   null           -> nessuna modifica (slot vuoto, resta vuoto)
+   {tipo:'esistente', docId, foto}  -> foto gia' salvata, invariata
+   {tipo:'nuova', file, previewUrl} -> nuova foto scelta (sostituisce o riempie lo slot)
+   {tipo:'rimossa', docId}          -> l'utente ha tolto la foto esistente in quello slot
+   `docId` puo' essere null per il campo legacy "foto" salvato prima che esistesse
+   la sottocollezione misureFoto (rilevazioni molto vecchie). */
+let misuraModificaFotoState = [null,null,null,null];
+
+function renderMisuraModifica(){
+  const m = cache.misure.find(x=>x.id===route.id);
+  if(!m){ setRoute({name:'storico-misure'}); return; }
+  pageTitle.textContent = 'Modifica rilevazione';
+  misuraModificaFotoState = [null,null,null,null];
+
+  view.innerHTML = `<div class="card">
+    <div id="misuraModError"></div>
+    <div class="field"><label>Data</label><input type="date" id="mmData" value="${m.data}"></div>
+    <div class="grid2">
+      <div class="field"><label>Peso (kg)</label><input type="number" step="0.1" id="mmPeso" value="${m.peso??''}"></div>
+      <div class="field"><label>Vita (cm)</label><input type="number" step="0.5" id="mmVita" value="${m.vita??''}"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Petto (cm)</label><input type="number" step="0.5" id="mmPetto" value="${m.petto??''}"></div>
+      <div class="field"><label>Fianchi (cm)</label><input type="number" step="0.5" id="mmFianchi" value="${m.fianchi??''}"></div>
+    </div>
+    <div class="field"><label>Collo (cm, facoltativo)</label><input type="number" step="0.5" id="mmCollo" value="${m.collo??''}"></div>
+    <div class="grid2">
+      <div class="field"><label>Braccio Dx (cm)</label><input type="number" step="0.5" id="mmBraccioDx" value="${m.braccioDx??''}"></div>
+      <div class="field"><label>Braccio Sx (cm)</label><input type="number" step="0.5" id="mmBraccioSx" value="${m.braccioSx??''}"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Coscia Dx (cm)</label><input type="number" step="0.5" id="mmCosciaDx" value="${m.cosciaDx??''}"></div>
+      <div class="field"><label>Coscia Sx (cm)</label><input type="number" step="0.5" id="mmCosciaSx" value="${m.cosciaSx??''}"></div>
+    </div>
+    <div class="field"><label>Ore di sonno (facoltativo)</label><input type="number" step="0.5" id="mmSonno" value="${m.sonno??''}"></div>
+    <div class="field">
+      <label>Foto progressi (fino a 4)</label>
+      <p class="field-hint" style="margin-top:-2px;">Tocca una foto per sostituirla, la ✕ per rimuoverla, oppure aggiungi quelle mancanti.</p>
+      <div class="photo-slots" id="mmPhotoSlots">${spinnerHtml('Carico le foto...')}</div>
+    </div>
+    <button class="btn" id="saveMisuraModBtn" onclick="salvaModificaMisura('${m.id}')">Salva modifiche</button>
+  </div>`;
+
+  caricaFotoMisuraModifica(m);
+}
+
+async function caricaFotoMisuraModifica(m){
+  try{
+    const snap = await userCollection('misureFoto').where('misuraId','==',m.id).get();
+    if(route.name!=='misura-modifica' || route.id!==m.id) return;
+    misuraModificaFotoState = [null,null,null,null];
+    const esistenti = snap.docs.map(d=>({docId:d.id, ...d.data()}));
+    esistenti.forEach(f=>{
+      if(f.ordine>=0 && f.ordine<4) misuraModificaFotoState[f.ordine] = { tipo:'esistente', docId:f.docId, foto:f.foto };
+    });
+    // Compatibilita' con rilevazioni salvate prima della sottocollezione misureFoto.
+    if(!esistenti.length && m.foto){
+      misuraModificaFotoState[0] = { tipo:'esistente', docId:null, foto:m.foto };
+    }
+    renderMmPhotoSlots();
+  }catch(e){
+    const box = document.getElementById('mmPhotoSlots');
+    if(box) box.innerHTML = `<div class="error-banner">Errore nel caricamento delle foto: ${e.message}</div>`;
+  }
+}
+
+function renderMmPhotoSlots(){
+  const box = document.getElementById('mmPhotoSlots');
+  if(!box) return;
+  box.innerHTML = FOTO_MISURA_LABELS.map((lbl,i)=>{
+    const st = misuraModificaFotoState[i];
+    const src = st && st.tipo!=='rimossa' ? (st.tipo==='nuova' ? st.previewUrl : st.foto) : null;
+    return `<div class="photo-slot" id="mmSlot${i}">
+      <input type="file" accept="image/*" capture="environment" id="mmFoto${i}" onchange="selezionaMmFotoSlot(${i})">
+      ${src
+        ? `<img class="photo-slot-preview" style="cursor:pointer;" src="${src}" onclick="document.getElementById('mmFoto${i}').click()">
+           <span class="photo-slot-tag">${lbl}</span>
+           <button type="button" class="photo-slot-remove" onclick="rimuoviMmFotoSlot(${i})">✕</button>`
+        : `<div class="photo-slot-empty" onclick="document.getElementById('mmFoto${i}').click()">
+             <span class="photo-slot-icon">📷</span><span>${lbl}</span>
+           </div>`}
+    </div>`;
+  }).join('');
+}
+
+function selezionaMmFotoSlot(i){
+  const input = document.getElementById('mmFoto' + i);
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const st = misuraModificaFotoState[i];
+    const docId = (st && st.docId) || null;
+    misuraModificaFotoState[i] = { tipo:'nuova', docId, file, previewUrl: e.target.result };
+    renderMmPhotoSlots();
+  };
+  reader.readAsDataURL(file);
+}
+
+function rimuoviMmFotoSlot(i){
+  const st = misuraModificaFotoState[i];
+  if(st && st.docId){
+    misuraModificaFotoState[i] = { tipo:'rimossa', docId: st.docId };
+  } else if(st && st.tipo==='esistente' && !st.docId){
+    // era il campo legacy "foto" sulla misura stessa, non un documento a parte
+    misuraModificaFotoState[i] = { tipo:'rimossa', docId: null };
+  } else {
+    misuraModificaFotoState[i] = null;
+  }
+  renderMmPhotoSlots();
+}
+
+async function salvaModificaMisura(id){
+  const data = document.getElementById('mmData').value;
+  const peso = document.getElementById('mmPeso').value;
+  const vita = document.getElementById('mmVita').value;
+  const petto = document.getElementById('mmPetto').value;
+  const fianchi = document.getElementById('mmFianchi').value;
+  const collo = document.getElementById('mmCollo').value;
+  const braccioDx = document.getElementById('mmBraccioDx').value;
+  const braccioSx = document.getElementById('mmBraccioSx').value;
+  const cosciaDx = document.getElementById('mmCosciaDx').value;
+  const cosciaSx = document.getElementById('mmCosciaSx').value;
+  const sonno = document.getElementById('mmSonno').value;
+  const btn = document.getElementById('saveMisuraModBtn');
+  const errBox = document.getElementById('misuraModError');
+  errBox.innerHTML = '';
+
+  const RANGE_PLAUSIBILI = {
+    'Peso':[peso,20,400], 'Vita':[vita,40,200], 'Petto':[petto,40,200], 'Fianchi':[fianchi,40,200],
+    'Collo':[collo,20,60],
+    'Braccio Dx':[braccioDx,10,80], 'Braccio Sx':[braccioSx,10,80],
+    'Coscia Dx':[cosciaDx,20,100], 'Coscia Sx':[cosciaSx,20,100],
+    'Ore di sonno':[sonno,0,16]
+  };
+  for(const label in RANGE_PLAUSIBILI){
+    const [valore, min, max] = RANGE_PLAUSIBILI[label];
+    if(valore!==''){
+      const n = Number(valore);
+      if(isNaN(n) || n < min || n > max){
+        errBox.innerHTML = `<div class="error-banner">Il valore inserito per "${label}" non sembra plausibile (${min}–${max}). Controllalo prima di salvare.</div>`;
+        return;
+      }
+    }
+  }
+
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+  try{
+    let clearLegacyFoto = false;
+    for(let i=0;i<4;i++){
+      const st = misuraModificaFotoState[i];
+      if(!st) continue;
+      if(st.tipo==='rimossa'){
+        if(st.docId) await userCollection('misureFoto').doc(st.docId).delete();
+        else clearLegacyFoto = true;
+      } else if(st.tipo==='nuova'){
+        const fotoDataUrl = await resizeImage(st.file, 900, 0.72);
+        if(st.docId){
+          await userCollection('misureFoto').doc(st.docId).update({ foto: fotoDataUrl, ordine: i });
+        } else {
+          await userCollection('misureFoto').add({ misuraId: id, ordine: i, foto: fotoDataUrl });
+          clearLegacyFoto = true; // se sostituiva il vecchio campo legacy, va ripulito sulla misura
+        }
+      }
+    }
+
+    // Ricalcola la miniatura dello storico sulla prima foto rimasta (se c'e').
+    const fotoSnap = await userCollection('misureFoto').where('misuraId','==',id).get();
+    const fotoRimaste = fotoSnap.docs.map(d=>d.data()).sort((a,b)=>(a.ordine||0)-(b.ordine||0));
+    let fotoThumb = null;
+    if(fotoRimaste.length){
+      fotoThumb = await resizeDataUrl(fotoRimaste[0].foto, 160, 0.55);
+    }
+
+    const payload = {
+      data,
+      peso: peso ? Number(peso) : null,
+      vita: vita ? Number(vita) : null,
+      petto: petto ? Number(petto) : null,
+      fianchi: fianchi ? Number(fianchi) : null,
+      collo: collo ? Number(collo) : null,
+      braccioDx: braccioDx ? Number(braccioDx) : null,
+      braccioSx: braccioSx ? Number(braccioSx) : null,
+      cosciaDx: cosciaDx ? Number(cosciaDx) : null,
+      cosciaSx: cosciaSx ? Number(cosciaSx) : null,
+      sonno: sonno ? Number(sonno) : null,
+      fotoThumb
+    };
+    if(clearLegacyFoto) payload.foto = firebase.firestore.FieldValue.delete();
+    await userCollection('misure').doc(id).update(payload);
+
+    const idx = cache.misure.findIndex(x=>x.id===id);
+    if(idx>-1){
+      const aggiornata = { ...cache.misure[idx], ...payload };
+      if(clearLegacyFoto) delete aggiornata.foto;
+      cache.misure[idx] = aggiornata;
+    }
+    cache.misure.sort((a,b)=> new Date(a.data)-new Date(b.data));
+    setRoute({name:'misura-detail', id, justSaved:true});
+  }catch(e){
+    errBox.innerHTML = `<div class="error-banner">${e.message}</div>`;
+    btn.disabled = false; btn.textContent = 'Salva modifiche';
   }
 }
 
