@@ -911,11 +911,14 @@ function schedeAssegnateUtente(){
 }
 
 /* Obiettivi nutrizionali attivi: quelli personalizzati dall'utente in Profilo
-   se presenti, altrimenti quelli di default del piano (DIETA_PIANO.target)
-   più 2750ml di acqua. Così se il trainer aggiorna i target col tempo, basta
+   se presenti (e in quel caso restano fissi, indipendenti dal tipo di giorno:
+   sono un override esplicito), altrimenti quelli di default del piano —
+   DIETA_PIANO.target.riposo o .allenamento a seconda del parametro `allenamento`
+   — più 2750ml di acqua. Così se il trainer aggiorna i target col tempo, basta
    modificarli in Profilo senza dover toccare il codice. */
-function obiettiviAttivi(){
-  const def = { kcal:DIETA_PIANO.target.kcal, prot:DIETA_PIANO.target.prot, carb:DIETA_PIANO.target.carb, grassi:DIETA_PIANO.target.grassi, acquaMl:2750 };
+function obiettiviAttivi(allenamento){
+  const base = allenamento ? DIETA_PIANO.target.allenamento : DIETA_PIANO.target.riposo;
+  const def = { kcal:base.kcal, prot:base.prot, carb:base.carb, grassi:base.grassi, acquaMl:2750 };
   if(profiloUtente && profiloUtente.obiettivi) return { ...def, ...profiloUtente.obiettivi };
   return def;
 }
@@ -1028,7 +1031,7 @@ async function scegliAvatarFoto(input){
 }
 
 /* ============ AUTH + FIRESTORE ============ */
-const cache = { sessioni: [], misure: [], dietaLog: [], alimentiPersonalizzati: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, energia:null, dolori:null } };
+const cache = { sessioni: [], misure: [], dietaLog: [], alimentiPersonalizzati: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, energia:null, dolori:null, giornoAllenamento:null } };
 let currentUid = null;
 let profiloUtente = null;
 let blocchiIniziati = {};
@@ -1267,7 +1270,9 @@ async function loadData(){
     alimentiExtra: (oggi && oggi.alimentiExtra) || [],
     pastiSnapshot: (oggi && oggi.pastiSnapshot) || {},
     energia: (oggi && oggi.energia!=null) ? oggi.energia : null,
-    dolori: (oggi && oggi.dolori!=null) ? oggi.dolori : null
+    dolori: (oggi && oggi.dolori!=null) ? oggi.dolori : null,
+    // null = non ancora chiesto oggi ("Oggi ti alleni?" in Dieta); true/false una volta risposto.
+    giornoAllenamento: (oggi && typeof oggi.giornoAllenamento === 'boolean') ? oggi.giornoAllenamento : null
   };
 }
 
@@ -1429,6 +1434,48 @@ function mostraConferma(messaggio, variant){
     overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudi(false); });
     attachSwipeDownToDismiss(overlay.querySelector('.confirm-box'), ()=>chiudi(false));
   });
+}
+
+/* Chiede se oggi è un giorno di allenamento: determina il target kcal/macro
+   del giorno (DIETA_PIANO.target.riposo/allenamento) e se mostrare l'extra
+   "giorni di allenamento" su colazione e pranzo. A differenza di mostraConferma
+   qui non si può chiudere toccando fuori o con swipe-down: è una scelta che
+   serve subito per calcolare i target del giorno, non un'azione annullabile. */
+function chiediGiornoAllenamento(){
+  return new Promise(resolve=>{
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <p class="confirm-msg">Oggi ti alleni? 🏋️</p>
+        <p class="field-hint" style="margin:-6px 0 16px;">Serve per proporti la dieta giusta (con o senza l'extra pre/post allenamento su colazione e pranzo) e per calcolare il target di kcal e macro di oggi.</p>
+        <div class="confirm-actions">
+          <button class="btn secondary" id="giornoNoBtn">No, riposo</button>
+          <button class="btn" id="giornoSiBtn">Sì, mi alleno</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const chiudi = esito => { overlay.remove(); resolve(esito); };
+    overlay.querySelector('#giornoNoBtn').onclick = ()=>{ hapticaLieve(); chiudi(false); };
+    overlay.querySelector('#giornoSiBtn').onclick = ()=>{ hapticaMedia(); chiudi(true); };
+  });
+}
+
+// Fa la domanda e salva la risposta, senza ri-renderizzare nulla: usata
+// all'avvio dell'app (avviaApp), prima ancora che la Home sia a schermo.
+async function chiediEImpostaGiornoAllenamento(){
+  const risposta = await chiediGiornoAllenamento();
+  cache.dietaLogOggi.giornoAllenamento = risposta;
+  salvaDietaLogOggi();
+}
+
+// Usata dal pill "tocca per cambiare" dentro Dieta: se non risposto ancora
+// (rete di sicurezza, non dovrebbe succedere perché ci pensa già l'avvio
+// dell'app) o quando l'utente vuole cambiare idea a metà giornata (forza=true).
+async function impostaGiornoAllenamento(forza){
+  if(!forza && cache.dietaLogOggi.giornoAllenamento !== null) return;
+  await chiediEImpostaGiornoAllenamento();
+  renderAlimentazione();
 }
 
 /* Blocco di caricamento a tutta larghezza, stile app (sostituisce i semplici
@@ -1680,7 +1727,7 @@ function renderOggiPanel(){
 
   let kcalRow = '', pastoRow = '';
   if(pianoPersonale){
-    const t = obiettiviAttivi();
+    const t = obiettiviAttivi(!!cache.dietaLogOggi.giornoAllenamento);
     let kcalOggi = 0;
     DIETA_PIANO.pasti.forEach((p,i)=>{
       if(cache.dietaLogOggi.pastiFatti[i]){
@@ -2898,10 +2945,10 @@ function renderProfilo(){
 }
 
 function renderObiettiviCard(){
-  const o = obiettiviAttivi();
+  const o = obiettiviAttivi(false);
   return `<div class="card">
     <div class="dic-t" style="font-size:13.5px;font-weight:800;margin-bottom:6px;">🎯 Obiettivi nutrizionali</div>
-    <p class="field-hint" style="margin:0 0 14px;">Kcal e macro di riferimento usati nell'anello e nelle barre in Dieta. Lasciali come sono se il tuo trainer non ti ha detto altro.</p>
+    <p class="field-hint" style="margin:0 0 14px;">Kcal e macro di riferimento usati nell'anello e nelle barre in Dieta (valori di riposo, mostrati qui come riferimento). Se li personalizzi qui, questi valori fissi sostituiscono sia i giorni di riposo sia quelli di allenamento del piano. Lasciali come sono se il tuo trainer non ti ha detto altro.</p>
     <div id="obiettiviError"></div>
     <div class="field"><label>Kcal / giorno</label><input type="number" id="oKcal" min="0" value="${o.kcal}"></div>
     <div class="grid2">
@@ -3062,224 +3109,241 @@ function toggleAssegnazione(uid, schedaId, chipEl){
 
 /* ============ DIETA ============ */
 const DIETA_PIANO = {
-  versione: 'v3',
-  aggiornato: '31/07/2026',
-  fase: 'Fase pre-settembre (pre-allenamento strutturato)',
-  target: { kcal:2250, prot:145, carb:277, grassi:62 },
+  versione: 'v4',
+  aggiornato: '27/08/2026',
+  fase: 'Ricomposizione corporea + Blocco 1 di allenamento',
+  // Due target distinti: quello attivo lo sceglie obiettiviAttivi() in base alla
+  // risposta data ogni giorno a "Oggi ti alleni?" (cache.dietaLogOggi.giornoAllenamento).
+  target: {
+    riposo:      { kcal:2170, prot:147, carb:260, grassi:60 },
+    allenamento: { kcal:2425, prot:147, carb:308, grassi:67 }
+  },
   pasti: [
     {
-      nome:'Colazione', icona:'🌅', orario:'6:00 – 9:00',
+      nome:'Colazione', icona:'🌅', orario:'6:30 – 9:00',
       opzioni:[
-        { titolo:"Porridge classico", kcal:517, prot:33, carb:73, grassi:12,
+        { titolo:'Toast integrale con ricotta e miele', kcal:458, prot:20, carb:63, grassi:14,
           alimenti:[
-            {n:"Fiocchi d'avena", q:'65 g', kcal:242, prot:9, carb:43, grassi:5},
-            {n:'Yogurt greco 0%', q:'200 g', kcal:108, prot:21, carb:6, grassi:0},
-            {n:'Banana', q:'90 g (1 media)', kcal:80, prot:1, carb:21, grassi:0},
-            {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
+            {n:'Pane integrale', q:'70 g, tostato', kcal:157, prot:5, carb:34, grassi:1},
+            {n:'Ricotta vaccina', q:'120 g', kcal:175, prot:11, carb:5, grassi:13},
+            {n:'Miele', q:'10 g', kcal:30, prot:0, carb:8, grassi:0},
+            {n:'Mela', q:'150 g (1 mela)', kcal:78, prot:0, carb:21, grassi:0},
+            {n:'Caffè', q:'a piacere', kcal:0, prot:0, carb:0, grassi:0},
           ],
-          preparazione:"Avena + yogurt greco + banana a fette + mandorle sopra (overnight oats o porridge caldo)." },
-        { titolo:'Salata (uova e pane)', kcal:425, prot:20, carb:55, grassi:16,
+          preparazione:'Pane integrale tostato con ricotta e un filo di miele, una mela e un caffè.',
+          extraAllenamento:'aggiungi un\'altra fetta di pane integrale (+30 g)' },
+        { titolo:"Porridge d'avena con banana e burro d'arachidi", kcal:431, prot:17, carb:62, grassi:12,
           alimenti:[
-            {n:'Pane tipo 0', q:'80 g', kcal:220, prot:6, carb:51, grassi:0},
-            {n:'Uova', q:'100 g (2 uova)', kcal:143, prot:13, carb:1, grassi:10},
-            {n:'Pomodoro', q:'100 g', kcal:17, prot:1, carb:3, grassi:0},
-            {n:"Olio extravergine d'oliva", q:'5 g (1 cucchiaino)', kcal:45, prot:0, carb:0, grassi:5},
+            {n:"Fiocchi d'avena", q:'50 g, cotti nel latte', kcal:186, prot:7, carb:33, grassi:4},
+            {n:'Banana', q:'a fette (~80 g)', kcal:71, prot:1, carb:18, grassi:0},
+            {n:'Latte parz. scremato', q:'200 ml', kcal:92, prot:6, carb:10, grassi:3},
+            {n:"Burro d'arachidi", q:'10 g (1 cucchiaino)', kcal:59, prot:3, carb:2, grassi:5},
+            {n:'Cannella', q:'a piacere', kcal:0, prot:0, carb:0, grassi:0},
           ],
-          preparazione:"Uova strapazzate o in camicia, pane tostato, pomodoro a fette con un filo d'olio." },
-        { titolo:'Fette biscottate e marmellata', kcal:510, prot:30, carb:82, grassi:9,
+          preparazione:"Fiocchi d'avena cotti nel latte, banana a fette, un cucchiaino di burro d'arachidi e cannella.",
+          extraAllenamento:"+15 g di fiocchi d'avena in più nella cottura" },
+        { titolo:'Uova strapazzate con pane e avocado', kcal:438, prot:24, carb:29, grassi:26,
           alimenti:[
-            {n:'Fette biscottate', q:'60 g (~8 fette)', kcal:245, prot:7, carb:49, grassi:4},
-            {n:'Marmellata', q:'20 g (1 cucchiaio colmo)', kcal:46, prot:0, carb:11, grassi:0},
-            {n:'Yogurt greco 0%', q:'200 g', kcal:108, prot:21, carb:6, grassi:0},
-            {n:'Banana', q:'60 g (1 piccola)', kcal:53, prot:1, carb:14, grassi:0},
-            {n:'Mandorle', q:'10 g (~8 pezzi)', kcal:58, prot:2, carb:2, grassi:5},
+            {n:'Uova', q:'150 g (3 uova) strapazzate', kcal:215, prot:20, carb:2, grassi:15},
+            {n:'Pane integrale', q:'50 g', kcal:112, prot:4, carb:24, grassi:1},
+            {n:'Avocado', q:'50 g (1/4 di avocado)', kcal:80, prot:1, carb:4, grassi:7},
+            {n:'Caffè', q:'a piacere', kcal:0, prot:0, carb:0, grassi:0},
           ],
-          preparazione:'Colazione "dolce da bar": fette con marmellata + yogurt greco a parte con banana e mandorle.' },
-        { titolo:'Cereali (tipo Coco Pops)', kcal:521, prot:31, carb:75, grassi:10,
+          preparazione:"Uova strapazzate, pane integrale e un quarto di avocado — versione salata, più bassa di carbo e più ricca di grassi buoni.",
+          extraAllenamento:"aggiungi un'altra fetta di pane integrale (+25 g)" },
+        { titolo:'Skyr con muesli, frutti di bosco e miele', kcal:404, prot:28, carb:61, grassi:5,
           alimenti:[
-            {n:'Cereali cioccolato/cocco (tipo Coco Pops)', q:'70 g', kcal:267, prot:5, carb:57, grassi:2},
-            {n:'Latte parz. scremato', q:'250 ml', kcal:115, prot:8, carb:12, grassi:4},
-            {n:'Yogurt greco 0%', q:'150 g', kcal:81, prot:15, carb:5, grassi:0},
-            {n:'Mandorle', q:'10 g (~8 pezzi)', kcal:58, prot:2, carb:2, grassi:5},
+            {n:'Skyr o yogurt 0%', q:'200 g', kcal:132, prot:22, carb:8, grassi:0},
+            {n:'Muesli senza zuccheri aggiunti', q:'55 g', kcal:204, prot:5, carb:36, grassi:4},
+            {n:'Frutti di bosco', q:'100 g', kcal:50, prot:1, carb:11, grassi:0},
+            {n:'Miele', q:'7 g (1 cucchiaino)', kcal:21, prot:0, carb:6, grassi:0},
           ],
-          preparazione:'Cereali con latte + yogurt greco a parte (per bilanciare le proteine dei cereali, poche).' },
-        { titolo:'Pancake proteici', kcal:493, prot:32, carb:71, grassi:11,
+          preparazione:'Skyr o yogurt 0% con muesli senza zuccheri aggiunti, frutti di bosco e un cucchiaino di miele.',
+          extraAllenamento:'+20 g di muesli in più' },
+        { titolo:'Budino proteico Milbona con fette biscottate integrali', kcal:312, prot:23, carb:42, grassi:5,
           alimenti:[
-            {n:"Fiocchi d'avena (da frullare in farina)", q:'70 g', kcal:261, prot:9, carb:46, grassi:5},
-            {n:'Uovo', q:'55 g (1 uovo)', kcal:79, prot:7, carb:0, grassi:5},
-            {n:"Albume d'uovo", q:'150 g (~5 albumi)', kcal:65, prot:15, carb:1, grassi:0},
-            {n:'Banana', q:'100 g (1 media)', kcal:89, prot:1, carb:23, grassi:0},
+            {n:'Budino proteico Milbona', q:'200 g', kcal:154, prot:20, carb:12, grassi:3},
+            {n:'Fette biscottate integrali', q:'30 g', kcal:117, prot:3, carb:22, grassi:2},
+            {n:'Marmellata', q:'15 g (velo)', kcal:38, prot:0, carb:9, grassi:0},
+            {n:'Caffè', q:'a piacere', kcal:0, prot:0, carb:0, grassi:0},
           ],
-          preparazione:'Frulla avena, uovo, albumi e banana; cuoci in padella antiaderente come pancake.' },
+          preparazione:'Un Budino proteico Milbona con fette biscottate integrali e un velo di marmellata — opzione più leggera, comoda quando hai poca fame o fretta.',
+          extraAllenamento:'+20 g di fette biscottate in più' },
       ]
     },
     {
-      nome:'Spuntino 1', icona:'🥤', orario:'Metà mattina',
+      nome:'Spuntino', icona:'🥤', orario:'Metà giornata',
       opzioni:[
-        { titolo:'Shake proteico', kcal:227, prot:21, carb:21, grassi:8,
+        { titolo:'Mela e mandorle', kcal:164, prot:3, carb:22, grassi:8,
           alimenti:[
-            {n:'Whey isolate', q:'15 g (1/2 misurino)', kcal:56, prot:14, carb:1, grassi:0},
-            {n:'Latte parz. scremato', q:'150 ml', kcal:69, prot:5, carb:7, grassi:2},
-            {n:'Banana', q:'50 g (1/2 piccola)', kcal:45, prot:1, carb:11, grassi:0},
-            {n:'Mandorle', q:'10 g (~8 pezzi)', kcal:58, prot:2, carb:2, grassi:5},
-          ],
-          preparazione:'Frullato whey + latte + banana; mandorle a parte.' },
-        { titolo:'Yogurt e frutta secca', kcal:277, prot:26, carb:24, grassi:10,
-          alimenti:[
-            {n:'Yogurt greco 0%', q:'200 g', kcal:108, prot:21, carb:6, grassi:0},
-            {n:'Mandorle', q:'20 g (~16 pezzi)', kcal:116, prot:4, carb:4, grassi:10},
-            {n:'Banana', q:'60 g (1 piccola)', kcal:53, prot:1, carb:14, grassi:0},
-          ],
-          preparazione:'Senza shaker: yogurt greco con mandorle e banana a fette.' },
-        { titolo:'Gallette e affettato', kcal:228, prot:20, carb:21, grassi:7,
-          alimenti:[
-            {n:'Gallette di riso', q:'20 g (2 pezzi)', kcal:78, prot:2, carb:16, grassi:1},
-            {n:'Fesa di tacchino affettata', q:'100 g (~5 fette)', kcal:104, prot:17, carb:3, grassi:2},
-            {n:'Mandorle', q:'8 g (~6 pezzi)', kcal:46, prot:2, carb:2, grassi:4},
-          ],
-          preparazione:'Gallette con fesa di tacchino sopra, mandorle a parte.' },
-        { titolo:'Skyr e kiwi', kcal:237, prot:24, carb:19, grassi:8,
-          alimenti:[
-            {n:'Skyr', q:'180 g', kcal:113, prot:20, carb:7, grassi:0},
+            {n:'Mela', q:'150 g (1 mela)', kcal:78, prot:0, carb:21, grassi:0},
             {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
-            {n:'Kiwi', q:'60 g (1 piccolo)', kcal:37, prot:1, carb:9, grassi:0},
           ],
-          preparazione:'Skyr con mandorle e kiwi a pezzi.' },
+          preparazione:'Una mela con una manciata di mandorle.' },
+        { titolo:'Yogurt greco con granella di nocciole', kcal:184, prot:13, carb:7, grassi:12,
+          alimenti:[
+            {n:'Yogurt greco', q:'125 g', kcal:121, prot:11, carb:5, grassi:6},
+            {n:'Granella di nocciole', q:'10 g', kcal:65, prot:2, carb:1, grassi:6},
+          ],
+          preparazione:'Yogurt greco con granella di nocciole sopra.' },
+        { titolo:'Gallette di riso con ricotta e miele', kcal:133, prot:6, carb:18, grassi:4,
+          alimenti:[
+            {n:'Gallette di riso', q:'2 pezzi (~20 g)', kcal:78, prot:2, carb:16, grassi:1},
+            {n:'Ricotta', q:'40 g', kcal:58, prot:4, carb:2, grassi:4},
+            {n:'Miele', q:'5 g (filo)', kcal:15, prot:0, carb:4, grassi:0},
+          ],
+          preparazione:'Gallette di riso con ricotta e un filo di miele.' },
+        { titolo:'Uovo sodo e pomodorini', kcal:154, prot:9, carb:6, grassi:11,
+          alimenti:[
+            {n:'Uovo', q:'55 g (1 uovo sodo)', kcal:79, prot:7, carb:1, grassi:6},
+            {n:'Pomodorini', q:'100 g', kcal:18, prot:1, carb:4, grassi:0},
+            {n:'Mandorle', q:'10 g', kcal:58, prot:2, carb:2, grassi:5},
+          ],
+          preparazione:'Un uovo sodo con pomodorini e mandorle.' },
+        { titolo:'Budino proteico Milbona', kcal:154, prot:20, carb:12, grassi:3,
+          alimenti:[
+            {n:'Budino proteico Milbona', q:'200 g', kcal:154, prot:20, carb:12, grassi:3},
+          ],
+          preparazione:'Un Budino proteico Milbona — la più sazia e proteica del gruppo.' },
       ]
     },
     {
-      nome:'Pranzo', icona:'🍝', orario:'Ore 15:00 circa',
+      nome:'Pranzo', icona:'🍝', orario:'13:00 – 15:00',
       opzioni:[
-        { titolo:'Pasta e pollo', kcal:686, prot:43, carb:87, grassi:18,
+        { titolo:'Riso venere con pollo e verdure saltate, stile asiatico', kcal:664, prot:55, carb:68, grassi:16,
           alimenti:[
-            {n:'Pasta di semola', q:'110 g (a crudo)', kcal:388, prot:14, carb:79, grassi:2},
+            {n:'Riso venere', q:'80 g (a crudo)', kcal:280, prot:6, carb:58, grassi:2},
+            {n:'Petto di pollo', q:'150 g (a crudo)', kcal:150, prot:35, carb:0, grassi:2},
+            {n:'Verdure miste saltate', q:'150 g', kcal:38, prot:2, carb:6, grassi:0},
+            {n:"Olio extravergine d'oliva", q:'5 g (filo)', kcal:45, prot:0, carb:0, grassi:5},
+            {n:'Salsa di soia', q:'1 cucchiaino (5 g)', kcal:3, prot:0, carb:0, grassi:0},
+          ],
+          preparazione:'Riso venere, pollo a straccetti e verdure saltate, con un filo di olio EVO e un cucchiaino di salsa di soia.',
+          extraAllenamento:'+30 g di riso venere crudo in più' },
+        { titolo:'Poke bowl casalingo con quinoa, pollo e avocado', kcal:684, prot:53, carb:60, grassi:24,
+          alimenti:[
+            {n:'Quinoa', q:'70 g (a crudo)', kcal:258, prot:10, carb:45, grassi:4},
+            {n:'Petto di pollo', q:'130 g grigliato', kcal:130, prot:30, carb:0, grassi:1},
+            {n:'Avocado', q:'50 g', kcal:80, prot:1, carb:4, grassi:7},
+            {n:'Mais o edamame', q:'50 g', kcal:55, prot:4, carb:7, grassi:2},
+            {n:"Olio extravergine d'oliva", q:'8 g, con limone', kcal:72, prot:0, carb:0, grassi:8},
+          ],
+          preparazione:'Quinoa, pollo grigliato, avocado, mais o edamame, limone e un filo di olio.',
+          extraAllenamento:'+20 g di quinoa cruda in più' },
+        { titolo:'Pasta e fagioli con pollo', kcal:678, prot:55, carb:72, grassi:16,
+          alimenti:[
+            {n:'Pasta di semola', q:'60 g', kcal:212, prot:8, carb:43, grassi:1},
+            {n:'Fagioli borlotti cotti', q:'150 g', kcal:191, prot:13, carb:34, grassi:1},
             {n:'Petto di pollo', q:'100 g (a crudo)', kcal:100, prot:23, carb:0, grassi:1},
-            {n:"Olio extravergine d'oliva", q:'12 g (1 cucchiaio)', kcal:108, prot:0, carb:0, grassi:12},
-            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
-            {n:'Parmigiano grattugiato', q:'10 g (1 cucchiaio)', kcal:39, prot:3, carb:0, grassi:3},
-          ],
-          preparazione:"Pasta al pomodoro/in bianco + pollo alla piastra + verdure saltate o crude condite con l'olio." },
-        { titolo:'Riso e tonno', kcal:640, prot:43, carb:87, grassi:12,
-          alimenti:[
-            {n:'Riso', q:'100 g (a crudo)', kcal:358, prot:7, carb:79, grassi:1},
-            {n:'Tonno al naturale sgocciolato', q:'150 g', kcal:143, prot:33, carb:0, grassi:0},
-            {n:"Olio extravergine d'oliva", q:'10 g', kcal:90, prot:0, carb:0, grassi:10},
-            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
-          ],
-          preparazione:'Riso bollito + tonno + verdura, condito con olio (ottimo anche freddo, portabile al lavoro).' },
-        { titolo:'Insalata di farro, ceci e tonno', kcal:719, prot:43, carb:89, grassi:20,
-          alimenti:[
-            {n:'Farro perlato', q:'80 g (a crudo)', kcal:292, prot:12, carb:54, grassi:2},
-            {n:'Ceci lessati (in scatola, scolati)', q:'200 g', kcal:200, prot:13, carb:28, grassi:5},
-            {n:'Tonno al naturale sgocciolato', q:'50 g', kcal:48, prot:11, carb:0, grassi:0},
-            {n:"Olio extravergine d'oliva", q:'10 g', kcal:90, prot:0, carb:0, grassi:10},
-            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
+            {n:"Olio extravergine d'oliva", q:'5 g, soffritto con rosmarino', kcal:45, prot:0, carb:0, grassi:5},
             {n:'Parmigiano grattugiato', q:'10 g', kcal:39, prot:3, carb:0, grassi:3},
           ],
-          preparazione:'Farro bollito freddo con ceci, tonno, verdura e una spolverata di parmigiano: piatto unico da portare al lavoro.' },
-        { titolo:'Piadina con fesa di tacchino', kcal:700, prot:45, carb:86, grassi:19,
+          preparazione:'Pasta e fagioli con pollo, soffritto leggero con rosmarino e una spolverata di parmigiano.',
+          extraAllenamento:'+20 g di pasta in più' },
+        { titolo:'Wrap di tacchino con hummus e patate al forno', kcal:601, prot:47, carb:70, grassi:13,
           alimenti:[
-            {n:'Piadina', q:'160 g (1 piadina grande)', kcal:448, prot:12, carb:75, grassi:11},
-            {n:'Fesa di tacchino affettata', q:'150 g (~8 fette)', kcal:156, prot:26, carb:4, grassi:3},
-            {n:'Parmigiano grattugiato', q:'15 g', kcal:59, prot:5, carb:0, grassi:4},
-            {n:'Verdura mista (insalata/pomodoro)', q:'150 g', kcal:38, prot:2, carb:6, grassi:0},
+            {n:'Piadina o tortilla integrale', q:'70 g', kcal:196, prot:5, carb:33, grassi:5},
+            {n:'Fesa di tacchino', q:'150 g saltata', kcal:156, prot:36, carb:0, grassi:2},
+            {n:'Hummus', q:'30 g', kcal:51, prot:2, carb:4, grassi:3},
+            {n:'Verdure grigliate', q:'100 g', kcal:25, prot:2, carb:4, grassi:0},
+            {n:'Patate al forno', q:'150 g (contorno)', kcal:165, prot:3, carb:29, grassi:5},
           ],
-          preparazione:'Piadina farcita con fesa di tacchino, verdura e una spolverata di parmigiano.' },
-        { titolo:'Quinoa e salmone', kcal:695, prot:40, carb:86, grassi:21,
+          preparazione:'Wrap con tacchino saltato, hummus e verdure grigliate, con le patate al forno come contorno.',
+          extraAllenamento:'+100 g di patate al forno in più' },
+        { titolo:'Buddha bowl con ceci speziati, riso basmati, uovo e feta light', kcal:685, prot:30, carb:95, grassi:15,
           alimenti:[
-            {n:'Quinoa', q:'120 g (a crudo)', kcal:442, prot:17, carb:77, grassi:7},
-            {n:'Salmone fresco', q:'110 g (a crudo)', kcal:204, prot:20, carb:1, grassi:13},
-            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
+            {n:'Riso basmati', q:'70 g (a crudo)', kcal:251, prot:5, carb:55, grassi:1},
+            {n:'Ceci cotti', q:'150 g speziati (paprika, cumino)', kcal:150, prot:10, carb:21, grassi:4},
+            {n:'Uovo', q:'55 g (1 uovo sodo)', kcal:79, prot:7, carb:1, grassi:6},
+            {n:'Feta light', q:'40 g', kcal:72, prot:6, carb:2, grassi:5},
+            {n:'Verdure fresche', q:'50 g, con yogurt-tahina', kcal:37, prot:2, carb:3, grassi:2},
           ],
-          preparazione:'Quinoa bollita + salmone al forno/piastra + verdura; il salmone ha già grassi buoni, non serve aggiungere olio.' },
+          preparazione:'Ceci speziati al forno con riso basmati, uovo sodo, feta light, verdure fresche e un cucchiaio di yogurt-tahina — variante vegetariana, più povera di proteine: usala ogni tanto, non come base fissa.',
+          extraAllenamento:'+20 g di riso in più' },
       ]
     },
     {
-      nome:'Spuntino 2', icona:'🍞', orario:'Metà pomeriggio',
+      nome:'Cena', icona:'🌙', orario:'20:00 – 21:30',
       opzioni:[
-        { titolo:'Bresaola e pane', kcal:245, prot:22, carb:23, grassi:9,
+        { titolo:'Gateau di patate fatto in casa', kcal:640, prot:34, carb:68, grassi:22,
           alimenti:[
-            {n:'Bresaola', q:'50 g (~6 fette)', kcal:76, prot:17, carb:0, grassi:1},
-            {n:'Pane tipo 0', q:'30 g (1 fetta)', kcal:83, prot:2, carb:19, grassi:0},
-            {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
+            {n:'Patate lessate e schiacciate', q:'300 g', kcal:255, prot:6, carb:57, grassi:0},
+            {n:'Prosciutto cotto a cubetti', q:'50 g', kcal:73, prot:9, carb:1, grassi:4},
+            {n:'Formaggio filante light', q:'40 g', kcal:88, prot:10, carb:1, grassi:5},
+            {n:'Uovo', q:'55 g (1 uovo, per legare)', kcal:79, prot:7, carb:1, grassi:6},
+            {n:'Pangrattato', q:'10 g (in superficie)', kcal:37, prot:1, carb:7, grassi:0},
           ],
-          preparazione:'Bresaola su pane, mandorle a parte.' },
-        { titolo:'Ricotta e kiwi', kcal:324, prot:17, carb:22, grassi:20,
+          preparazione:'Patate lessate e schiacciate con prosciutto cotto a cubetti e formaggio filante light, legate con un uovo, pangrattato in superficie e in forno 20 min a 200°C. Prepara una teglia grande la domenica e porzionala: si scalda in 5 minuti nei giorni successivi.' },
+        { titolo:'Burrito di pollo fatto in casa', kcal:620, prot:48, carb:55, grassi:20,
           alimenti:[
-            {n:'Ricotta vaccina', q:'180 g', kcal:263, prot:16, carb:7, grassi:20},
-            {n:'Kiwi', q:'100 g (1-2 pezzi)', kcal:61, prot:1, carb:15, grassi:0},
+            {n:'Tortilla di frumento grande', q:'60 g', kcal:168, prot:5, carb:28, grassi:4},
+            {n:'Petto di pollo', q:'150 g a striscioline, saltato', kcal:248, prot:47, carb:0, grassi:5},
+            {n:'Peperoni e cipolla', q:'100 g', kcal:35, prot:1, carb:7, grassi:0},
+            {n:'Formaggio filante light', q:'15 g grattugiato', kcal:33, prot:4, carb:0, grassi:2},
+            {n:'Yogurt greco', q:'30 g (al posto della panna acida)', kcal:16, prot:3, carb:1, grassi:0},
           ],
-          preparazione:'Ricotta con kiwi a pezzi (opzione più grassa, adatta se serve più sazietà).' },
-        { titolo:'Skyr, gallette e miele', kcal:254, prot:24, carb:23, grassi:8,
+          preparazione:'Tortilla farcita con pollo saltato con peperoni e cipolla, formaggio filante grattugiato e yogurt greco al posto della panna acida.' },
+        { titolo:'Tartare di manzo con patate al forno', kcal:660, prot:40, carb:55, grassi:26,
           alimenti:[
-            {n:'Skyr', q:'180 g', kcal:113, prot:20, carb:7, grassi:0},
-            {n:'Gallette di riso', q:'10 g (1 pezzo)', kcal:39, prot:1, carb:8, grassi:0},
-            {n:'Miele', q:'5 g (1 cucchiaino)', kcal:15, prot:0, carb:4, grassi:0},
-            {n:'Mandorle', q:'15 g (~12 pezzi)', kcal:87, prot:3, carb:3, grassi:8},
+            {n:'Tartare di manzo magro', q:'150 g', kcal:206, prot:32, carb:0, grassi:8},
+            {n:'Tuorlo', q:'1 tuorlo', kcal:55, prot:3, carb:1, grassi:5},
+            {n:'Capperi', q:'con cipolla tritata e un filo d\'olio', kcal:55, prot:0, carb:2, grassi:5},
+            {n:'Patate al forno', q:'200 g', kcal:220, prot:4, carb:38, grassi:6},
           ],
-          preparazione:'Skyr con galletta sbriciolata, un filo di miele e mandorle.' },
-        { titolo:'Uova sode e pane', kcal:260, prot:20, carb:22, grassi:11,
+          preparazione:"Tartare di manzo magro con tuorlo, capperi, cipolla tritata e un filo d'olio, patate al forno come contorno. Si mangia cruda, nessuna conversione di peso." },
+        { titolo:'Polpette di manzo al sugo con purè leggero', kcal:651, prot:57, carb:60, grassi:18,
           alimenti:[
-            {n:'Uova', q:'100 g (2 uova)', kcal:143, prot:13, carb:1, grassi:10},
-            {n:'Pane tipo 0', q:'30 g (1 fetta)', kcal:83, prot:2, carb:19, grassi:0},
-            {n:'Pomodoro', q:'50 g', kcal:9, prot:1, carb:2, grassi:0},
-            {n:'Prosciutto cotto magro', q:'20 g (1 fetta)', kcal:26, prot:4, carb:0, grassi:1},
+            {n:'Polpette di manzo magro', q:'200 g', kcal:274, prot:40, carb:0, grassi:12},
+            {n:'Pangrattato', q:'15 g (per legare)', kcal:56, prot:2, carb:11, grassi:0},
+            {n:'Uovo', q:'porzione, per legare', kcal:43, prot:4, carb:0, grassi:3},
+            {n:'Sugo di pomodoro', q:'150 g', kcal:53, prot:2, carb:9, grassi:1},
+            {n:'Purè di patate fatto in casa', q:'250 g (poco latte e burro)', kcal:275, prot:5, carb:43, grassi:9},
           ],
-          preparazione:'2 uova sode + pane + pomodoro + una fetta di prosciutto cotto magro.' },
-        { titolo:'Hummus e gallette', kcal:262, prot:22, carb:26, grassi:8,
+          preparazione:'Polpette di manzo magro con pangrattato e uovo per legare, cotte nel sugo di pomodoro, servite con purè di patate fatto in casa con poco latte e burro.' },
+        { titolo:'Chili con carne fatto in casa', kcal:639, prot:56, carb:73, grassi:11,
           alimenti:[
-            {n:'Hummus di ceci', q:'50 g (~3 cucchiai)', kcal:85, prot:4, carb:7, grassi:5},
-            {n:'Gallette di riso', q:'15 g (1-2 pezzi)', kcal:58, prot:1, carb:12, grassi:1},
-            {n:'Verdura (carote/finocchi a pinzimonio)', q:'100 g', kcal:25, prot:2, carb:4, grassi:0},
-            {n:'Fesa di tacchino affettata', q:'90 g (~5 fette)', kcal:94, prot:15, carb:3, grassi:2},
+            {n:'Manzo macinato magro', q:'180 g', kcal:247, prot:36, carb:0, grassi:11},
+            {n:'Fagioli rossi cotti', q:'150 g', kcal:191, prot:13, carb:34, grassi:1},
+            {n:'Passata di pomodoro', q:'150 g', kcal:45, prot:2, carb:8, grassi:0},
+            {n:'Riso basmati', q:'50 g (a crudo)', kcal:179, prot:4, carb:40, grassi:1},
+            {n:'Peperoncino e spezie', q:'a piacere', kcal:0, prot:0, carb:0, grassi:0},
           ],
-          preparazione:'Hummus con gallette e verdure a pinzimonio, più fesa di tacchino per completare le proteine.' },
+          preparazione:'Manzo macinato magro con fagioli rossi, passata di pomodoro, peperoncino e spezie a piacere, servito con riso basmati. Si conserva bene 3-4 giorni in frigo o si congela a porzioni: comodo per i turni più pieni.' },
       ]
     },
     {
-      nome:'Cena', icona:'🌙', orario:'Ore 21:00 circa',
+      nome:'Spuntino serale', icona:'🍨', orario:'Sera, dopo cena',
       opzioni:[
-        { titolo:'Tacchino e patate', kcal:548, prot:33, carb:66, grassi:17,
+        { titolo:'Gelato alla nocciola, coppetta singola', kcal:220, prot:4, carb:22, grassi:13,
           alimenti:[
-            {n:'Petto di tacchino', q:'100 g (a crudo)', kcal:104, prot:24, carb:0, grassi:1},
-            {n:'Patate lesse', q:'320 g (~2-3 patate medie)', kcal:272, prot:6, carb:60, grassi:0},
-            {n:"Olio extravergine d'oliva", q:'15 g (1,5 cucchiai)', kcal:135, prot:0, carb:0, grassi:15},
-            {n:'Verdura mista', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
+            {n:'Gelato alla nocciola', q:'porzione singola confezionata', kcal:220, prot:4, carb:22, grassi:13},
           ],
-          preparazione:'Tacchino alla piastra o al forno, patate lesse condite con olio, verdura a piacere.' },
-        { titolo:'Pollo e riso', kcal:469, prot:47, carb:42, grassi:12,
+          preparazione:'Gelato alla nocciola confezionato, porzione singola — la tua abitudine, mantenuta.' },
+        { titolo:'Tortino dal cuore caldo, porzione singola', kcal:270, prot:4, carb:30, grassi:14,
           alimenti:[
-            {n:'Petto di pollo', q:'180 g (a crudo)', kcal:180, prot:42, carb:0, grassi:1},
-            {n:'Riso', q:'45 g (a crudo)', kcal:161, prot:3, carb:36, grassi:0},
-            {n:"Olio extravergine d'oliva", q:'10 g', kcal:90, prot:0, carb:0, grassi:10},
-            {n:'Verdura mista', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
+            {n:'Tortino al cioccolato', q:'porzione singola', kcal:270, prot:4, carb:30, grassi:14},
           ],
-          preparazione:'Più proteica, meno carboidrati — utile se il pranzo è stato più leggero/ricco di carbo.' },
-        { titolo:'Merluzzo e patate', kcal:550, prot:35, carb:62, grassi:17,
+          preparazione:'Tortino al cioccolato, porzione singola — la tua abitudine, mantenuta.' },
+        { titolo:'Yogurt greco con cioccolato fondente e burro d\'arachidi', kcal:265, prot:17, carb:10, grassi:17,
           alimenti:[
-            {n:'Merluzzo/nasello', q:'150 g (a crudo)', kcal:123, prot:27, carb:0, grassi:1},
-            {n:'Patate lesse', q:'300 g (~2 patate medie)', kcal:255, prot:6, carb:56, grassi:0},
-            {n:"Olio extravergine d'oliva", q:'15 g (1,5 cucchiai)', kcal:135, prot:0, carb:0, grassi:15},
-            {n:'Verdura mista', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
+            {n:'Yogurt greco', q:'150 g', kcal:146, prot:14, carb:6, grassi:8},
+            {n:'Cioccolato fondente 85%', q:'10 g a scaglie', kcal:60, prot:1, carb:3, grassi:5},
+            {n:"Burro d'arachidi", q:'10 g (1 cucchiaino)', kcal:59, prot:3, carb:2, grassi:5},
           ],
-          preparazione:'Pesce bianco al forno/vapore, patate lesse condite con olio, verdura a piacere.' },
-        { titolo:'Manzo e pane integrale', kcal:540, prot:34, carb:66, grassi:16,
+          preparazione:"Yogurt greco con scaglie di cioccolato fondente 85% e un cucchiaino di burro d'arachidi — alternativa più proteica, golosa comunque." },
+        { titolo:'Mug cake al cioccolato, fatta in casa in 2 minuti', kcal:175, prot:10, carb:12, grassi:8,
           alimenti:[
-            {n:'Fesa di manzo magra', q:'100 g (a crudo)', kcal:113, prot:22, carb:0, grassi:3},
-            {n:'Pane integrale', q:'120 g', kcal:269, prot:9, carb:58, grassi:2},
-            {n:"Olio extravergine d'oliva", q:'12 g (1 cucchiaio)', kcal:108, prot:0, carb:0, grassi:12},
-            {n:'Verdura mista', q:'200 g', kcal:50, prot:3, carb:8, grassi:0},
+            {n:'Uovo', q:'55 g (1 uovo)', kcal:79, prot:7, carb:1, grassi:6},
+            {n:'Cacao amaro', q:'15 g', kcal:35, prot:3, carb:2, grassi:2},
+            {n:'Miele', q:'10 g', kcal:30, prot:0, carb:8, grassi:0},
+            {n:'Latte parz. scremato', q:'30 ml (goccio)', kcal:14, prot:1, carb:1, grassi:0},
           ],
-          preparazione:'Fesa di manzo alla piastra + pane integrale al posto di patate/riso + verdura condita con olio.' },
-        { titolo:'Frittata e pane', kcal:550, prot:33, carb:68, grassi:18,
+          preparazione:'Uovo, cacao amaro, miele, un pizzico di lievito e un goccio di latte, tutto mescolato in una tazza e cotto al microonde 90 secondi — dolce genuino, pronto in due minuti.' },
+        { titolo:'Bevanda proteica Milbona', kcal:218, prot:35, carb:18, grassi:1,
           alimenti:[
-            {n:'Uova', q:'120 g (2 uova)', kcal:172, prot:15, carb:1, grassi:12},
-            {n:"Albume d'uovo", q:'80 g (~2-3 albumi)', kcal:34, prot:8, carb:1, grassi:0},
-            {n:'Pane tipo 0', q:'95 g', kcal:261, prot:8, carb:60, grassi:0},
-            {n:"Olio extravergine d'oliva", q:'5 g (1 cucchiaino)', kcal:45, prot:0, carb:0, grassi:5},
-            {n:'Verdura mista', q:'150 g', kcal:37, prot:2, carb:6, grassi:0},
+            {n:'Bevanda proteica Milbona', q:'330 ml', kcal:218, prot:35, carb:18, grassi:1},
           ],
-          preparazione:'Frittata (uova intere + albumi) con verdura, pane a parte.' },
+          preparazione:'Una Bevanda proteica Milbona — comoda quando vuoi qualcosa di liquido e molto saziante.' },
       ]
     },
   ]
@@ -3322,7 +3386,6 @@ const MICRO_DB = {
   'Cereali cioccolato/cocco (tipo Coco Pops)': { acqua:3, vitA:100, vitC:10, vitD:1.5, vitE:1, vitB12:0.5, folati:100, calcio:20, ferro:8, magnesio:30, potassio:150, zinco:3, sodio:350 , fibre:3 },
   'Latte parz. scremato':       { acqua:89, vitA:45,  vitC:1,   vitD:0.05,vitE:0.05,vitB12:0.4, folati:5,   calcio:120,  ferro:0.05,magnesio:11,  potassio:150, zinco:0.4, sodio:44 , fibre:0 },
   "Albume d'uovo":              { acqua:88, vitA:0,   vitC:0,   vitD:0,   vitE:0,   vitB12:0.1, folati:4,   calcio:5,    ferro:0.1, magnesio:11,  potassio:163, zinco:0,   sodio:166 , fibre:0 },
-  'Whey isolate':                { acqua:4,  vitA:0,   vitC:0,   vitD:0,   vitE:0,   vitB12:1,   folati:0,   calcio:130,  ferro:0.2, magnesio:20,  potassio:180, zinco:1,   sodio:150 , fibre:0 },
   'Gallette di riso':           { acqua:6,  vitA:0,   vitC:0,   vitD:0,   vitE:0.2, vitB12:0,   folati:10,  calcio:10,   ferro:0.5, magnesio:40,  potassio:130, zinco:0.8, sodio:5 , fibre:2 },
   'Fesa di tacchino affettata':  { acqua:70, vitA:0,   vitC:0,   vitD:0,   vitE:0.2, vitB12:0.3, folati:5,   calcio:10,   ferro:0.7, magnesio:20,  potassio:300, zinco:1,   sodio:900 , fibre:0 },
   'Skyr':                        { acqua:84, vitA:1,   vitC:0,   vitD:0,   vitE:0,   vitB12:0.4, folati:5,   calcio:120,  ferro:0.1, magnesio:10,  potassio:130, zinco:0.6, sodio:45 , fibre:0 },
@@ -3349,11 +3412,52 @@ const MICRO_DB = {
   'Merluzzo/nasello':             { acqua:82, vitA:10,  vitC:0,   vitD:1,   vitE:0.5, vitB12:1,   folati:7,   calcio:12,   ferro:0.3, magnesio:24,  potassio:350, zinco:0.4, sodio:70 , fibre:0 },
   'Fesa di manzo magra':          { acqua:74, vitA:0,   vitC:0,   vitD:0,   vitE:0.3, vitB12:2,   folati:8,   calcio:5,    ferro:2,   magnesio:22,  potassio:350, zinco:4,   sodio:55 , fibre:0 },
   'Pane integrale':               { acqua:38, vitA:0,   vitC:0,   vitD:0,   vitE:0.5, vitB12:0,   folati:30,  calcio:40,   ferro:2.5, magnesio:60,  potassio:250, zinco:1.5, sodio:480 , fibre:6 },
+  // Aggiunti col piano v4 (27/08/2026): alimenti nuovi non ancora coperti sopra.
+  'Avocado':                      { acqua:73, vitA:7,   vitC:10,  vitD:0,   vitE:2.1, vitB12:0,   folati:81,  calcio:12,   ferro:0.6, magnesio:29,  potassio:485, zinco:0.6, sodio:7 ,   fibre:6.7 },
+  'Mela':                         { acqua:86, vitA:3,   vitC:4.6, vitD:0,   vitE:0.2, vitB12:0,   folati:3,   calcio:6,    ferro:0.1, magnesio:5,   potassio:107, zinco:0.04,sodio:1 ,   fibre:2.4 },
+  'Muesli senza zuccheri aggiunti': { acqua:6, vitA:2,   vitC:1,   vitD:0,   vitE:1.5, vitB12:0,   folati:40,  calcio:50,   ferro:3,   magnesio:100, potassio:400, zinco:2,   sodio:60 ,  fibre:8 },
+  'Frutti di bosco':              { acqua:85, vitA:3,   vitC:25,  vitD:0,   vitE:1,   vitB12:0,   folati:20,  calcio:20,   ferro:0.5, magnesio:15,  potassio:120, zinco:0.2, sodio:1 ,   fibre:3.5 },
+  'Granella di nocciole':         { acqua:5,  vitA:1,   vitC:1,   vitD:0,   vitE:15,  vitB12:0,   folati:70,  calcio:110,  ferro:3.4, magnesio:160, potassio:680, zinco:2.5, sodio:1 ,   fibre:9.7 },
+  "Burro d'arachidi":             { acqua:2,  vitA:0,   vitC:0,   vitD:0,   vitE:5,   vitB12:0,   folati:60,  calcio:50,   ferro:1.9, magnesio:180, potassio:650, zinco:2.9, sodio:400 , fibre:6 },
+  'Feta light':                   { acqua:60, vitA:120, vitC:0,   vitD:0.2, vitE:0.3, vitB12:1,   folati:20,  calcio:450,  ferro:0.4, magnesio:20,  potassio:80,  zinco:2,   sodio:900 , fibre:0 },
+  'Formaggio filante light':      { acqua:55, vitA:150, vitC:0,   vitD:0.3, vitE:0.3, vitB12:1.2, folati:15,  calcio:600,  ferro:0.3, magnesio:25,  potassio:90,  zinco:2.5, sodio:600 , fibre:0 },
+  'Manzo macinato magro':         { acqua:65, vitA:0,   vitC:0,   vitD:0,   vitE:0.3, vitB12:2.5, folati:8,   calcio:8,    ferro:2.2, magnesio:20,  potassio:330, zinco:4.5, sodio:65 ,  fibre:0 },
+  'Cioccolato fondente 85%':      { acqua:1,  vitA:5,   vitC:0,   vitD:0,   vitE:1,   vitB12:0,   folati:10,  calcio:70,   ferro:11,  magnesio:230, potassio:730, zinco:3.5, sodio:10 ,  fibre:11 },
+  'Cacao amaro':                  { acqua:3,  vitA:2,   vitC:0,   vitD:0,   vitE:0.5, vitB12:0,   folati:30,  calcio:130,  ferro:14,  magnesio:500, potassio:1500,zinco:6.8, sodio:20 ,  fibre:33 },
+  'Pangrattato':                  { acqua:8,  vitA:0,   vitC:0,   vitD:0,   vitE:0.3, vitB12:0,   folati:30,  calcio:150,  ferro:3,   magnesio:30,  potassio:150, zinco:1,   sodio:600 , fibre:3.5 },
+  'Mais o edamame':               { acqua:70, vitA:15,  vitC:8,   vitD:0,   vitE:1,   vitB12:0,   folati:150, calcio:60,   ferro:1.8, magnesio:60,  potassio:400, zinco:1,   sodio:5 ,   fibre:5 },
+  'Salsa di soia':                { acqua:70, vitA:0,   vitC:0,   vitD:0,   vitE:0,   vitB12:0,   folati:15,  calcio:20,   ferro:2,   magnesio:40,  potassio:300, zinco:0.5, sodio:5500, fibre:0 },
+  'Peperoni e cipolla':           { acqua:90, vitA:150, vitC:60,  vitD:0,   vitE:0.7, vitB12:0,   folati:25,  calcio:15,   ferro:0.5, magnesio:12,  potassio:200, zinco:0.2, sodio:5 ,   fibre:2 },
+  'Capperi':                      { acqua:83, vitA:15,  vitC:4,   vitD:0,   vitE:0.9, vitB12:0,   folati:23,  calcio:40,   ferro:1.7, magnesio:33,  potassio:40,  zinco:0.3, sodio:2900, fibre:3.2 },
+  'Tuorlo':                       { acqua:50, vitA:380, vitC:0,   vitD:5,   vitE:2.6, vitB12:2,   folati:145, calcio:130,  ferro:2.7, magnesio:5,   potassio:110, zinco:2.3, sodio:50 ,  fibre:0 },
 };
 const MICRO_ALIAS = {
   "Fiocchi d'avena (da frullare in farina)": "Fiocchi d'avena",
   'Uovo': 'Uova',
   'Verdura mista (insalata/pomodoro)': 'Verdura mista',
+  // Aggiunti col piano v4: alimenti nuovi assimilabili a uno già presente sopra.
+  'Pomodorini': 'Pomodoro',
+  'Skyr o yogurt 0%': 'Skyr',
+  'Yogurt greco': 'Yogurt greco 0%',
+  'Verdure miste saltate': 'Verdura mista',
+  'Verdure grigliate': 'Verdura mista',
+  'Verdure fresche': 'Verdura mista',
+  'Riso venere': 'Riso',
+  'Riso basmati': 'Riso',
+  'Fette biscottate integrali': 'Fette biscottate',
+  'Piadina o tortilla integrale': 'Piadina',
+  'Tortilla di frumento grande': 'Piadina',
+  'Ceci cotti': 'Ceci lessati (in scatola, scolati)',
+  'Prosciutto cotto a cubetti': 'Prosciutto cotto magro',
+  'Hummus': 'Hummus di ceci',
+  'Patate lessate e schiacciate': 'Patate lesse',
+  'Patate al forno': 'Patate lesse',
+  "Purè di patate fatto in casa": 'Patate lesse',
+  'Sugo di pomodoro': 'Pomodoro',
+  'Passata di pomodoro': 'Pomodoro',
+  'Polpette di manzo magro': 'Manzo macinato magro',
+  'Tartare di manzo magro': 'Manzo macinato magro',
+  'Fesa di tacchino': 'Fesa di tacchino affettata',
 };
 
 function microPer100(nome){
@@ -3423,10 +3527,6 @@ function microGridHtmlDaOFF(micro100, acqua100, fattore){
 const INTEGRAZIONE_PIANO = {
   intro: "Nessuno degli integratori sostituisce il cibo: il piano alimentare resta la base, l'integrazione colma solo eventuali gap pratici (proteine, creatina, micronutrienti). Tocca un integratore per vedere quantità, indicazioni d'uso e particolarità.",
   integratori: [
-    { nome:'Whey isolate', icona:'🥛',
-      dose:'15-25 g/die (1 misurino ≈ 25 g)',
-      indicazioni:"Nello spuntino di metà mattina o metà pomeriggio, secondo l'opzione scelta nel piano alimentare. Aiuta a raggiungere il target proteico (145 g/die) senza appesantire i pasti.",
-      particolarita:"Versione isolate: pochissimo lattosio, compatibile con l'intolleranza lieve." },
     { nome:'Omega 3 (EPA/DHA)', icona:'🐟',
       dose:'1-2 g/die di EPA+DHA combinati (2-3 capsule: controlla la concentrazione reale in etichetta, varia molto da prodotto a prodotto).',
       indicazioni:"Ai pasti principali (pranzo o cena), per migliorare l'assorbimento essendo un grasso. Supporto anti-infiammatorio e cardiovascolare.",
@@ -3448,7 +3548,7 @@ const INTEGRAZIONE_PIANO = {
       indicazioni:'Mattina, ai pasti.',
       particolarita:'Da considerare solo se le analisi mostrano carenze specifiche (es. ferritina bassa); il piano alimentare copre già la maggior parte dei micronutrienti se seguito con costanza.' },
   ],
-  noteImportanti: "Sei in terapia con Lyrica (pregabalin) e Zarelis (venlafaxina): non sono note interazioni rilevanti con whey isolate, omega 3 o creatina monoidrato. Per lo ZMA, distanzia l'assunzione di almeno 2 ore dai farmaci per sicurezza. Qualunque nuovo integratore — in particolare multivitaminici a dosaggi elevati o prodotti \"pre-workout\" con stimolanti — andrebbe comunque verificato con il medico o il farmacista prima dell'introduzione. Questo piano di integrazione non sostituisce una valutazione medica."
+  noteImportanti: "Sei in terapia con Lyrica (pregabalin) e Zarelis (venlafaxina): non sono note interazioni rilevanti con omega 3 o creatina monoidrato. Per lo ZMA, distanzia l'assunzione di almeno 2 ore dai farmaci per sicurezza. Qualunque nuovo integratore — in particolare multivitaminici a dosaggi elevati o prodotti \"pre-workout\" con stimolanti — andrebbe comunque verificato con il medico o il farmacista prima dell'introduzione. Questo piano di integrazione non sostituisce una valutazione medica."
 };
 
 let dietaOpenSet = new Set();
@@ -3483,7 +3583,13 @@ function renderAlimentazione(){
     return;
   }
 
-  const t = obiettiviAttivi();
+  // La prima volta che si apre Dieta in giornata, chiede se oggi ci si allena:
+  // determina il target del giorno e se mostrare l'extra su colazione/pranzo.
+  // Il rendering prosegue comunque (di default sui valori di riposo) mentre
+  // si attende la risposta: impostaGiornoAllenamento ri-renderizza da sola.
+  impostaGiornoAllenamento();
+
+  const t = obiettiviAttivi(!!cache.dietaLogOggi.giornoAllenamento);
 
   const macroDef = [
     {key:'prot', label:'Proteine', color:'var(--accent)'},
@@ -3573,6 +3679,7 @@ function renderAlimentazione(){
           <tbody>${foodRows}</tbody>
         </table>
         <div class="meal-prep"><b>Preparazione:</b> ${opz.preparazione}</div>
+        ${(cache.dietaLogOggi.giornoAllenamento && opz.extraAllenamento) ? `<div class="note-box" style="border-color:var(--accent-2);">🏋️ <b>Nei giorni di allenamento:</b> ${opz.extraAllenamento}. Usala solo in uno dei due pasti (colazione o pranzo) — quello più vicino all'orario in cui ti alleni, non in entrambi lo stesso giorno.</div>` : ''}
         <button class="toggle-guide" onclick="event.stopPropagation();toggleMicro(${i})">💧🧪 Vitamine, minerali e acqua (stima) ▾</button>
         <div class="guide-body" id="micro-${i}">
           <p style="margin:0 0 10px;">💧 Acqua fornita da questi alimenti: <b style="color:var(--text);">${Math.round(micro.acqua)} ml circa</b></p>
@@ -3682,7 +3789,8 @@ function renderAlimentazione(){
   view.innerHTML = `
     <div class="diet-summary">
       <div class="tlt">Piano nutrizionale</div>
-      <div class="tsb">${DIETA_PIANO.fase}<br>3 pasti principali + 2 spuntini · più opzioni intercambiabili per ogni pasto</div>
+      <div class="tsb">${DIETA_PIANO.fase}<br>5 pasti al giorno · 5 opzioni intercambiabili per ogni pasto</div>
+      ${cache.dietaLogOggi.giornoAllenamento!==null ? `<button class="btn small secondary" style="margin-top:10px;" onclick="impostaGiornoAllenamento(true)">${cache.dietaLogOggi.giornoAllenamento ? '🏋️ Oggi ti alleni' : '🛋️ Oggi riposo'} · tocca per cambiare</button>` : ''}
       <div class="kcal-ring-wrap">
         <svg viewBox="0 0 120 120" class="kcal-ring">
           <circle cx="60" cy="60" r="${RING_R}" class="kr-bg"></circle>
@@ -3768,6 +3876,7 @@ function renderDiario(){
     const numPastiFatti = Object.values(pastiFatti).filter(Boolean).length;
     const numIntegrFatti = Object.values(integratoriFatti).filter(Boolean).length;
     const dataLabel = g.id===oggiK ? 'Oggi' : new Date(g.id).toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'});
+    const tipoGiornoLabel = g.giornoAllenamento===true ? ' · 🏋️ allenamento' : g.giornoAllenamento===false ? ' · 🛋️ riposo' : '';
 
     const pastiRighe = DIETA_PIANO.pasti.map((p,i)=>{
       if(!pastiFatti[i]) return '';
@@ -3786,7 +3895,7 @@ function renderDiario(){
         <div class="icon">📅</div>
         <div class="mh-info">
           <div class="mh-name">${dataLabel}</div>
-          <div class="mh-time">${numPastiFatti}/${DIETA_PIANO.pasti.length} pasti · ${numIntegrFatti} integratori · ${((g.acquaMl||0)/1000).toFixed(1).replace('.',',')} L</div>
+          <div class="mh-time">${numPastiFatti}/${DIETA_PIANO.pasti.length} pasti · ${numIntegrFatti} integratori · ${((g.acquaMl||0)/1000).toFixed(1).replace('.',',')} L${tipoGiornoLabel}</div>
         </div>
         <div class="mh-kcal">${kcalTot} kcal</div>
         <div class="mh-chev">▾</div>
@@ -5172,6 +5281,12 @@ async function avviaApp(){
   view.innerHTML = '<div class="spinner-wrap">Caricamento dati...</div>';
   try{
     await loadData();
+    // Chiesto qui, prima della Home, così vale per tutta la sessione di oggi
+    // (statistiche di Home e target di Dieta inclusi) e non solo aprendo Dieta.
+    const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
+    if(pianoPersonale && cache.dietaLogOggi.giornoAllenamento === null){
+      await chiediEImpostaGiornoAllenamento();
+    }
     goHome();
   }catch(e){
     view.innerHTML = `<div class="error-banner">Errore nel caricamento dei dati: ${e.message}</div>`;
