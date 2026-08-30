@@ -561,6 +561,7 @@
   .meal-head .mh-time{font-size:12px;color:var(--text-dim);font-weight:600;margin-top:1px;}
   .meal-head .mh-kcal{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--accent);white-space:nowrap;}
   .meal-head .mh-chev{color:var(--text-dim);font-size:13px;margin-left:2px;transition:transform .25s ease;flex-shrink:0;}
+  .meal-head .diario-del-giorno{flex-shrink:0;}
   .meal-card.open .mh-chev{transform:rotate(180deg);}
   .meal-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
   .meal-card.open .meal-body{max-height:2000px;}
@@ -4430,6 +4431,25 @@ function salvaGiornoDietaLog(giornoId, giorno){
   }
 }
 
+/* Elimina l'intero giorno dal diario (pasti, integratori, acqua, extra):
+   usato dal cestino nell'intestazione della card giorno, non da quello sui
+   singoli pasti/alimenti. Se il giorno eliminato è "oggi", azzeriamo anche
+   cache.dietaLogOggi con la stessa forma di default usata in loadData(),
+   così Dieta/Home restano coerenti senza bisogno di un reload. */
+async function confermaEliminaGiornoIntero(giornoId){
+  if(!(await mostraConferma('Eliminare questo giorno dal diario? Pasti, integratori, acqua ed extra registrati verranno cancellati e non potrai recuperarli.'))) return;
+  cache.dietaLog = cache.dietaLog.filter(d=>d.id!==giornoId);
+  if(currentUid) userCollection('dietaLog').doc(giornoId).delete().catch(()=>{});
+  if(giornoId === todayKey()){
+    cache.dietaLogOggi = {
+      pastiFatti: {}, acquaMl: 0, integratoriFatti: {}, alimentiExtra: [],
+      pastiSnapshot: {}, pastiViaExtra: {}, energia: null, dolori: null,
+      giornoAllenamento: null
+    };
+  }
+  renderDiario();
+}
+
 async function confermaEliminaPastoGiorno(giornoId, i){
   if(!(await mostraConferma('Rimuovere questo pasto dal diario? Tornerà "non segnato" per quel giorno.'))) return;
   const g = cache.dietaLog.find(d=>d.id===giornoId);
@@ -4604,6 +4624,7 @@ function renderDiario(){
           <div class="mh-time">${numPastiFatti}/${DIETA_PIANO.pasti.length} pasti · ${numIntegrFatti} integratori · ${((g.acquaMl||0)/1000).toFixed(1).replace('.',',')} L${tipoGiornoLabel}</div>
         </div>
         <div class="mh-kcal">${kcalTot} kcal</div>
+        <button class="diario-mini-btn diario-del-giorno" onclick="event.stopPropagation();confermaEliminaGiornoIntero('${g.id}')" title="Elimina l'intero giorno">🗑️</button>
         <div class="mh-chev">▾</div>
       </div>
       <div class="meal-body"><div class="meal-body-in">
