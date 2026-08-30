@@ -708,6 +708,13 @@
     color:var(--text-dim);padding:6px 0;border-bottom:1px solid var(--border);
   }
   .micro-row b{color:var(--text);font-weight:800;white-space:nowrap;}
+  .diario-item-actions{display:inline-flex;gap:5px;margin-left:8px;vertical-align:middle;}
+  .diario-mini-btn{
+    background:var(--panel-2);border:1px solid var(--border);border-radius:7px;
+    width:21px;height:21px;font-size:10.5px;line-height:1;padding:0;
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .diario-mini-btn:active{transform:scale(.9);background:var(--panel);}
   .spinner-inline{
     display:inline-block;width:13px;height:13px;border-radius:50%;vertical-align:middle;margin-right:7px;
     border:2px solid #ffffff22;border-top-color:var(--accent);
@@ -4405,6 +4412,130 @@ function toggleDiarioGiorno(id){
   renderDiario();
 }
 
+/* ============ MODIFICA/ELIMINAZIONE VOCI DI GIORNI PASSATI ============
+   A differenza di "oggi" (cache.dietaLogOggi), un giorno passato va letto e
+   riscritto direttamente nell'oggetto corrispondente dentro cache.dietaLog:
+   questo helper centralizza il salvataggio su Firestore + l'aggiornamento
+   della cache, e tiene allineata anche cache.dietaLogOggi quando il giorno
+   modificato è "oggi" (così la schermata Dieta resta coerente col Diario). */
+function salvaGiornoDietaLog(giornoId, giorno){
+  if(!currentUid) return;
+  const { id, ...dati } = giorno;
+  userCollection('dietaLog').doc(giornoId).set(dati, { merge:true }).catch(()=>{});
+  if(giornoId === todayKey()){
+    cache.dietaLogOggi.pastiFatti = giorno.pastiFatti || {};
+    cache.dietaLogOggi.pastiViaExtra = giorno.pastiViaExtra || {};
+    cache.dietaLogOggi.pastiSnapshot = giorno.pastiSnapshot || {};
+    cache.dietaLogOggi.alimentiExtra = giorno.alimentiExtra || [];
+  }
+}
+
+async function confermaEliminaPastoGiorno(giornoId, i){
+  if(!(await mostraConferma('Rimuovere questo pasto dal diario? Tornerà "non segnato" per quel giorno.'))) return;
+  const g = cache.dietaLog.find(d=>d.id===giornoId);
+  if(!g) return;
+  if(g.pastiFatti) g.pastiFatti[i] = false;
+  if(g.pastiViaExtra) delete g.pastiViaExtra[i];
+  if(g.pastiSnapshot) delete g.pastiSnapshot[i];
+  salvaGiornoDietaLog(giornoId, g);
+  renderDiario();
+}
+
+async function confermaEliminaAlimentoExtraGiorno(giornoId, alimentoId){
+  if(!(await mostraConferma('Rimuovere questo alimento dal diario?'))) return;
+  const g = cache.dietaLog.find(d=>d.id===giornoId);
+  if(!g) return;
+  const rimosso = (g.alimentiExtra||[]).find(a=>a.id===alimentoId);
+  g.alimentiExtra = (g.alimentiExtra||[]).filter(a=>a.id!==alimentoId);
+  // Stessa logica usata per "oggi" in rimuoviAlimentoExtra(): se il pasto era
+  // stato segnato fatto grazie a questo extra e non ne resta più nessuno su
+  // quel pasto, togliamo anche la spunta al pasto.
+  const pastoIdx = rimosso ? rimosso.pasto : null;
+  if(pastoIdx!=null && pastoIdx>=0 && pastoIdx<DIETA_PIANO.pasti.length && g.pastiViaExtra && g.pastiViaExtra[pastoIdx]){
+    const restanoExtraSulPasto = g.alimentiExtra.some(a=>a.pasto===pastoIdx);
+    if(!restanoExtraSulPasto){
+      if(g.pastiFatti) g.pastiFatti[pastoIdx] = false;
+      delete g.pastiViaExtra[pastoIdx];
+      if(g.pastiSnapshot) delete g.pastiSnapshot[pastoIdx];
+    }
+  }
+  salvaGiornoDietaLog(giornoId, g);
+  renderDiario();
+}
+
+/* Modifica quale opzione risulta mangiata in un pasto già segnato di un
+   giorno passato: stesso bottom-sheet visivo del selettore di "oggi"
+   (classi sheet-overlay/opt-card condivise), ma scritto sul giorno storico
+   invece che su cache.dietaLogOggi. Non applicabile ai pasti sostituiti da
+   un alimento extra: per quelli si modifica/elimina l'alimento stesso. */
+let diarioModificaState = null; // {giornoId, pastoIdx}
+
+function apriModificaPastoGiorno(giornoId, i){
+  diarioModificaState = { giornoId, pastoIdx:i };
+  mostraModificaPastoOverlay();
+}
+
+function mostraModificaPastoOverlay(){
+  const { giornoId, pastoIdx } = diarioModificaState;
+  const p = DIETA_PIANO.pasti[pastoIdx];
+  const g = cache.dietaLog.find(d=>d.id===giornoId);
+  const snapAttuale = g && g.pastiSnapshot ? g.pastiSnapshot[pastoIdx] : null;
+  let overlay = document.getElementById('diarioModSheetOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'diarioModSheetOverlay';
+    overlay.className = 'sheet-overlay';
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudiModificaPastoGiorno(); });
+    document.body.appendChild(overlay);
+  }
+  const cardsHtml = p.opzioni.map((o,oi)=>{
+    const active = !!(snapAttuale && snapAttuale.titolo===o.titolo);
+    return `<div class="opt-card${active?' active':''}">
+      <div class="opt-card-top" onclick="sceglieOpzioneModificaGiorno(${oi})">
+        <div class="opt-card-main">
+          <div class="opt-card-title">${o.titolo}${active?' <span class="opt-card-badge">Registrato</span>':''}</div>
+          <div class="opt-card-macros">
+            <span><span class="mb-dot" style="background:var(--accent);"></span>P <b>${o.prot}g</b></span>
+            <span><span class="mb-dot" style="background:var(--accent-2);"></span>C <b>${o.carb}g</b></span>
+            <span><span class="mb-dot" style="background:var(--accent-3);"></span>G <b>${o.grassi}g</b></span>
+          </div>
+        </div>
+        <div class="opt-card-kcal">${o.kcal}<span>kcal</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  overlay.innerHTML = `<div class="sheet-box" id="diarioModSheetBox"><div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">${p.icona} ${p.nome}</div>
+      <button class="sheet-close" onclick="chiudiModificaPastoGiorno()" aria-label="Chiudi">✕</button>
+    </div>
+    <p class="field-hint" style="margin:-4px 0 14px;">Tocca l'opzione che hai effettivamente mangiato quel giorno.</p>
+    <div class="opt-card-list">${cardsHtml}</div>
+  </div>`;
+  attachSwipeDownToDismiss(overlay.querySelector('#diarioModSheetBox'), chiudiModificaPastoGiorno);
+}
+
+function sceglieOpzioneModificaGiorno(oi){
+  const { giornoId, pastoIdx } = diarioModificaState || {};
+  const g = cache.dietaLog.find(d=>d.id===giornoId);
+  if(!g){ chiudiModificaPastoGiorno(); return; }
+  const opz = DIETA_PIANO.pasti[pastoIdx].opzioni[oi];
+  if(!g.pastiFatti) g.pastiFatti = {};
+  g.pastiFatti[pastoIdx] = true;
+  if(g.pastiViaExtra) delete g.pastiViaExtra[pastoIdx]; // torna a un pasto "da piano"
+  if(!g.pastiSnapshot) g.pastiSnapshot = {};
+  g.pastiSnapshot[pastoIdx] = { titolo:opz.titolo, kcal:opz.kcal, prot:opz.prot, carb:opz.carb, grassi:opz.grassi };
+  salvaGiornoDietaLog(giornoId, g);
+  chiudiModificaPastoGiorno();
+  renderDiario();
+}
+
+function chiudiModificaPastoGiorno(){
+  const overlay = document.getElementById('diarioModSheetOverlay');
+  if(overlay) overlay.remove();
+  diarioModificaState = null;
+}
+
 function renderDiario(){
   pageTitle.textContent = 'Diario';
   const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
@@ -4443,19 +4574,27 @@ function renderDiario(){
     const pastiRighe = DIETA_PIANO.pasti.map((p,i)=>{
       if(!pastiFatti[i]) return '';
       const snap = pastiSnapshot[i];
+      const viaExtraGiorno = !!(g.pastiViaExtra && g.pastiViaExtra[i]);
       // Un pasto "sostituito con alimento extra" ha kcal:0 nello snapshot per
       // costruzione (le kcal reali sono contate una sola volta, tra gli
       // alimenti extra qui sotto): mostriamo "vedi extra" invece di "0 kcal",
       // che sembrerebbe un errore.
-      const valoreKcal = snap ? (snap.viaExtra ? 'vedi extra ↓' : snap.kcal+' kcal') : 'segnato';
-      return `<div class="micro-row"><span>${p.icona} ${p.nome}${snap?` — ${snap.titolo}`:''}</span><b>${valoreKcal}</b></div>`;
+      const valoreKcal = snap ? (viaExtraGiorno ? 'vedi extra ↓' : snap.kcal+' kcal') : 'segnato';
+      // Un pasto sostituito da un extra si modifica/elimina dall'alimento
+      // extra stesso qui sotto, non da qui: qui offriamo solo l'eliminazione
+      // (che rimette il pasto "non segnato"), non la scelta di un'opzione.
+      const azioni = `<span class="diario-item-actions">
+        ${!viaExtraGiorno ? `<button class="diario-mini-btn" onclick="event.stopPropagation();apriModificaPastoGiorno('${g.id}',${i})" title="Cambia opzione mangiata">✏️</button>` : ''}
+        <button class="diario-mini-btn" onclick="event.stopPropagation();confermaEliminaPastoGiorno('${g.id}',${i})" title="Rimuovi dal diario">🗑️</button>
+      </span>`;
+      return `<div class="micro-row"><span>${p.icona} ${p.nome}${snap?` — ${snap.titolo}`:''}${azioni}</span><b>${valoreKcal}</b></div>`;
     }).join('');
 
     const integrRighe = INTEGRAZIONE_PIANO.integratori
       .filter(s=> integratoriFatti[s.nome])
       .map(s=>`<div class="micro-row"><span>${s.icona} ${s.nome}</span><b>✅</b></div>`).join('');
 
-    const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)</span><b>${a.kcal} kcal</b></div>`).join('');
+    const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)<span class="diario-item-actions"><button class="diario-mini-btn" onclick="confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${a.kcal} kcal</b></div>`).join('');
 
     return `<div class="meal-card${open?' open':''}">
       <div class="meal-head" onclick="toggleDiarioGiorno('${g.id}')">
