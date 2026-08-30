@@ -1425,7 +1425,24 @@ function aggiungiAlimentoExtra(voce){
 }
 
 function rimuoviAlimentoExtra(id){
+  const rimosso = (cache.dietaLogOggi.alimentiExtra||[]).find(a=>a.id===id);
   cache.dietaLogOggi.alimentiExtra = (cache.dietaLogOggi.alimentiExtra||[]).filter(a=>a.id!==id);
+
+  // Se il pasto rimosso era quello che aveva fatto scattare l'auto-segna-fatto
+  // (pastiViaExtra) e dopo la rimozione non resta più nessun alimento extra
+  // agganciato a quel pasto, togliamo la spunta: altrimenti il pasto
+  // resterebbe segnato come fatto senza che ci sia più nulla a giustificarlo.
+  const pastoIdx = rimosso ? rimosso.pasto : null;
+  if(pastoIdx!=null && pastoIdx>=0 && pastoIdx<DIETA_PIANO.pasti.length &&
+     cache.dietaLogOggi.pastiViaExtra && cache.dietaLogOggi.pastiViaExtra[pastoIdx]){
+    const restanoExtraSulPasto = cache.dietaLogOggi.alimentiExtra.some(a=>a.pasto===pastoIdx);
+    if(!restanoExtraSulPasto){
+      cache.dietaLogOggi.pastiFatti[pastoIdx] = false;
+      delete cache.dietaLogOggi.pastiViaExtra[pastoIdx];
+      if(cache.dietaLogOggi.pastiSnapshot) delete cache.dietaLogOggi.pastiSnapshot[pastoIdx];
+    }
+  }
+
   salvaDietaLogOggi();
   renderAlimentazione();
 }
