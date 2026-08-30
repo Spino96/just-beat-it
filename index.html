@@ -163,10 +163,12 @@
   .profile-link{font-size:12.5px;color:var(--text-dim);font-weight:700;margin:0 0 16px;}
   .profile-link span{cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
   .diet-quicklinks{display:flex;gap:10px;margin:0 0 16px;}
-  .diet-quicklinks .qlink{flex:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  .diet-quicklinks .qlink{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
     background:var(--panel-2);border:1px solid var(--border);border-radius:14px;
-    font-size:21px;cursor:pointer;transition:transform .12s ease, background .12s ease;}
+    padding:12px 4px;cursor:pointer;transition:transform .12s ease, background .12s ease;}
   .diet-quicklinks .qlink:active{transform:scale(.92);background:var(--panel);}
+  .diet-quicklinks .qlink .qi{font-size:20px;}
+  .diet-quicklinks .qlink .ql{font-size:10.5px;color:var(--text-dim);font-weight:700;text-align:center;line-height:1.2;}
   .app-credit{
     text-align:center;font-size:12px;color:var(--text-dim);font-weight:600;
     margin:26px 0 10px;letter-spacing:.2px;
@@ -4335,10 +4337,9 @@ function renderAlimentazione(){
     </div>
 
     <div class="diet-quicklinks">
-      <div class="qlink" onclick="setRoute({name:'diario'})" title="Diario dei giorni passati">📖</div>
-      <div class="qlink" onclick="setRoute({name:'menu-alimentare'})" title="Menu in consultazione">📋</div>
-      <div class="qlink" onclick="setRoute({name:'settimana-alimentare'})" title="La tua settimana">📅</div>
-      <div class="qlink" onclick="setRoute({name:'lista-spesa'})" title="Lista della spesa">🛒</div>
+      <div class="qlink" onclick="setRoute({name:'diario'})" title="Diario dei giorni passati"><span class="qi">📖</span><span class="ql">Diario</span></div>
+      <div class="qlink" onclick="setRoute({name:'settimana-alimentare'})" title="La tua settimana"><span class="qi">📅</span><span class="ql">Settimana</span></div>
+      <div class="qlink" onclick="setRoute({name:'lista-spesa'})" title="Lista della spesa"><span class="qi">🛒</span><span class="ql">Spesa</span></div>
     </div>
 
     ${tabContentHtml}
