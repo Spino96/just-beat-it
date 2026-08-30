@@ -7,8 +7,10 @@
    campo "notificheInviate" del log alimentare del giorno.
 
    NOTA: gli orari qui sotto sono una copia semplificata di quelli nel piano
-   alimentare dentro index.html (DIETA_PIANO). Se cambi gli orari dei pasti
-   nell'app, aggiorna anche i CHECKPOINT qui sotto per restare coerenti.
+   alimentare dentro index.html (DIETA_PIANO). Se cambi gli orari o l'ordine
+   dei pasti nell'app, aggiorna anche i CHECKPOINT qui sotto per restare coerenti.
+   Allineato al piano v6 (30/08/2026): Colazione, Spuntino mattina, Pranzo,
+   Spuntino pomeridiano, Cena — indici 0-4 nello stesso ordine.
 
    DEPLOY (va fatto a mano dalla tua macchina, non posso farlo io da qui):
    1. Installa Firebase CLI se non ce l'hai:  npm install -g firebase-tools
@@ -30,11 +32,11 @@ const FUSO_ORARIO = 'Europe/Rome';
 // Checkpoint: ora (in fuso Europe/Rome) in cui controllare, chiave usata per
 // non notificare due volte lo stesso giorno, e messaggio da inviare.
 const CHECKPOINT_PASTI = [
-  { chiave: 'colazione', oraMin: 9,  oraMax: 10, pastoIndex: 0, titolo: 'Colazione da segnare', corpo: 'Non hai ancora segnato la colazione di oggi nel piano.' },
-  { chiave: 'spuntino1', oraMin: 11, oraMax: 12, pastoIndex: 1, titolo: 'Spuntino da segnare', corpo: 'Promemoria: segna lo spuntino di metà mattina se l\'hai fatto.' },
-  { chiave: 'pranzo',    oraMin: 16, oraMax: 17, pastoIndex: 2, titolo: 'Pranzo da segnare', corpo: 'Non hai ancora segnato il pranzo di oggi nel piano.' },
-  { chiave: 'spuntino2', oraMin: 18, oraMax: 19, pastoIndex: 3, titolo: 'Spuntino da segnare', corpo: 'Promemoria: segna lo spuntino di metà pomeriggio se l\'hai fatto.' },
-  { chiave: 'cena',      oraMin: 22, oraMax: 23, pastoIndex: 4, titolo: 'Cena da segnare', corpo: 'Non hai ancora segnato la cena di oggi nel piano.' },
+  { chiave: 'colazione',         oraMin: 9,  oraMax: 10, pastoIndex: 0, titolo: 'Colazione da segnare', corpo: 'Non hai ancora segnato la colazione di oggi nel piano.' },
+  { chiave: 'spuntinoMattina',   oraMin: 11, oraMax: 12, pastoIndex: 1, titolo: 'Spuntino da segnare', corpo: 'Promemoria: segna lo spuntino di metà mattina se l\'hai fatto.' },
+  { chiave: 'pranzo',            oraMin: 16, oraMax: 17, pastoIndex: 2, titolo: 'Pranzo da segnare', corpo: 'Non hai ancora segnato il pranzo di oggi nel piano.' },
+  { chiave: 'spuntinoPomeridiano', oraMin: 18, oraMax: 19, pastoIndex: 3, titolo: 'Spuntino da segnare', corpo: 'Promemoria: segna lo spuntino pomeridiano se l\'hai fatto.' },
+  { chiave: 'cena',              oraMin: 22, oraMax: 23, pastoIndex: 4, titolo: 'Cena da segnare', corpo: 'Non hai ancora segnato la cena di oggi nel piano.' },
 ];
 const CHECKPOINT_IDRATAZIONE = { chiave: 'idratazione', oraMin: 15, oraMax: 16, sogliaMl: 1200,
   titolo: 'Poca acqua oggi', corpo: 'Sei ancora sotto 1,2L di acqua: prova a berne un po\' nel pomeriggio.' };
