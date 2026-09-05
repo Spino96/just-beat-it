@@ -320,6 +320,20 @@
     font-size:12.5px;font-weight:600;padding:10px 12px;border-radius:12px;
     margin-top:10px;line-height:1.5;
   }
+  .prev-session-tip{
+    background:#8b6bff1a;border:1px solid #8b6bff40;color:var(--text);
+    font-size:12.5px;font-weight:600;padding:10px 12px;border-radius:12px;
+    margin-top:12px;line-height:1.6;
+  }
+  .prev-session-tip .pst-label{color:#8b6bff;font-weight:800;}
+  .prev-session-tip .pst-sets{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .prev-session-tip .pst-set{
+    background:var(--panel-2);border:1px solid var(--border);border-radius:8px;
+    padding:3px 8px;font-family:var(--mono);font-size:12px;color:var(--text);
+    font-weight:700;white-space:nowrap;
+  }
+  .prev-session-tip .pst-nota{margin-top:8px;color:var(--text-dim);font-weight:500;}
+  .prev-session-tip .pst-nota b{color:var(--text);font-weight:800;}
   .oggi-panel{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
     box-shadow:var(--shadow-card);padding:16px 18px;margin-bottom:14px;
@@ -2163,6 +2177,15 @@ function parseRipTarget(str){
   return { max: Math.max(...nums), isTime };
 }
 
+function datiUltimaSessione(nomeEsercizio){
+  const trovata = cache.sessioni
+    .slice().sort((a,b)=> new Date(b.data)-new Date(a.data))
+    .map(s=>({ data: s.data, es: s.esercizi.find(e=>e.nome===nomeEsercizio) }))
+    .find(x=>x.es);
+  if(!trovata) return null;
+  return { data: trovata.data, sets: trovata.es.sets || [], noteUtente: trovata.es.noteUtente || '' };
+}
+
 function suggerimentoProgressione(nomeEsercizio, ripTargetStr){
   const target = parseRipTarget(ripTargetStr);
   if(!target) return null;
@@ -2268,6 +2291,19 @@ function renderSessione(){
           <div class="ex-meta" style="margin-bottom:0;">${e.serieTarget} x ${e.ripTarget} · recupero ${e.recupero}"</div>
         </div>
       </div>`;
+    const ultimaVolta = datiUltimaSessione(nomeAttivo);
+    if(ultimaVolta){
+      const dataLbl = new Date(ultimaVolta.data).toLocaleDateString('it-IT',{day:'numeric',month:'short'});
+      const setsConPeso = ultimaVolta.sets.filter(s=> s.peso!=='' && s.peso!=null);
+      const setsHtml = setsConPeso.length
+        ? `<div class="pst-sets">${setsConPeso.map(s=>`<span class="pst-set">${s.peso}kg${s.rip?` × ${s.rip}`:''}</span>`).join('')}</div>`
+        : '';
+      html += `<div class="prev-session-tip">
+        <span class="pst-label">🕐 Ultima volta</span> (${dataLbl})${!setsConPeso.length ? ': nessun peso registrato' : ''}
+        ${setsHtml}
+        ${ultimaVolta.noteUtente ? `<div class="pst-nota"><b>Nota:</b> ${ultimaVolta.noteUtente}</div>` : ''}
+      </div>`;
+    }
     html += `<p class="rpe-legend">RPE per ogni serie: 6 = leggero · 8 = a 2 rip dal cedimento · 10 = cedimento totale</p>`;
     draft.sets.forEach((set,si)=>{
       html += `<div class="set-row">
