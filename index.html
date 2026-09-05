@@ -1537,6 +1537,7 @@ function rimuoviAlimentoExtra(id){
 let route = {name:'home'};
 let sessionDraft = null;
 let restTimerHandle = null;
+let restWakeLock = null; // Wake Lock API: tiene lo schermo acceso durante il recupero
 
 const view = document.getElementById('view');
 const pageTitle = document.getElementById('pageTitle');
@@ -2373,9 +2374,39 @@ let restState = null;
 
 const REST_RING_CIRC = 2 * Math.PI * 52;
 
+/* Il timer di recupero è basato su un istante di fine assoluto (endAt),
+   non su un contatore decrementato a ogni tick: se il telefono va in
+   stand-by (schermo spento) i browser sospendono/rallentano i setInterval
+   in background, quindi un semplice "remaining--" ogni tick andrebbe
+   fuori sincrono o si fermerebbe del tutto. Calcolando invece il tempo
+   restante come "endAt - adesso" ogni volta che serve, il timer torna
+   sempre corretto non appena il telefono si riaccende, anche se i tick
+   di mezzo sono stati persi. La Wake Lock API (dove supportata) prova
+   inoltre a impedire che lo schermo si spenga da solo per inattività
+   durante il recupero — non può nulla contro uno spegnimento manuale
+   (tasto laterale), che resta una limitazione del sistema operativo, non
+   dell'app. */
+async function richiediRestWakeLock(){
+  if(!('wakeLock' in navigator)) return;
+  try{
+    restWakeLock = await navigator.wakeLock.request('screen');
+    restWakeLock.addEventListener('release', ()=>{ restWakeLock = null; });
+  }catch(e){ restWakeLock = null; }
+}
+function rilasciaRestWakeLock(){
+  if(restWakeLock){ restWakeLock.release().catch(()=>{}); restWakeLock = null; }
+}
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='visible' && restState){
+    if(!restState.paused) richiediRestWakeLock();
+    verificaFineRestTimer();
+  }
+});
+
 function startRestTimer(seconds){
   clearRestTimer();
-  restState = { remaining: seconds, total: seconds, paused: false };
+  restState = { endAt: Date.now()+seconds*1000, total: seconds, paused: false, pausedRemainingMs: 0, finalizzato: false };
+  richiediRestWakeLock();
   const bar = document.createElement('div');
   bar.className = 'timer-bar';
   bar.id = 'restBar';
@@ -2403,28 +2434,43 @@ function startRestTimer(seconds){
   updateRestDisplay();
   restTimerHandle = setInterval(()=>{
     if(!restState || restState.paused) return;
-    restState.remaining--;
-    if(restState.remaining<=0){
-      updateRestDisplay();
-      const t = document.getElementById('restT');
-      if(t) t.textContent = "Via! 💪";
-      timerFinishedFeedback();
-      clearInterval(restTimerHandle);
-      setTimeout(clearRestTimer, 2000);
-      return;
-    }
     updateRestDisplay();
+    verificaFineRestTimer();
   },1000);
+}
+
+// Secondi rimanenti "veri", ricalcolati da endAt: sorgente di verità unica,
+// sia per il tick normale sia per il resync dopo uno stand-by.
+function restRemainingSec(){
+  if(!restState) return 0;
+  if(restState.paused) return Math.max(0, Math.ceil(restState.pausedRemainingMs/1000));
+  return Math.max(0, Math.ceil((restState.endAt - Date.now())/1000));
 }
 
 function updateRestDisplay(){
   if(!restState) return;
+  const remaining = restRemainingSec();
   const t = document.getElementById('restT');
   const ring = document.getElementById('restRingFill');
-  if(t) t.textContent = restState.remaining>0 ? restState.remaining+'"' : 'Via! 💪';
+  if(t) t.textContent = remaining>0 ? remaining+'"' : 'Via! 💪';
   if(ring){
-    const pct = restState.total>0 ? Math.max(0, Math.min(1, restState.remaining/restState.total)) : 0;
+    const pct = restState.total>0 ? Math.max(0, Math.min(1, remaining/restState.total)) : 0;
     ring.style.strokeDashoffset = String(REST_RING_CIRC * (1 - pct));
+  }
+}
+
+// Chiamata sia dal tick regolare sia al ritorno in foreground (visibilitychange):
+// se il tempo è scaduto e non l'abbiamo ancora segnalato, scatta ora il feedback,
+// anche se i tick del setInterval sono stati persi mentre il telefono era in stand-by.
+function verificaFineRestTimer(){
+  if(!restState || restState.finalizzato) return;
+  if(restRemainingSec()<=0){
+    restState.finalizzato = true;
+    updateRestDisplay();
+    timerFinishedFeedback();
+    rilasciaRestWakeLock();
+    if(restTimerHandle){ clearInterval(restTimerHandle); restTimerHandle=null; }
+    setTimeout(clearRestTimer, 2000);
   }
 }
 
@@ -2457,20 +2503,35 @@ function richiediPermessoNotifiche(){
 
 function adjustRest(delta){
   if(!restState) return;
-  restState.remaining = Math.max(0, restState.remaining + delta);
-  if(restState.remaining > restState.total) restState.total = restState.remaining;
+  if(restState.paused){
+    restState.pausedRemainingMs = Math.max(0, restState.pausedRemainingMs + delta*1000);
+  } else {
+    restState.endAt = Date.now() + Math.max(0, restRemainingSec()*1000 + delta*1000);
+  }
+  const nuovoRemaining = restRemainingSec();
+  if(nuovoRemaining > restState.total) restState.total = nuovoRemaining;
   updateRestDisplay();
 }
 
 function togglePauseRest(){
   if(!restState) return;
-  restState.paused = !restState.paused;
+  if(restState.paused){
+    // Riprendi: il tempo restante salvato in pausa diventa il nuovo endAt.
+    restState.endAt = Date.now() + restState.pausedRemainingMs;
+    restState.paused = false;
+    richiediRestWakeLock();
+  } else {
+    restState.pausedRemainingMs = Math.max(0, restState.endAt - Date.now());
+    restState.paused = true;
+    rilasciaRestWakeLock();
+  }
   const btn = document.getElementById('restPauseBtn');
   if(btn) btn.textContent = restState.paused ? '▶ Riprendi' : '⏸ Pausa';
 }
 
 function clearRestTimer(){
   if(restTimerHandle){ clearInterval(restTimerHandle); restTimerHandle=null; }
+  rilasciaRestWakeLock();
   restState = null;
   const bar = document.getElementById('restBar');
   if(bar) bar.remove();
