@@ -19,6 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <style>
   :root{
     --bg:#08090c;
@@ -926,15 +927,51 @@ async function attivaNotifichePush(){
 }
 
 /* Le notifiche in primo piano (app aperta) non vengono mostrate in automatico
-   dal sistema come quelle in background: le intercettiamo e le mostriamo noi. */
+   dal sistema come quelle in background: le intercettiamo e le mostriamo noi.
+   Il "tag" (quando presente) fa sì che una notifica di fine timer arrivata
+   dal server non si accumuli sopra a quella già mostrata in locale se l'app
+   era ancora aperta al momento — la sostituisce invece di raddoppiarla. */
 if(messagingSupportata()){
   try{
     firebase.messaging().onMessage(payload=>{
       const titolo = (payload.notification && payload.notification.title) || 'Beat Yourself';
       const corpo = (payload.notification && payload.notification.body) || '';
-      if(Notification.permission==='granted') new Notification(titolo, { body: corpo, icon:'icon-192.png' });
+      const tag = (payload.data && payload.data.tag) || undefined;
+      if(Notification.permission==='granted') new Notification(titolo, { body: corpo, icon:'icon-192.png', tag });
     });
   }catch(e){}
+}
+
+/* ============ NOTIFICA PUSH DI FINE TIMER DI RECUPERO ============
+   I timer di recupero in Sessione restano precisi anche dopo uno stand-by
+   (vedi startRestTimer/restRemainingSec più sotto), ma se il telefono va
+   in stand-by o l'app viene chiusa del tutto, il beep/vibrazione/notifica
+   locale a fine recupero non può scattare: il sistema operativo sospende
+   l'esecuzione JS. Per questo, se le notifiche push sono attive, chiediamo
+   al server (funzione pianificaNotificaTimer, coda Cloud Tasks) di mandarci
+   una push esattamente tra N secondi — arriva anche a schermo spento/app
+   chiusa, come le altre notifiche push dell'app.
+   Richiede che l'utente abbia già completato l'attivazione delle notifiche
+   (Profilo → Attiva notifiche): se non l'ha fatto, semplicemente non
+   proviamo a chiamare la funzione, senza errori visibili — il timer resta
+   comunque corretto localmente, solo senza l'avviso a schermo spento. */
+async function pianificaNotificaTimerRemoto(secondi, timerId){
+  if(!(profiloUtente && profiloUtente.fcmToken)) return;
+  if(!(window.firebase && firebase.functions)) return;
+  try{
+    const chiamata = firebase.functions().httpsCallable('pianificaNotificaTimer');
+    await chiamata({ secondi, timerId });
+  }catch(e){
+    // Non blocchiamo mai l'allenamento per un problema di rete/funzione:
+    // il timer locale resta comunque corretto, si perde solo l'avviso remoto.
+  }
+}
+function annullaNotificaTimerRemoto(){
+  if(!currentUid) return;
+  db.collection('users').doc(currentUid).set({ timerRecuperoAttivoId: null }, { merge:true }).catch(()=>{});
+}
+function nuovoTimerId(){
+  return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
 }
 
 /* ============ DATI SCHEDA DI DEFAULT (usati per popolare Firestore al primo avvio) ============ */
@@ -2405,8 +2442,10 @@ document.addEventListener('visibilitychange', ()=>{
 
 function startRestTimer(seconds){
   clearRestTimer();
-  restState = { endAt: Date.now()+seconds*1000, total: seconds, paused: false, pausedRemainingMs: 0, finalizzato: false };
+  const timerId = nuovoTimerId();
+  restState = { endAt: Date.now()+seconds*1000, total: seconds, paused: false, pausedRemainingMs: 0, finalizzato: false, timerId };
   richiediRestWakeLock();
+  pianificaNotificaTimerRemoto(seconds, timerId);
   const bar = document.createElement('div');
   bar.className = 'timer-bar';
   bar.id = 'restBar';
@@ -2480,7 +2519,7 @@ function timerFinishedFeedback(){
     try{ navigator.vibrate([200,100,200,100,300]); }catch(e){}
   }
   if(window.Notification && Notification.permission === 'granted'){
-    try{ new Notification('Recupero terminato 💪', { body:'Riparti con la prossima serie.' }); }catch(e){}
+    try{ new Notification('Recupero terminato 💪', { body:'Riparti con la prossima serie.', tag:'recupero-timer' }); }catch(e){}
   }
 }
 
@@ -2507,6 +2546,12 @@ function adjustRest(delta){
     restState.pausedRemainingMs = Math.max(0, restState.pausedRemainingMs + delta*1000);
   } else {
     restState.endAt = Date.now() + Math.max(0, restRemainingSec()*1000 + delta*1000);
+    // Il tempo di fine è cambiato: la notifica remota già pianificata partirebbe
+    // al momento sbagliato, quindi ne pianifichiamo una nuova con un nuovo id
+    // (quella vecchia, quando scatterà, si accorgerà di essere superata e non
+    // manderà nulla — vedi il controllo lato server su timerRecuperoAttivoId).
+    restState.timerId = nuovoTimerId();
+    pianificaNotificaTimerRemoto(restRemainingSec(), restState.timerId);
   }
   const nuovoRemaining = restRemainingSec();
   if(nuovoRemaining > restState.total) restState.total = nuovoRemaining;
@@ -2516,14 +2561,20 @@ function adjustRest(delta){
 function togglePauseRest(){
   if(!restState) return;
   if(restState.paused){
-    // Riprendi: il tempo restante salvato in pausa diventa il nuovo endAt.
+    // Riprendi: il tempo restante salvato in pausa diventa il nuovo endAt,
+    // e ripianifichiamo la notifica remota su questo nuovo orario di fine.
     restState.endAt = Date.now() + restState.pausedRemainingMs;
     restState.paused = false;
     richiediRestWakeLock();
+    restState.timerId = nuovoTimerId();
+    pianificaNotificaTimerRemoto(restRemainingSec(), restState.timerId);
   } else {
     restState.pausedRemainingMs = Math.max(0, restState.endAt - Date.now());
     restState.paused = true;
     rilasciaRestWakeLock();
+    // In pausa il tempo è congelato: annulliamo la notifica remota pianificata
+    // sul vecchio orario di fine, altrimenti arriverebbe troppo presto.
+    annullaNotificaTimerRemoto();
   }
   const btn = document.getElementById('restPauseBtn');
   if(btn) btn.textContent = restState.paused ? '▶ Riprendi' : '⏸ Pausa';
@@ -2532,6 +2583,7 @@ function togglePauseRest(){
 function clearRestTimer(){
   if(restTimerHandle){ clearInterval(restTimerHandle); restTimerHandle=null; }
   rilasciaRestWakeLock();
+  if(restState) annullaNotificaTimerRemoto();
   restState = null;
   const bar = document.getElementById('restBar');
   if(bar) bar.remove();

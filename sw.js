@@ -90,7 +90,11 @@ self.addEventListener('push', event => {
     body: (dati.notification && dati.notification.body) || '',
     icon: './icon-192.png',
     badge: './icon-192.png',
-    data: { url: './index.html' }
+    data: { url: './index.html' },
+    // Se il payload porta un "tag" (es. le notifiche di fine timer di
+    // recupero), lo usiamo così una nuova notifica con lo stesso tag
+    // sostituisce quella precedente invece di accumularsi.
+    tag: (dati.data && dati.data.tag) || undefined
   };
   event.waitUntil(self.registration.showNotification(titolo, opzioni));
 });

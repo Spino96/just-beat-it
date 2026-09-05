@@ -1,6 +1,6 @@
 # Beat Yourself — Guida attivazione notifiche push
 
-Il codice per i promemoria push (pasti non segnati, poca idratazione, integratori serali) è già scritto e pronto — sia lato app (`index.html`) sia la funzione cloud che li invia ogni 30 minuti (`functions/index.js`). Mancano solo alcuni passaggi che devi fare tu nella console Firebase (in parte toccano la fatturazione dell'account, quindi non posso farli al posto tuo) più il deploy da un terminale con accesso internet completo (non riesco a farlo dall'ambiente isolato di questa sessione, che non raggiunge le API Google).
+Il codice per i promemoria push (pasti non segnati, poca idratazione, integratori serali) è già scritto e pronto — sia lato app (`index.html`) sia la funzione cloud che li invia ogni 30 minuti (`functions/index.js`). Include anche la notifica di fine timer di recupero in Sessione (arriva puntuale anche a schermo spento/app chiusa): stessa infrastruttura, nessun passaggio in più da fare oltre a quelli qui sotto. Mancano solo alcuni passaggi che devi fare tu nella console Firebase (in parte toccano la fatturazione dell'account, quindi non posso farli al posto tuo) più il deploy da un terminale con accesso internet completo (non riesco a farlo dall'ambiente isolato di questa sessione, che non raggiunge le API Google).
 
 Segui i passaggi in ordine. Quando arrivi al punto 3 (chiave VAPID), mandami la chiave e la incollo io nel codice.
 
@@ -58,7 +58,7 @@ Il deploy richiede qualche minuto la prima volta. Se va a buon fine, vedrai un m
 - Clicca **Attiva notifiche** e concedi il permesso quando il browser lo chiede
 - Dovresti vedere "🔔 Notifiche attive"
 
-Da quel momento, la funzione cloud gira ogni 30 minuti e — se hai un pasto non ancora segnato, poca acqua nel pomeriggio, o integratori serali non presi — ricevi una notifica push (una sola volta al giorno per ciascun promemoria, per non essere invadente).
+Da quel momento, la funzione cloud gira ogni 30 minuti e — se hai un pasto non ancora segnato, poca acqua nel pomeriggio, o integratori serali non presi — ricevi una notifica push (una sola volta al giorno per ciascun promemoria, per non essere invadente). In più, da quel momento ogni timer di recupero avviato in Sessione manda anche lui una notifica push puntuale a fine recupero (utile se nel frattempo il telefono va in stand-by o chiudi l'app): non serve attivare nulla di separato, funziona in automatico appena le notifiche sono attive.
 
 ---
 
@@ -67,5 +67,6 @@ Da quel momento, la funzione cloud gira ogni 30 minuti e — se hai un pasto non
 - **"Notifiche attivate" non compare / errore**: controlla di aver incollato la chiave VAPID corretta e di aver concesso il permesso notifiche al browser (impostazioni del sito).
 - **Le notifiche non arrivano mai**: verifica che il deploy della funzione sia andato a buon fine (`firebase deploy --only functions` senza errori) e che il piano Blaze sia attivo.
 - **Su iPhone**: le notifiche push richiedono che l'app sia installata sulla schermata Home (PWA), non basta il browser Safari aperto.
+- **La notifica di fine timer non arriva mai (ma le altre push sì)**: la prima chiamata dal telefono a `pianificaNotificaTimer` crea automaticamente la coda Cloud Tasks nel progetto durante il deploy; se il deploy segnala un errore relativo a "Cloud Tasks API", vai su [console.cloud.google.com](https://console.cloud.google.com/) → progetto **just-beat-it-76154** → **API e servizi** → abilita **Cloud Tasks API**, poi ripeti `firebase deploy --only functions`.
 
 Fammi sapere a che punto sei arrivato o se un passaggio dà errore: ti aiuto a risolverlo.

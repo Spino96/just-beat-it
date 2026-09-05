@@ -23,8 +23,11 @@
    non sono disponibili sul piano gratuito Spark. */
 
 const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onTaskDispatched } = require('firebase-functions/v2/tasks');
 const admin = require('firebase-admin');
 admin.initializeApp();
+const { getFunctions } = require('firebase-admin/functions');
 const db = admin.firestore();
 
 const FUSO_ORARIO = 'Europe/Rome';
@@ -53,9 +56,16 @@ function chiaveGiornoOggi(){
   return f.format(new Date()); // formato YYYY-MM-DD, stesso usato da todayKey() nel client
 }
 
-async function inviaNotifica(uid, token, titolo, corpo){
+async function inviaNotifica(uid, token, titolo, corpo, tag){
   try{
-    await admin.messaging().send({ token, notification: { title: titolo, body: corpo } });
+    await admin.messaging().send({
+      token,
+      notification: { title: titolo, body: corpo },
+      // Il "tag" (opzionale) arriva sia in notification.tag (webpush) sia in
+      // data.tag: il service worker/app lo leggono da data, più affidabile
+      // da recuperare lato client in ogni situazione (foreground/background).
+      ...(tag ? { data: { tag }, webpush: { notification: { tag } } } : {})
+    });
   }catch(e){
     // Token scaduto/non valido: lo rimuoviamo così l'app tornerà a chiedere
     // il permesso invece di ritentare all'infinito su un token morto.
@@ -112,4 +122,67 @@ exports.promemoriaGiornalieri = onSchedule({ schedule: 'every 30 minutes', timeZ
       }
     }
   }
+});
+
+/* ============ NOTIFICA PUSH DI FINE TIMER DI RECUPERO (Sessione) ============
+   A differenza dei promemoria sopra (controllo periodico ogni 30 minuti,
+   va benissimo per "hai segnato il pranzo?"), qui serve precisione di
+   pochi secondi: un timer di recupero dura tipicamente 60-120". Per questo
+   usiamo una coda Cloud Tasks (non uno scheduler periodico): il client,
+   quando avvia il timer, chiama pianificaNotificaTimer chiedendo l'invio
+   tra esattamente N secondi; quella funzione pianifica un task puntuale
+   che, alla scadenza, esegue inviaNotificaTimer.
+
+   "timerId" è generato dal client a ogni avvio/ripianificazione del timer
+   (pausa/ripresa, +15"/-15") e salvato su users/{uid}.timerRecuperoAttivoId:
+   quando il task scatta, invia la notifica solo se quell'id è ancora quello
+   corrente. Così, se l'utente salta il recupero, lo mette in pausa, o ne
+   avvia subito un altro, un task ormai superato non manda comunque una
+   notifica "fantasma" legata a un timer che non esiste più.
+
+   Richiede la stessa configurazione delle notifiche pasti (vedi "Beat
+   Yourself - Guida notifiche push.md": piano Blaze, chiave VAPID, deploy) —
+   nessun passaggio aggiuntivo oltre a quelli già nella guida. */
+exports.pianificaNotificaTimer = onCall(async (request) => {
+  if(!request.auth) throw new HttpsError('unauthenticated', 'Devi essere autenticato.');
+  const uid = request.auth.uid;
+  const secondi = Number(request.data && request.data.secondi);
+  const timerId = String((request.data && request.data.timerId) || '');
+  if(!Number.isFinite(secondi) || secondi <= 0 || secondi > 900){
+    throw new HttpsError('invalid-argument', 'Durata del recupero non valida.');
+  }
+  if(!timerId){
+    throw new HttpsError('invalid-argument', 'Id timer mancante.');
+  }
+
+  const utenteSnap = await db.collection('users').doc(uid).get();
+  const token = utenteSnap.exists ? utenteSnap.data().fcmToken : null;
+  if(!token){
+    throw new HttpsError('failed-precondition', 'Notifiche push non attive per questo account.');
+  }
+
+  await db.collection('users').doc(uid).set({ timerRecuperoAttivoId: timerId }, { merge:true });
+
+  const coda = getFunctions().taskQueue('inviaNotificaTimer');
+  await coda.enqueue({ uid, timerId }, { scheduleDelaySeconds: Math.round(secondi) });
+
+  return { ok: true };
+});
+
+exports.inviaNotificaTimer = onTaskDispatched(async (request) => {
+  const { uid, timerId } = request.data || {};
+  if(!uid || !timerId) return;
+
+  const utenteSnap = await db.collection('users').doc(uid).get();
+  if(!utenteSnap.exists) return;
+  const utente = utenteSnap.data();
+
+  // Il timer è stato annullato/sostituito da uno più recente nel frattempo:
+  // non mandiamo una notifica ormai superata.
+  if(utente.timerRecuperoAttivoId !== timerId) return;
+
+  const token = utente.fcmToken;
+  if(!token) return;
+
+  await inviaNotifica(uid, token, 'Recupero terminato 💪', 'Riparti con la prossima serie.', 'recupero-timer');
 });
