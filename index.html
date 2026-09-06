@@ -1243,6 +1243,11 @@ async function scegliAvatarFoto(input){
 const cache = { sessioni: [], misure: [], dietaLog: [], alimentiPersonalizzati: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, energia:null, dolori:null, giornoAllenamento:null } };
 let currentUid = null;
 let profiloUtente = null;
+// Promessa di loadData() già avviata da boot() in parallelo con le altre
+// richieste iniziali (catalogo schede, profilo): avviaApp() la riusa invece
+// di ripartire da zero, così le richieste di rete del primo avvio partono
+// tutte insieme invece che in fila una dopo l'altra (vedi boot()/avviaApp()).
+let loadDataInVolo = null;
 let blocchiIniziati = {};
 
 function schedaScaduta(s){
@@ -6371,8 +6376,18 @@ function attachSwipeTabConfronto(angoli, tabAttuale){
 
 /* ============ AVVIO ============ */
 async function boot(){
-  await caricaCatalogoSchede();
-  const profiloCompleto = await checkProfilo();
+  // Le tre richieste del primo avvio (catalogo schede, profilo, dati
+  // dieta/allenamenti/misure) non dipendono l'una dall'altra: prima
+  // partivano in fila (tre round-trip di rete uno dopo l'altro), qui
+  // partono tutte insieme, così l'attesa totale è quella della più lenta
+  // delle tre invece della somma di tutte e tre — il guadagno più grande
+  // sul tempo di caricamento percepito all'apertura dell'app.
+  loadDataInVolo = loadData();
+  const [, profiloCompleto] = await Promise.all([
+    caricaCatalogoSchede(),
+    checkProfilo(),
+    loadDataInVolo
+  ]);
   if(!profiloCompleto){
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').style.display = 'none';
@@ -6389,7 +6404,13 @@ async function avviaApp(){
   richiediPermessoNotifiche();
   view.innerHTML = '<div class="spinner-wrap">Caricamento dati...</div>';
   try{
-    await loadData();
+    // Se boot() ha già avviato loadData() in parallelo (caso normale di
+    // login), aspettiamo quella stessa chiamata invece di farne una
+    // seconda da zero. Nei percorsi di creazione account (registrati()/
+    // salvaProfilo(), chiamati prima che boot() esista per quell'utente)
+    // loadDataInVolo è ancora vuoto, quindi partiamo da zero come prima.
+    await (loadDataInVolo || loadData());
+    loadDataInVolo = null;
     // Chiesto qui, prima della Home, così vale per tutta la sessione di oggi
     // (statistiche di Home e target di Dieta inclusi) e non solo aprendo Dieta.
     const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
