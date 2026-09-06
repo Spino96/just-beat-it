@@ -893,7 +893,7 @@ db.enablePersistence({ synchronizeTabs: true }).catch(err=>{
    Impostazioni progetto → Cloud Messaging → Certificati web push → Genera coppia
    di chiavi. Finché questa costante resta vuota, il pulsante "Attiva notifiche"
    in Profilo mostra un avviso invece di provare ad attivarle. */
-const VAPID_KEY = '';
+const VAPID_KEY = 'BFyZgctC9kbrYwO9UAtezX2lNg8kTBPjV05rFnqSVEw98o2XS6GaHt63mg5zCuT3lHc9fxTi5Nk_IspK8TeDTqQ';
 
 function messagingSupportata(){
   return !!(firebase.messaging && firebase.messaging.isSupported && firebase.messaging.isSupported() && 'Notification' in window);
