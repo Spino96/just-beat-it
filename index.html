@@ -915,8 +915,16 @@ async function attivaNotifichePush(){
       if(stato) stato.innerHTML = `<div class="error-banner">Permesso non concesso. Puoi riattivarlo dalle impostazioni di notifica del browser/telefono.</div>`;
       return;
     }
+    // Senza specificare quale service worker usare, Firebase Messaging
+    // proverebbe da solo a registrarne uno con nome fisso
+    // "firebase-messaging-sw.js" che in questo progetto non esiste (usiamo
+    // "sw.js" per l'offline/cache) — fallendo con
+    // "messaging/failed-service-worker-registration". Gli passiamo invece
+    // esplicitamente il nostro service worker già attivo, che gestisce
+    // anche l'evento "push" (vedi sw.js).
+    const registrazioneSW = await navigator.serviceWorker.ready;
     const messaging = firebase.messaging();
-    const token = await messaging.getToken({ vapidKey: VAPID_KEY });
+    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registrazioneSW });
     if(!token) throw new Error('Nessun token ottenuto');
     await db.collection('users').doc(currentUid).set({ fcmToken: token }, { merge:true });
     if(profiloUtente) profiloUtente.fcmToken = token;
