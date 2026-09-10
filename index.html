@@ -1302,14 +1302,11 @@ const SCHEDE_DEFAULT = [
   }
 ];
 
-/* Blocchi futuri (non ancora attivabili): anteprima informativa fedele al piano PDF */
+/* Blocchi futuri (non ancora attivabili): anteprima informativa fedele al piano PDF.
+   L'ex voce "Impostazione" è stata rimossa da qui perché ora è una scheda vera
+   (Blocco 2 — Giorno A/B) e comparirebbe due volte, come testo statico e come
+   scheda reale caricata da Firestore. */
 const PROSSIMI_BLOCCHI = [
-  {
-    nome: 'Impostazione',
-    periodo: '1 mese · 3x/settimana',
-    focus: 'Carichi progressivi, esercizi base',
-    descrizione: 'Una volta consolidata la tecnica, il Blocco 2 introduce carichi progressivi e una scheda organizzata per gruppi muscolari, restando comunque a 3 sessioni a settimana per un mese intero: è il tempo minimo perché il corpo si abitui davvero a un nuovo stimolo prima di aumentare ulteriormente la frequenza a 4 sedute settimanali.'
-  },
   {
     nome: 'Progressione',
     periodo: 'Durata da definire · 4x/settimana',
