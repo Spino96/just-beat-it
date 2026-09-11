@@ -209,6 +209,7 @@
   .list-item h3{margin:0 0 4px;font-size:16px;font-weight:700;}
   .list-item p{margin:0;font-size:12.5px;color:var(--text-dim);font-weight:600;}
   .list-item .scheda-desc{margin-top:8px;font-size:12.5px;line-height:1.55;color:var(--text-dim);font-weight:500;}
+  .list-item .scheda-note{margin-top:8px;font-size:12.5px;line-height:1.55;color:var(--accent-2);font-weight:500;}
   .list-item.passato{border-left-color:var(--text-dim);opacity:.65;}
   .list-item.locked{border-left-color:var(--text-dim);opacity:.5;cursor:default;}
   .section-label{
@@ -1079,7 +1080,7 @@ const SCHEDE_DEFAULT = [
     periodo: '1 mese · alternata con Giorno B, 3x/settimana totali · Upper body',
     durataSettimane: 4,
     descrizione: 'Dopo le prime due settimane di riadattamento, il Blocco 2 passa a uno schema Upper/Lower: invece di allenare tutto il corpo in ogni seduta, questa giornata è dedicata alla parte superiore (petto, schiena, spalle, braccia), mentre "Blocco 2 — Giorno B" copre la parte inferiore. Nessun fastidio alla spalla sinistra nelle 5 sedute del Blocco 1: si reintroducono con gradualità alzate laterali e lavoro per i deltoidi posteriori.',
-    note: 'Alterna con "Blocco 2 — Giorno B" secondo lo schema A-B-A / B-A-B, una settimana con lo schema invertito rispetto alla precedente. Spalla sinistra: alzate laterali e rear delt sono nuovi in questo blocco — al primo segnale di fastidio, anche lieve, si tolgono senza discutere.',
+    note: 'Alterna con "Blocco 2 — Giorno B" secondo lo schema A-B-A / B-A-B, una settimana con lo schema invertito rispetto alla precedente. Spalla sinistra: alzate laterali e rear delt sono nuovi in questo blocco — al primo segnale di fastidio, anche lieve, si tolgono senza discutere. Cardio: niente più cardio a fine seduta pesi — vive ora in una sessione dedicata a parte, 1x/settimana per iniziare (20-25 min a intensità Zona 2 — parli a frasi intere ma non canti — su cyclette, tapis roulant in salita o step). Passa a 2x/settimana dopo 2-3 settimane solo se dormi normalmente, l\'RPE sui pesi non è più alto del solito e non ti senti trascinato; se noti più fatica accumulata, resta a 1x.',
     riscaldamento: [
       {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi/curvo al bancone', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
       {nome:'Affondo con rotazione toracica', serie:'5-6 per lato', note:'Apre il torace, utile prima di spinte e tirate', video:'https://www.youtube.com/watch?v=Boi2zLj_4_8'},
@@ -1204,7 +1205,7 @@ const SCHEDE_DEFAULT = [
     periodo: '1 mese · alternata con Giorno A, 3x/settimana totali · Lower body',
     durataSettimane: 4,
     descrizione: 'Giornata dedicata alla parte inferiore (gambe, glutei, bassa schiena) dello schema Upper/Lower del Blocco 2. Introduce gli stacchi rumeni, un movimento nuovo e più delicato per la schiena: le prime sedute sono dedicate solo alla tecnica, con carichi molto leggeri.',
-    note: 'Alterna con "Blocco 2 — Giorno A" secondo lo schema A-B-A / B-A-B, una settimana con lo schema invertito rispetto alla precedente. Stacchi rumeni: movimento nuovo — le prime 1-2 sedute vanno usate solo per imparare la tecnica, con carichi molto leggeri, prima di aggiungere peso sul serio.',
+    note: 'Alterna con "Blocco 2 — Giorno A" secondo lo schema A-B-A / B-A-B, una settimana con lo schema invertito rispetto alla precedente. Stacchi rumeni: movimento nuovo — le prime 1-2 sedute vanno usate solo per imparare la tecnica, con carichi molto leggeri, prima di aggiungere peso sul serio. Cardio: niente più cardio a fine seduta pesi — vive ora in una sessione dedicata a parte, 1x/settimana per iniziare (20-25 min a intensità Zona 2 — parli a frasi intere ma non canti — su cyclette, tapis roulant in salita o step). Passa a 2x/settimana dopo 2-3 settimane solo se dormi normalmente, l\'RPE sui pesi non è più alto del solito e non ti senti trascinato; se noti più fatica accumulata, resta a 1x.',
     riscaldamento: [
       {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
       {nome:'Leg swings', serie:'10 per lato', note:'Sblocca l\'anca prima di leg press e stacchi', video:'https://www.youtube.com/watch?v=difYoBtZi2s'},
@@ -2356,6 +2357,7 @@ function renderAllenamentoList(){
       <h3>${s.nome}</h3>
       <p>${s.periodo}</p>
       ${s.descrizione ? `<p class="scheda-desc">${s.descrizione}</p>` : ''}
+      ${s.note ? `<p class="scheda-note">📌 ${s.note}</p>` : ''}
     </div>
   `).join('');
 
@@ -2517,6 +2519,9 @@ function renderSessione(){
   }
   if(scheda.descrizione){
     html += `<div class="card"><p style="margin:0;font-size:13px;line-height:1.6;color:var(--text-dim);">${scheda.descrizione}</p></div>`;
+  }
+  if(scheda.note){
+    html += `<div class="card" style="border-left:3px solid var(--accent-2);"><p style="margin:0;font-size:13px;line-height:1.6;"><b>📌 Da tenere a mente:</b> ${scheda.note}</p></div>`;
   }
   html += `<div class="card">
     <div class="pill">Riscaldamento</div>
