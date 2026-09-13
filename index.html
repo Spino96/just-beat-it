@@ -239,10 +239,41 @@
     background:linear-gradient(90deg,var(--accent),#1fae63);color:#04140d;padding:3px 9px;border-radius:20px;
     margin-bottom:8px;box-shadow:0 0 12px -3px #39ff94aa;
   }
+  .scheda-toggle{
+    display:inline-flex;align-items:center;gap:4px;margin-top:9px;padding:0;border:none;background:none;
+    color:var(--accent);font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.1px;
+  }
+  .scheda-toggle:active{opacity:.7;}
   .blocco-progress{margin:2px 2px 10px;}
   .blocco-progress .bp-label{margin:0 0 5px;font-size:12px;color:var(--text-dim);font-weight:700;}
   .blocco-progress .bp-bar{height:6px;border-radius:4px;background:var(--panel-2);border:1px solid var(--border);overflow:hidden;}
   .blocco-progress .bp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-3));border-radius:4px;transition:width .35s ease;box-shadow:0 0 10px -1px #39ff9488;}
+  .cardio-card{
+    position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius-sm);box-shadow:var(--shadow-card);padding:16px 18px;margin-bottom:10px;
+  }
+  .cardio-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,#39d6ff,var(--accent-3));
+  }
+  .cardio-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .cardio-icon{
+    font-size:22px;width:42px;height:42px;border-radius:50%;flex-shrink:0;
+    background:var(--panel-2);border:1.5px solid #39d6ff55;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cardio-head h3{margin:0 0 2px;font-size:15.5px;font-weight:800;}
+  .cardio-freq{font-size:11.5px;font-weight:800;color:#39d6ff;letter-spacing:.2px;}
+  .cardio-toggle{
+    display:inline-flex;align-items:center;gap:4px;margin:0 0 2px;padding:0;border:none;background:none;
+    color:#39d6ff;font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.1px;
+  }
+  .cardio-toggle:active{opacity:.7;}
+  .cardio-rows{display:flex;flex-direction:column;gap:9px;margin:12px 0 10px;}
+  .cardio-row{font-size:12.5px;line-height:1.5;}
+  .cardio-row b{display:block;color:var(--text);font-weight:800;margin-bottom:2px;}
+  .cardio-row span{color:var(--text-dim);font-weight:500;}
+  .cardio-nota{margin:0;font-size:12px;line-height:1.5;color:var(--text-dim);font-weight:500;padding-top:10px;border-top:1px solid var(--border);}
   .section-label{
     font-size:12px;text-transform:uppercase;letter-spacing:.6px;
     color:var(--text-dim);font-weight:800;margin:20px 2px 10px;
@@ -1310,7 +1341,7 @@ const SCHEDE_DEFAULT = [
     periodo: '1 mese · alternata con Giorno B, 3x/settimana totali · Upper body',
     durataSettimane: 4,
     descrizione: 'Dopo le prime due settimane di riadattamento, il Blocco 2 passa a uno schema Upper/Lower: invece di allenare tutto il corpo in ogni seduta, questa giornata è dedicata alla parte superiore (petto, schiena, spalle, braccia), mentre "Blocco 2 — Giorno B" copre la parte inferiore. Nessun fastidio alla spalla sinistra nelle 5 sedute del Blocco 1: si reintroducono con gradualità alzate laterali e lavoro per i deltoidi posteriori.',
-    note: 'Alterna con "Blocco 2 — Giorno B" secondo lo schema A-B-A / B-A-B, una settimana con lo schema invertito rispetto alla precedente. Spalla sinistra: alzate laterali e rear delt sono nuovi in questo blocco — al primo segnale di fastidio, anche lieve, si tolgono senza discutere. Cardio: niente più cardio a fine seduta pesi — vive ora in una sessione dedicata a parte, 1x/settimana per iniziare (20-25 min a intensità Zona 2 — parli a frasi intere ma non canti — su cyclette, tapis roulant in salita o step). Passa a 2x/settimana dopo 2-3 settimane solo se dormi normalmente, l\'RPE sui pesi non è più alto del solito e non ti senti trascinato; se noti più fatica accumulata, resta a 1x.',
+    note: 'Alterna con "Blocco 2 — Giorno B" secondo lo schema A-B-A / B-A-B, una settimana con lo schema invertito rispetto alla precedente. Spalla sinistra: alzate laterali e rear delt sono nuovi in questo blocco — al primo segnale di fastidio, anche lieve, si tolgono senza discutere.',
     riscaldamento: [
       {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi/curvo al bancone', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
       {nome:'Affondo con rotazione toracica', serie:'5-6 per lato', note:'Apre il torace, utile prima di spinte e tirate', video:'https://www.youtube.com/watch?v=Boi2zLj_4_8'},
@@ -1437,7 +1468,7 @@ const SCHEDE_DEFAULT = [
     periodo: '1 mese · alternata con Giorno A, 3x/settimana totali · Lower body',
     durataSettimane: 4,
     descrizione: 'Giornata dedicata alla parte inferiore (gambe, glutei, bassa schiena) dello schema Upper/Lower del Blocco 2. Introduce gli stacchi rumeni, un movimento nuovo e più delicato per la schiena: le prime sedute sono dedicate solo alla tecnica, con carichi molto leggeri.',
-    note: 'Alterna con "Blocco 2 — Giorno A" secondo lo schema A-B-A / B-A-B, una settimana con lo schema invertito rispetto alla precedente. Stacchi rumeni: movimento nuovo — le prime 1-2 sedute vanno usate solo per imparare la tecnica, con carichi molto leggeri, prima di aggiungere peso sul serio. Cardio: niente più cardio a fine seduta pesi — vive ora in una sessione dedicata a parte, 1x/settimana per iniziare (20-25 min a intensità Zona 2 — parli a frasi intere ma non canti — su cyclette, tapis roulant in salita o step). Passa a 2x/settimana dopo 2-3 settimane solo se dormi normalmente, l\'RPE sui pesi non è più alto del solito e non ti senti trascinato; se noti più fatica accumulata, resta a 1x.',
+    note: 'Alterna con "Blocco 2 — Giorno A" secondo lo schema A-B-A / B-A-B, una settimana con lo schema invertito rispetto alla precedente. Stacchi rumeni: movimento nuovo — le prime 1-2 sedute vanno usate solo per imparare la tecnica, con carichi molto leggeri, prima di aggiungere peso sul serio.',
     riscaldamento: [
       {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
       {nome:'Leg swings', serie:'10 per lato', note:'Sblocca l\'anca prima di leg press e stacchi', video:'https://www.youtube.com/watch?v=difYoBtZi2s'},
@@ -1534,6 +1565,25 @@ const SCHEDE_DEFAULT = [
     ]
   }
 ];
+
+/* Sessione cardio dedicata al fiato, dal piano del personal trainer
+   (Blocco 2, 09/09/2026): non più a fine seduta pesi, vive ora come
+   sessione a parte in un giorno libero. Mostrata come card informativa
+   fissa — non è una scheda avviabile, non esiste tracking cardio in app —
+   accanto alle schede del gruppo indicato in "gruppo". */
+const CARDIO_INFO = {
+  gruppo: 'blocco2',
+  titolo: '🫁 Sessione cardio dedicata',
+  frequenza: '1x/settimana per iniziare',
+  righe: [
+    { label: 'Quando', testo: 'Un giorno libero a settimana, al posto di una delle camminate leggere.' },
+    { label: 'Attività', testo: 'Cyclette, tapis roulant in camminata in salita, o step — la più comoda/disponibile.' },
+    { label: 'Durata e ritmo', testo: '20-25 minuti continui, ritmo costante, niente scatti.' },
+    { label: 'Intensità', testo: 'Zona 2 — riesci a parlare a frasi intere ma non a cantare. Se sei senza fiato per parlare, vai troppo forte.' },
+    { label: 'Quando passare a 2x/sett.', testo: 'Dopo 2-3 settimane, solo se dormi normalmente, l\'RPE sui pesi non è più alto del solito e non ti senti trascinato. Più fatica accumulata → resta a 1x.' }
+  ],
+  nota: 'Negli altri giorni liberi dalla palestra: 15-20 minuti di camminata a passo sostenuto o cyclette leggera, come nel Blocco 1.'
+};
 
 /* Blocchi futuri (non ancora attivabili): anteprima informativa fedele al piano PDF.
    L'ex voce "Impostazione" è stata rimossa da qui perché ora è una scheda vera
@@ -2655,6 +2705,19 @@ function renderHome(){
 }
 
 /* ============ ALLENAMENTO: lista schede ============ */
+// Stato UI (non persistito): quali schede hanno descrizione/note espanse e
+// se la card cardio è aperta. Le card partono chiuse per tenere la lista
+// compatta — si apre solo quello che interessa in quel momento.
+let schedeEspanse = {};
+let cardioEspansa = false;
+function toggleSchedaEspansa(id){
+  schedeEspanse[id] = !schedeEspanse[id];
+  renderAllenamentoList();
+}
+function toggleCardioEspansa(){
+  cardioEspansa = !cardioEspansa;
+  renderAllenamentoList();
+}
 function renderAllenamentoList(){
   pageTitle.textContent = 'Allenamento';
   const disponibili = schedeAssegnateUtente();
@@ -2691,16 +2754,39 @@ function renderAllenamentoList(){
       }
     }
     const isTurno = s.gruppo && prossimaSchedaGruppo(s.gruppo) === s.id;
+    const espansa = !!schedeEspanse[s.id];
+    const haDettagli = !!(s.descrizione || s.note);
     return `${progressoHtml}
     <div class="list-item${isTurno ? ' turno' : ''}" onclick='avviaSessione("${s.id}")'>
       ${isTurno ? '<span class="turn-badge">👉 Oggi tocca a te</span>' : ''}
       <h3>${s.nome}</h3>
       <p>${s.periodo}</p>
-      ${s.descrizione ? `<p class="scheda-desc">${s.descrizione}</p>` : ''}
-      ${s.note ? `<p class="scheda-note">📌 ${s.note}</p>` : ''}
+      ${haDettagli ? `<button class="scheda-toggle" onclick='event.stopPropagation();toggleSchedaEspansa("${s.id}")'>${espansa ? '– Nascondi dettagli' : '+ Dettagli e note'}</button>` : ''}
+      ${espansa ? `
+        ${s.descrizione ? `<p class="scheda-desc">${s.descrizione}</p>` : ''}
+        ${s.note ? `<p class="scheda-note">📌 ${s.note}</p>` : ''}
+      ` : ''}
     </div>
   `;
   }).join('');
+
+  if(gruppiMostrati.has(CARDIO_INFO.gruppo)){
+    const righeHtml = CARDIO_INFO.righe.map(r=>`<div class="cardio-row"><b>${r.label}</b><span>${r.testo}</span></div>`).join('');
+    html += `<div class="cardio-card">
+      <div class="cardio-head">
+        <span class="cardio-icon">🫁</span>
+        <div>
+          <h3>${CARDIO_INFO.titolo}</h3>
+          <span class="cardio-freq">${CARDIO_INFO.frequenza}</span>
+        </div>
+      </div>
+      <button class="cardio-toggle" onclick="toggleCardioEspansa()">${cardioEspansa ? '– Nascondi dettagli' : '+ Come funziona'}</button>
+      ${cardioEspansa ? `
+        <div class="cardio-rows">${righeHtml}</div>
+        <p class="cardio-nota">${CARDIO_INFO.nota}</p>
+      ` : ''}
+    </div>`;
+  }
 
   if(passate.length){
     html += `<p class="section-label">Allenamenti passati</p>`;
