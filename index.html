@@ -70,7 +70,7 @@
     border-bottom:1px solid transparent;
     padding:20px 18px 12px;
     display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
-    transition:background-color .25s ease, backdrop-filter .25s ease, border-color .25s ease;
+    transition:background-color .25s ease, backdrop-filter .25s ease, border-color .25s ease, transform .3s ease;
     --section-accent:var(--accent);
   }
   header.scrolled{
@@ -78,6 +78,10 @@
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
     border-bottom-color:var(--border);
   }
+  /* Barra che si nasconde scorrendo verso il basso (più spazio per il
+     contenuto mentre si legge) e ricompare scorrendo verso l'alto anche di
+     poco (cosi' torna subito raggiungibile senza dover risalire tutto). */
+  header.hidden-bar{ transform:translateY(-100%); }
   /* Barra sottile che cambia colore in base alla sezione (impostata via JS,
      vedi sectionAccentColor/render()): dà un orientamento immediato su dove
      ci si trova senza aggiungere altro testo o icone nell'header. */
@@ -2060,10 +2064,23 @@ backBtn.addEventListener('click', async ()=>{
   setRoute({name: BACK_MAP[route.name] || 'home'});
 });
 
+let ultimoScrollYHeader = 0;
 window.addEventListener('scroll', ()=>{
   const h = document.querySelector('header');
-  if(h) h.classList.toggle('scrolled', window.scrollY > 4);
-});
+  if(!h) return;
+  const y = window.scrollY;
+  h.classList.toggle('scrolled', y > 4);
+  const delta = y - ultimoScrollYHeader;
+  // Sotto una soglia minima resta sempre visibile (evita che sparisca dopo
+  // un pelo di scroll in cima alla pagina); oltre, si nasconde scendendo
+  // verso il basso e riappare non appena si risale, anche di poco.
+  if(y > 70 && delta > 4){
+    h.classList.add('hidden-bar');
+  } else if(delta < -4 || y <= 70){
+    h.classList.remove('hidden-bar');
+  }
+  ultimoScrollYHeader = y;
+}, { passive:true });
 
 function goHome(){ route={name:'home'}; render(); }
 
@@ -2312,7 +2329,11 @@ function setRoute(r){
 function render(){
   clearRestTimer();
   renderHeaderAvatar();
-  if(headerEl) headerEl.style.setProperty('--section-accent', sectionAccentColor(route.name));
+  if(headerEl){
+    headerEl.style.setProperty('--section-accent', sectionAccentColor(route.name));
+    headerEl.classList.remove('hidden-bar'); // ogni nuova schermata parte con la barra visibile
+    ultimoScrollYHeader = window.scrollY;
+  }
   // Se stiamo lasciando la pagina dello scanner, spegni sempre la fotocamera:
   // niente stream attivo in background, né per batteria né per privacy.
   if(route.name!=='scansiona-barcode' && typeof fermaScannerBarcode==='function') fermaScannerBarcode();
@@ -5752,7 +5773,7 @@ function renderCreaAlimentoCustom(){
   pageTitle.textContent = 'Nuovo alimento';
   creaAlimentoModalita = 'porzione';
   view.innerHTML = `<div class="card">
-    <h3 style="margin-top:0;font-size:15px;">Alimento o ricetta personalizzata</h3>
+    <h3 style="margin-top:0;font-size:15px;">📝 Alimento o ricetta personalizzata</h3>
     <p class="field-hint" style="margin-top:0;">Per un piatto fatto in casa spesso è più comodo inserire i valori dell'intera porzione: calcolo io il per-100g per farlo funzionare come gli altri alimenti nel diario.</p>
     <div id="caError"></div>
     <div class="field"><label>Nome</label><input type="text" id="caNome" placeholder="Es. Pasta al pomodoro fatta in casa"></div>
@@ -6114,7 +6135,7 @@ function renderMisure(){
   pageTitle.textContent = 'Misure';
   misuraFotoFiles = [null,null,null,null];
   view.innerHTML = `<div class="card">
-    <h3 style="margin-top:0;font-size:15px;">Nuova rilevazione</h3>
+    <h3 style="margin-top:0;font-size:15px;">📏 Nuova rilevazione</h3>
     <p class="note-box" style="margin-top:0;">Per confrontare i dati nel tempo misura sempre nello stesso momento della giornata (es. al mattino, a digiuno) e con lo stesso metro, senza stringere troppo il nastro.</p>
     <div id="misuraError"></div>
     <div class="field"><label>Data</label><input type="date" id="mData" value="${new Date().toISOString().slice(0,10)}"></div>
@@ -6408,16 +6429,16 @@ function renderMisuraDetail(){
   </div>` : '';
 
   let html = bannerSalvato + `<div class="card">
-    <h3 style="margin-top:0;font-size:15px;">Valori registrati</h3>
+    <h3 style="margin-top:0;font-size:15px;">📋 Valori registrati</h3>
     ${righe || `<p class="empty" style="padding:10px 0;">Nessun valore numerico per questa rilevazione.</p>`}
   </div>
   ${asimmetrieHtml}
   <div class="card">
-    <h3 style="margin-top:0;font-size:15px;">Stima massa grassa</h3>
+    <h3 style="margin-top:0;font-size:15px;">⚖️ Stima massa grassa</h3>
     ${bfHtml}
   </div>
   <div class="card">
-    <h3 style="margin-top:0;font-size:15px;">Foto</h3>
+    <h3 style="margin-top:0;font-size:15px;">📸 Foto</h3>
     <div id="misuraFotoGrid">${spinnerHtml('Carico le foto...')}</div>
   </div>
   <div style="display:flex;gap:10px;">
@@ -7000,7 +7021,7 @@ function renderComparePane(){
     }).join('');
 
   body.innerHTML = `<div class="card">${tabsHtml}${paneHtml}${angoliDisponibili.length>1?`<p class="field-hint" style="margin:10px 2px 0;text-align:center;">← scorri per cambiare angolazione →</p>`:''}</div>
-    ${righeDiff ? `<div class="card"><h3 style="margin-top:0;font-size:15px;">Differenze</h3>${righeDiff}</div>` : ''}`;
+    ${righeDiff ? `<div class="card"><h3 style="margin-top:0;font-size:15px;">📈 Differenze</h3>${righeDiff}</div>` : ''}`;
 
   attachSwipeTabConfronto(angoliDisponibili, tab);
   aggiornaDistanzaConfronto(mA, mB);
