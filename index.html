@@ -102,6 +102,15 @@
   header h1{
     font-size:19px;margin:0;font-weight:800;letter-spacing:-.2px;
     text-align:center;white-space:nowrap;
+    /* Un titolo lungo (es. "Blocco 2 — Giorno A (Upper)") con solo
+       nowrap costringe la colonna "auto" del grid dell'header a sforare
+       la larghezza disponibile: prima poteva scorrere lateralmente (mai
+       notato), ma con lo scroll orizzontale ora disattivato quello
+       sforo tagliava semplicemente il bottone profilo a destra. overflow
+       hidden + ellipsis (e min-width:0, sotto) permettono alla colonna
+       di restringersi troncando il titolo invece di sforare: header
+       sempre centrato e simmetrico, niente più tagli. */
+    overflow:hidden;text-overflow:ellipsis;min-width:0;
     background:linear-gradient(90deg,var(--text) 25%,var(--section-accent,var(--accent)) 110%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
     transition:background .3s ease;
