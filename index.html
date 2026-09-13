@@ -1983,6 +1983,46 @@ function toggleIntegratoreFatto(nome){
   renderAlimentazione();
 }
 
+// Categoria nutrizionale principale di un alimento: la sceglie chi lo
+// registra (voluto: più affidabile di un calcolo automatico quando un
+// alimento è "misto"), con un suggerimento di partenza in base a quale
+// macro pesa di più in kcal. Usata per raggruppare "Aggiungi di nuovo".
+const FONTE_OPZIONI = [
+  { key:'carbo',    label:'Carboidrati', icona:'🍞' },
+  { key:'proteine', label:'Proteine',    icona:'🍗' },
+  { key:'grassi',   label:'Grassi',      icona:'🥑' },
+];
+function suggerisciFonte(p){
+  const kcalP = (p.prot100||0)*4, kcalC = (p.carb100||0)*4, kcalG = (p.grassi100||0)*9;
+  const max = Math.max(kcalP, kcalC, kcalG);
+  if(max<=0) return 'carbo';
+  if(max===kcalG) return 'grassi';
+  if(max===kcalP) return 'proteine';
+  return 'carbo';
+}
+
+// Target di un pasto (solo numeri, niente nomi di piatti): media di
+// kcal/macro tra le opzioni previste per quel pasto nel piano. Sostituisce
+// la vecchia scelta "una tra 5 opzioni con piatti fissi" — qui è solo un
+// riferimento su cosa centrare, poi si segna con "Segna pasto" cosa si è
+// mangiato davvero.
+function targetPastoMedia(p){
+  const opz = p.opzioni || [];
+  const n = opz.length || 1;
+  const somma = opz.reduce((s,o)=>({
+    kcal: s.kcal + (o.kcal||0),
+    prot: s.prot + (o.prot||0),
+    carb: s.carb + (o.carb||0),
+    grassi: s.grassi + (o.grassi||0),
+  }), { kcal:0, prot:0, carb:0, grassi:0 });
+  return {
+    kcal: Math.round(somma.kcal/n),
+    prot: Math.round(somma.prot/n),
+    carb: Math.round(somma.carb/n),
+    grassi: Math.round(somma.grassi/n),
+  };
+}
+
 /* Alimenti "extra" di oggi: cercati per nome (Open Food Facts) e aggiunti con
    una grammatura scelta, si sommano ai macro/kcal acquisiti del giorno oltre
    ai pasti del piano fisso. */
@@ -4472,7 +4512,7 @@ let selettoreDettaglioOi = null;
 // qui, sta direttamente sulla riga nella lista (vedi suppHtml).
 let dettaglioIntegratoreIdx = null;
 let dietaOpzioneSel = {};
-let dietaTab = 'piano';
+let dietaTab = 'segna-pasto';
 function setDietaTab(tab){ dietaTab = tab; renderAlimentazione(); }
 
 /* ============ MENU IN CONSULTAZIONE ============
@@ -4857,37 +4897,6 @@ function renderAlimentazione(){
     </div>`;
   }).join('');
 
-  const mealsHtml = DIETA_PIANO.pasti.map((p,i)=>{
-    const selIdx = dietaOpzioneSel[i] || 0;
-    const opz = p.opzioni[selIdx];
-    const fatto = !!cache.dietaLogOggi.pastiFatti[i];
-    const viaExtra = fatto && !!(cache.dietaLogOggi.pastiViaExtra && cache.dietaLogOggi.pastiViaExtra[i]);
-    const haExtra = !!(cache.dietaLogOggi.giornoAllenamento && opz.extraAllenamento);
-    // Se il pasto è stato segnato tramite un alimento extra (sostituisce
-    // l'opzione del piano, vedi segnaPastoFattoDaExtra) mostriamo cosa hai
-    // davvero mangiato — la somma degli extra loggati per questo pasto — 
-    // invece del titolo/kcal dell'opzione del piano che non hai seguito.
-    const extraDiQuestoPasto = viaExtra ? (cache.dietaLogOggi.alimentiExtra||[]).filter(a=>a.pasto===i) : [];
-    const kcalExtraPasto = extraDiQuestoPasto.reduce((s,a)=>s+a.kcal,0);
-    const sottotitolo = viaExtra
-      ? (extraDiQuestoPasto.length===1 ? extraDiQuestoPasto[0].nome : `${extraDiQuestoPasto.length} alimenti extra`)
-      : opz.titolo;
-    const kcalRiga = viaExtra ? kcalExtraPasto : opz.kcal;
-    return `
-    <div class="meal-row${fatto?' done':''}">
-      <button class="meal-check${fatto?' checked':''}" onclick="event.stopPropagation();toggleMealDone(${i})" aria-label="${fatto?'Segna come non fatto':'Segna come fatto'}">${fatto?'✓':''}</button>
-      <div class="meal-row-main" onclick="apriSelettoreOpzione(${i})">
-        <div class="meal-row-icon">${p.icona}</div>
-        <div class="meal-row-info">
-          <div class="meal-row-name">${p.nome}<span class="meal-row-time">${p.orario}</span></div>
-          <div class="meal-row-opt">${viaExtra ? '<span class="meal-row-extra" title="Segnato tramite alimento extra, non l\'opzione del piano">🔁</span> ' : ''}${sottotitolo}${haExtra ? ' <span class="meal-row-extra" title="Extra nei giorni di allenamento">🏋️</span>' : ''}</div>
-        </div>
-        <div class="meal-row-kcal">${kcalRiga}<span>kcal</span></div>
-        <div class="meal-row-chev">›</div>
-      </div>
-    </div>`;
-  }).join('');
-
   // Stessa checklist "a riga piatta" già usata per i pasti (.meal-row):
   // si spuntano subito col cerchietto, senza dover aprire ciascun
   // integratore prima. Il dettaglio (indicazioni d'uso, particolarità) si
@@ -4914,16 +4923,31 @@ function renderAlimentazione(){
   const acquaL = (acquaMl/1000).toFixed(2).replace('.', ',');
 
   const timingHtml = allenamentoFattoOggi()
-    ? `<div class="note-box">💪 Ti sei allenato oggi: nelle prossime ore punta su un pasto con proteine e carboidrati (es. la prossima opzione del piano) per favorire il recupero.</div>`
+    ? `<div class="note-box">💪 Ti sei allenato oggi: nelle prossime ore punta su un pasto con proteine e carboidrati per favorire il recupero.</div>`
     : '';
 
-  const pianoTabHtml = `
-    ${timingHtml}
-    ${mealsHtml}
-    <div class="diet-info-card">
-      <div class="dic-t">📝 Note pratiche</div>
-      <div class="dic-b">Ogni opzione di un pasto è intercambiabile con le altre dello stesso pasto (macro equivalenti, tolleranza ±10%): componi la settimana come preferisci, anche ripetendo o mescolando le opzioni. Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 150-200g corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Birra (~130 kcal/die media) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
+  // Media (kcal/macro) tra le opzioni previste per un pasto: solo numeri,
+  // niente nomi di piatti — l'utente non vuole più vedere esempi fissi, solo
+  // il target da centrare segnando poi cosa ha mangiato davvero.
+  const pastiTargetHtml = DIETA_PIANO.pasti.map((p,pi)=>{
+    const tgt = targetPastoMedia(p);
+    const voci = alimentiExtra.filter(a=> a.pasto===pi);
+    const subKcal = voci.reduce((s,a)=>s+a.kcal,0);
+    const vociHtml = voci.length ? `<div class="extra-food-list" style="margin-top:8px;">${voci.map(a=>`
+        <div class="extra-food-item">
+          <div class="efi-info">
+            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
+            <div class="efi-m">${a.grammi}g · ${a.kcal} kcal · P ${a.prot}g · C ${a.carb}g · G ${a.grassi}g</div>
+          </div>
+          <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
+        </div>`).join('')}</div>` : '';
+    return `<div class="diet-info-card">
+      <div class="dic-t">${p.icona} ${p.nome} <span style="float:right;font-weight:600;color:var(--text-dim);font-size:12px;">${p.orario}</span></div>
+      <div class="dic-b" style="margin-bottom:${voci.length?'0':'10px'};">Target: <b>${tgt.kcal} kcal</b> · P ${tgt.prot}g · C ${tgt.carb}g · G ${tgt.grassi}g${voci.length?` &nbsp;·&nbsp; Oggi: <b>${subKcal} kcal</b>`:''}</div>
+      ${vociHtml}
+      <button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="apriRicercaPerPasto(${pi})">+ Aggiungi a ${p.nome}</button>
     </div>`;
+  }).join('');
 
   // Raggruppati per pasto (come in MyFitnessPal/Yazio) invece di una lista
   // piatta: ogni alimento extra porta con sé il pasto scelto al momento del
@@ -4966,30 +4990,40 @@ function renderAlimentazione(){
   // inserire": non serve ricercare da capo un alimento già loggato prima.
   const extraRecenti = (profiloUtente && profiloUtente.alimentiRecenti) || [];
   const extraPersonalizzati = cache.alimentiPersonalizzati || [];
-  const rigaQuickAdd = (p, fonte, i, sottotitolo) => `
-    <div class="food-search-item" onclick="apriAggiungiExtraRapido('${fonte}', ${i})">
+  const rigaQuickAdd = (p, origine, i, sottotitolo) => `
+    <div class="food-search-item" onclick="apriAggiungiExtraRapido('${origine}', ${i})">
       <div class="fsi-info">
         <div class="fsi-n">${p.nome}</div>
         ${sottotitolo?`<div class="fsi-brand">${sottotitolo}</div>`:''}
       </div>
       <div class="fsi-kcal">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
     </div>`;
-  const personalizzatiQuickHtml = extraPersonalizzati.map((p,i)=> rigaQuickAdd(p, 'personalizzato', i, 'Personalizzato')).join('');
-  const recentiQuickHtml = extraRecenti.map((p,i)=> rigaQuickAdd(p, 'recente', i, p.marca||'')).join('');
-  const quickAddSectionHtml = (personalizzatiQuickHtml || recentiQuickHtml) ? `<div class="diet-info-card">
+  // Organizziamo "Aggiungi di nuovo" per fonte principale (Carboidrati /
+  // Proteine / Grassi) invece che per provenienza (personalizzato/recente):
+  // così è immediato trovare l'alimento giusto quando si sa cosa si vuole
+  // aggiungere (es. "una fonte di proteine").
+  const quickAddItems = [
+    ...extraPersonalizzati.map((p,i)=> ({ p, origine:'personalizzato', idx:i, sottotitolo:'Personalizzato' })),
+    ...extraRecenti.map((p,i)=> ({ p, origine:'recente', idx:i, sottotitolo:p.marca||'' })),
+  ];
+  const quickAddGruppi = FONTE_OPZIONI
+    .map(fo => ({ ...fo, items: quickAddItems.filter(it => (it.p.fonte || suggerisciFonte(it.p)) === fo.key) }))
+    .filter(g => g.items.length);
+  const quickAddGruppiHtml = quickAddGruppi.map((g,gi) => `
+      <p class="section-label"${gi===0?' style="margin-top:0;"':''}>${g.icona} ${g.label}</p>
+      ${g.items.map(it=> rigaQuickAdd(it.p, it.origine, it.idx, it.sottotitolo)).join('')}
+    `).join('');
+  const quickAddSectionHtml = quickAddItems.length ? `<div class="diet-info-card">
       <div class="dic-t">⚡ Aggiungi di nuovo</div>
       <div class="dic-b" style="margin-bottom:10px;">Tocca un alimento già usato: puoi cambiare grammatura e pasto prima di confermare.</div>
-      ${personalizzatiQuickHtml ? `<p class="section-label" style="margin-top:0;">I miei alimenti e ricette</p>${personalizzatiQuickHtml}` : ''}
-      ${recentiQuickHtml ? `<p class="section-label"${personalizzatiQuickHtml?'':' style="margin-top:0;"'}>Aggiunti di recente</p>${recentiQuickHtml}` : ''}
+      ${quickAddGruppiHtml}
     </div>` : '';
 
-  const extraTabHtml = `
-    <div class="diet-info-card">
-      <div class="dic-t">🔍 Extra di oggi</div>
-      ${alimentiExtra.length
-        ? `<div class="dic-b" style="margin-bottom:10px;">Si sommano ai macro qui sopra.</div>${extraGruppiHtml}${extraSenzaPastoHtml}`
-        : `<div class="dic-b" style="margin-bottom:2px;">Qualcosa fuori dal piano? Aggiungilo qui sotto: tocca un alimento già usato per riaggiungerlo in pochi secondi, o cercane uno nuovo.</div>`}
-    </div>
+  const segnaPastoTabHtml = `
+    ${timingHtml}
+    ${pastiTargetHtml}
+
+    ${extraSenzaPastoHtml}
 
     ${quickAddSectionHtml}
 
@@ -5006,6 +5040,11 @@ function renderAlimentazione(){
         <button class="btn small secondary" onclick="aggiungiAcqua(-250)">−250 ml</button>
         <button class="btn small secondary" onclick="aggiungiAcqua(250)">+250 ml</button>
       </div>
+    </div>
+
+    <div class="diet-info-card">
+      <div class="dic-t">📝 Note pratiche</div>
+      <div class="dic-b">Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 150-200g corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Birra (~130 kcal/die media) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
     </div>`;
 
   const integratoriTabHtml = `
@@ -5029,12 +5068,12 @@ function renderAlimentazione(){
       <div class="dic-b">Tra 2-3 settimane (peso, circonferenza vita, foto), oppure al ricevimento del Blocco 2 della scheda di allenamento o di nuove analisi del sangue.</div>
     </div>`;
 
-  const tabContentHtml = dietaTab==='extra' ? extraTabHtml : dietaTab==='integratori' ? integratoriTabHtml : pianoTabHtml;
+  const tabContentHtml = dietaTab==='integratori' ? integratoriTabHtml : segnaPastoTabHtml;
 
   view.innerHTML = `
     <div class="diet-summary">
       <div class="tlt">Piano nutrizionale</div>
-      <div class="tsb">${DIETA_PIANO.fase}<br>5 pasti al giorno · 5 opzioni intercambiabili per ogni pasto</div>
+      <div class="tsb">${DIETA_PIANO.fase}<br>5 pasti al giorno · segna cosa mangi davvero, pasto per pasto</div>
       ${cache.dietaLogOggi.giornoAllenamento!==null ? `<button class="btn small secondary" style="margin-top:10px;" onclick="impostaGiornoAllenamento(true)">${cache.dietaLogOggi.giornoAllenamento ? '🏋️ Oggi ti alleni' : '🛋️ Oggi riposo'} · tocca per cambiare</button>` : ''}
       <div class="kcal-ring-wrap">
         <svg viewBox="0 0 120 120" class="kcal-ring">
@@ -5050,8 +5089,7 @@ function renderAlimentazione(){
     </div>
 
     <div class="tab-bar">
-      <div class="tab-btn${dietaTab==='piano'?' active':''}" onclick="setDietaTab('piano')">🍽️ Piano</div>
-      <div class="tab-btn${dietaTab==='extra'?' active':''}" onclick="setDietaTab('extra')">🔍 Extra</div>
+      <div class="tab-btn${dietaTab==='segna-pasto'?' active':''}" onclick="setDietaTab('segna-pasto')">🍽️ Segna pasto</div>
       <div class="tab-btn${dietaTab==='integratori'?' active':''}" onclick="setDietaTab('integratori')">💊 Integratori</div>
     </div>
 
@@ -5669,7 +5707,7 @@ function condividiListaSpesa(){
    del piano fisso, con grammatura scelta liberamente. Nessuna chiave API:
    Open Food Facts è un database aperto e gratuito, pensato per essere
    interrogato direttamente dal browser. */
-let ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx:null };
+let ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx:null, fonte:null };
 
 function renderCercaAlimento(){
   pageTitle.textContent = 'Cerca alimento';
@@ -5686,6 +5724,9 @@ function renderCercaAlimento(){
     const pastoChipsHtml = DIETA_PIANO.pasti.map((pp,pi)=>
       `<div class="chip${pi===s.pastoIdx?' active':''}" onclick="sceglieCategoriaPastoExtra(${pi})">${pp.icona} ${pp.nome}</div>`
     ).join('');
+    const fonteChipsHtml = FONTE_OPZIONI.map(fo=>
+      `<div class="chip${fo.key===s.fonte?' active':''}" onclick="sceglieFonteExtra('${fo.key}')">${fo.icona} ${fo.label}</div>`
+    ).join('');
     view.innerHTML = `
       <div class="card">
         <h3 style="margin-top:0;">${p.nome}</h3>
@@ -5693,6 +5734,10 @@ function renderCercaAlimento(){
         <div class="field">
           <label>In quale pasto lo aggiungi?</label>
           <div class="chip-select">${pastoChipsHtml}</div>
+        </div>
+        <div class="field">
+          <label>Fonte principale</label>
+          <div class="chip-select">${fonteChipsHtml}</div>
         </div>
         <div class="field">
           <label>Quantità (grammi)</label>
@@ -5939,7 +5984,8 @@ function pastoSuggeritoOra(){
 function selezionaAlimentoRicerca(i){
   ricercaAlimentoState.selezionato = ricercaAlimentoState.risultati[i];
   ricercaAlimentoState.grammi = 100;
-  ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
+  if(ricercaAlimentoState.pastoIdx==null) ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
+  ricercaAlimentoState.fonte = suggerisciFonte(ricercaAlimentoState.selezionato);
   renderCercaAlimento();
 }
 
@@ -5948,15 +5994,22 @@ function selezionaAlimentoPersonalizzato(i){
   ricercaAlimentoState.selezionato = {
     nome: p.nome, marca: '',
     kcal100: p.kcal100, prot100: p.prot100, carb100: p.carb100, grassi100: p.grassi100,
-    micro100: { fibre: p.fibre100!=null ? p.fibre100 : null }, acqua100: null
+    micro100: { fibre: p.fibre100!=null ? p.fibre100 : null }, acqua100: null,
+    fonte: p.fonte
   };
   ricercaAlimentoState.grammi = 100;
-  ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
+  if(ricercaAlimentoState.pastoIdx==null) ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
+  ricercaAlimentoState.fonte = p.fonte || suggerisciFonte(p);
   renderCercaAlimento();
 }
 
 function sceglieCategoriaPastoExtra(idx){
   ricercaAlimentoState.pastoIdx = idx;
+  renderCercaAlimento();
+}
+
+function sceglieFonteExtra(key){
+  ricercaAlimentoState.fonte = key;
   renderCercaAlimento();
 }
 
@@ -5975,10 +6028,13 @@ async function eliminaAlimentoPersonalizzato(id){
    (più comodo per una ricetta di cui conosci il totale, non il per-100g):
    in quel caso viene fatta la conversione internamente al salvataggio. */
 let creaAlimentoModalita = 'porzione';
+let creaAlimentoFonte = null;
 
 function renderCreaAlimentoCustom(){
   pageTitle.textContent = 'Nuovo alimento';
   creaAlimentoModalita = 'porzione';
+  creaAlimentoFonte = null;
+  const fonteChipsHtml = FONTE_OPZIONI.map(fo=>`<div class="chip" data-f="${fo.key}">${fo.icona} ${fo.label}</div>`).join('');
   view.innerHTML = `<div class="card">
     <h3 style="margin-top:0;font-size:15px;">📝 Alimento o ricetta personalizzata</h3>
     <p class="field-hint" style="margin-top:0;">Per un piatto fatto in casa spesso è più comodo inserire i valori dell'intera porzione: calcolo io il per-100g per farlo funzionare come gli altri alimenti nel diario.</p>
@@ -5989,6 +6045,10 @@ function renderCreaAlimentoCustom(){
       <div class="chip" data-m="100g">Per 100g</div>
     </div>
     <div id="caCampi"></div>
+    <div class="field">
+      <label>Fonte principale</label>
+      <div class="chip-select" id="caFonteChips">${fonteChipsHtml}</div>
+    </div>
     <button class="btn" id="salvaAlimentoCustomBtn" style="margin-top:6px;" onclick="salvaAlimentoCustom()">Salva</button>
   </div>`;
 
@@ -5999,6 +6059,13 @@ function renderCreaAlimentoCustom(){
       chip.classList.add('active');
       creaAlimentoModalita = chip.dataset.m;
       renderCampiAlimentoCustom();
+    });
+  });
+  document.querySelectorAll('#caFonteChips .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('#caFonteChips .chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      creaAlimentoFonte = chip.dataset.f;
     });
   });
 }
@@ -6049,6 +6116,10 @@ async function salvaAlimentoCustom(){
     errBox.innerHTML = '<div class="error-banner">Controlla i valori numerici inseriti.</div>';
     return;
   }
+  if(!creaAlimentoFonte){
+    errBox.innerHTML = '<div class="error-banner">Scegli la fonte principale (Carboidrati, Proteine o Grassi).</div>';
+    return;
+  }
 
   let kcal100, prot100, carb100, grassi100, fibre100;
   if(creaAlimentoModalita==='porzione'){
@@ -6069,7 +6140,7 @@ async function salvaAlimentoCustom(){
 
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try{
-    const payload = { nome, kcal100, prot100, carb100, grassi100, fibre100, creato: new Date().toISOString() };
+    const payload = { nome, kcal100, prot100, carb100, grassi100, fibre100, fonte: creaAlimentoFonte, creato: new Date().toISOString() };
     const ref = await userCollection('alimentiPersonalizzati').add(payload);
     cache.alimentiPersonalizzati.push({ id: ref.id, ...payload });
     setRoute({name:'cerca-alimento'});
@@ -6106,8 +6177,9 @@ function toggleMicroSearch(){
 // il foglio rapido "Aggiungi di nuovo" nella tab Extra: entrambi finiscono
 // per chiamare questa, così il comportamento (somma kcal, segna il pasto
 // fatto, ricorda l'alimento) resta identico indipendentemente da dove parte.
-function eseguiAggiungiAlimentoExtra(p, g, pastoIdx){
+function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
   const fattore = g/100;
+  const fonteFinale = fonte || p.fonte || suggerisciFonte(p);
   aggiungiAlimentoExtra({
     id: 'extra-'+Date.now(),
     nome: p.nome,
@@ -6117,7 +6189,8 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx){
     prot: Math.round(p.prot100*fattore*10)/10,
     carb: Math.round(p.carb100*fattore*10)/10,
     grassi: Math.round(p.grassi100*fattore*10)/10,
-    pasto: pastoIdx
+    pasto: pastoIdx,
+    fonte: fonteFinale
   });
   // Aggiungere un alimento extra a un pasto conta come "aver fatto" quel
   // pasto: se non era già segnato lo spuntiamo qui, con lo stesso snapshot
@@ -6125,7 +6198,7 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx){
   // manuale — coerente col diario storico. Se il pasto era già segnato non
   // tocchiamo lo snapshot esistente.
   segnaPastoFattoDaExtra(pastoIdx);
-  registraAlimentoRecente(p);
+  registraAlimentoRecente(p, fonteFinale);
 }
 
 function confermaAggiungiAlimento(){
@@ -6135,8 +6208,8 @@ function confermaAggiungiAlimento(){
   // si seleziona l'alimento), ma per sicurezza degrada su "Colazione" invece
   // di bloccare il salvataggio se per qualche motivo manca.
   const pastoIdx = ricercaAlimentoState.pastoIdx!=null ? ricercaAlimentoState.pastoIdx : 0;
-  eseguiAggiungiAlimentoExtra(p, g, pastoIdx);
-  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx:null };
+  eseguiAggiungiAlimentoExtra(p, g, pastoIdx, ricercaAlimentoState.fonte);
+  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx:null, fonte:null };
   setRoute({name:'alimentazione'});
 }
 
@@ -6146,12 +6219,12 @@ function confermaAggiungiAlimento(){
    secondi, senza dover ricercare o navigare altrove. */
 let extraRapidoState = null; // { p, grammi, pastoIdx }
 
-function apriAggiungiExtraRapido(fonte, idx){
-  const p = fonte==='recente'
+function apriAggiungiExtraRapido(origine, idx){
+  const p = origine==='recente'
     ? (profiloUtente && profiloUtente.alimentiRecenti || [])[idx]
     : (cache.alimentiPersonalizzati || [])[idx];
   if(!p) return;
-  extraRapidoState = { p, grammi:100, pastoIdx: pastoSuggeritoOra() };
+  extraRapidoState = { p, grammi:100, pastoIdx: pastoSuggeritoOra(), fonte: p.fonte || suggerisciFonte(p) };
   hapticaLieve();
   mostraAggiungiExtraRapidoOverlay();
 }
@@ -6159,7 +6232,7 @@ function apriAggiungiExtraRapido(fonte, idx){
 function mostraAggiungiExtraRapidoOverlay(){
   const st = extraRapidoState;
   if(!st) return;
-  const { p, grammi, pastoIdx } = st;
+  const { p, grammi, pastoIdx, fonte } = st;
   const fattore = grammi/100;
   const kcal = Math.round(p.kcal100*fattore);
   const prot = Math.round(p.prot100*fattore*10)/10;
@@ -6167,6 +6240,9 @@ function mostraAggiungiExtraRapidoOverlay(){
   const grassi = Math.round(p.grassi100*fattore*10)/10;
   const pastoChipsHtml = DIETA_PIANO.pasti.map((pp,pi)=>
     `<div class="chip${pi===pastoIdx?' active':''}" onclick="sceglieCategoriaPastoExtraRapido(${pi})">${pp.icona} ${pp.nome}</div>`
+  ).join('');
+  const fonteChipsHtml = FONTE_OPZIONI.map(fo=>
+    `<div class="chip${fo.key===fonte?' active':''}" onclick="sceglieFonteExtraRapido('${fo.key}')">${fo.icona} ${fo.label}</div>`
   ).join('');
   let overlay = document.getElementById('extraRapidoOverlay');
   if(!overlay){
@@ -6183,6 +6259,7 @@ function mostraAggiungiExtraRapidoOverlay(){
     </div>
     ${p.marca ? `<p class="field-hint" style="margin:-8px 0 14px;">${p.marca}</p>` : ''}
     <div class="field"><label>In quale pasto lo aggiungi?</label><div class="chip-select">${pastoChipsHtml}</div></div>
+    <div class="field"><label>Fonte principale</label><div class="chip-select">${fonteChipsHtml}</div></div>
     <div class="field"><label>Quantità (grammi)</label><input type="number" min="1" id="erGrammiInput" value="${grammi}" oninput="aggiornaAnteprimaGrammiRapido()"></div>
     <div class="meal-macro-mini" style="margin-bottom:14px;">
       <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b id="erProt">${prot}g</b></span>
@@ -6198,6 +6275,12 @@ function mostraAggiungiExtraRapidoOverlay(){
 function sceglieCategoriaPastoExtraRapido(pi){
   if(!extraRapidoState) return;
   extraRapidoState.pastoIdx = pi;
+  mostraAggiungiExtraRapidoOverlay();
+}
+
+function sceglieFonteExtraRapido(key){
+  if(!extraRapidoState) return;
+  extraRapidoState.fonte = key;
   mostraAggiungiExtraRapidoOverlay();
 }
 
@@ -6218,7 +6301,7 @@ function confermaAggiungiExtraRapido(){
   const st = extraRapidoState;
   if(!st) return;
   const pastoIdx = st.pastoIdx!=null ? st.pastoIdx : 0;
-  eseguiAggiungiAlimentoExtra(st.p, st.grammi, pastoIdx);
+  eseguiAggiungiAlimentoExtra(st.p, st.grammi, pastoIdx, st.fonte);
   chiudiAggiungiExtraRapido();
   renderAlimentazione();
 }
@@ -6248,10 +6331,10 @@ function segnaPastoFattoDaExtra(pastoIdx){
 /* Scorciatoia per i cibi che si ripetono spesso: tiene gli ultimi 8 alimenti
    aggiunti (per valore/100g, non per grammatura specifica) sul profilo, così
    la prossima volta non serve ricercarli da capo. */
-function registraAlimentoRecente(p){
+function registraAlimentoRecente(p, fonte){
   if(!profiloUtente) return;
   const chiave = a => (a.nome+'|'+(a.marca||'')).toLowerCase();
-  const voce = { nome:p.nome, marca:p.marca||'', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100, micro100:p.micro100||{}, acqua100:(p.acqua100!=null?p.acqua100:null) };
+  const voce = { nome:p.nome, marca:p.marca||'', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100, micro100:p.micro100||{}, acqua100:(p.acqua100!=null?p.acqua100:null), fonte: fonte || p.fonte || suggerisciFonte(p) };
   let lista = (profiloUtente.alimentiRecenti || []).filter(a=> chiave(a)!==chiave(voce));
   lista.unshift(voce);
   lista = lista.slice(0,8);
@@ -6264,8 +6347,17 @@ function selezionaAlimentoRecente(i){
   if(!p) return;
   ricercaAlimentoState.selezionato = p;
   ricercaAlimentoState.grammi = 100;
-  ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
+  if(ricercaAlimentoState.pastoIdx==null) ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
+  ricercaAlimentoState.fonte = p.fonte || suggerisciFonte(p);
   renderCercaAlimento();
+}
+
+/* Apre la ricerca alimento con il pasto già preselezionato (dal tap su
+   "+ Aggiungi a [pasto]" nelle card target di Segna pasto), invece di
+   lasciare che venga dedotto dall'ora attuale. */
+function apriRicercaPerPasto(pi){
+  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx: pi, fonte:null };
+  setRoute({name:'cerca-alimento'});
 }
 
 /* ============ SCANNER CODICE A BARRE ============
@@ -6362,6 +6454,7 @@ async function onBarcodeRilevato(codice){
     };
     ricercaAlimentoState.grammi = 100;
     ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
+    ricercaAlimentoState.fonte = suggerisciFonte(ricercaAlimentoState.selezionato);
     setRoute({name:'cerca-alimento'});
   }catch(e){
     if(stato) stato.textContent = 'Errore nella ricerca del prodotto. Riprova o usa la ricerca per nome.';
