@@ -274,6 +274,17 @@
   .cardio-row b{display:block;color:var(--text);font-weight:800;margin-bottom:2px;}
   .cardio-row span{color:var(--text-dim);font-weight:500;}
   .cardio-nota{margin:0;font-size:12px;line-height:1.5;color:var(--text-dim);font-weight:500;padding-top:10px;border-top:1px solid var(--border);}
+  .cardio-session-card{text-align:center;padding:26px 20px;}
+  .cardio-session-tipo{margin:0 0 6px;font-size:14px;font-weight:800;color:#39d6ff;}
+  .cardio-timer-display{
+    font-size:52px;font-weight:800;letter-spacing:.5px;margin:6px 0 18px;font-variant-numeric:tabular-nums;
+    background:linear-gradient(90deg,#39d6ff,var(--accent-3));-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .cardio-target-bar{height:8px;border-radius:5px;background:var(--panel-2);border:1px solid var(--border);overflow:hidden;margin-bottom:8px;}
+  .cardio-target-fill{height:100%;background:linear-gradient(90deg,#39d6ff,var(--accent-3));border-radius:5px;transition:width .35s ease;box-shadow:0 0 10px -1px #39d6ff88;}
+  .cardio-target-label{margin:0 0 14px;font-size:12px;color:var(--text-dim);font-weight:700;}
+  .cardio-kcal-live{margin:0;font-size:22px;font-weight:800;color:var(--text);}
+  .cardio-kcal-live span{color:var(--accent-2);}
   .section-label{
     font-size:12px;text-transform:uppercase;letter-spacing:.6px;
     color:var(--text-dim);font-weight:800;margin:20px 2px 10px;
@@ -1585,6 +1596,17 @@ const CARDIO_INFO = {
   nota: 'Negli altri giorni liberi dalla palestra: 15-20 minuti di camminata a passo sostenuto o cyclette leggera, come nel Blocco 1.'
 };
 
+/* Attività per la sessione cardio avviabile dall'app, con il MET (Metabolic
+   Equivalent of Task) di riferimento per ciascuna a ritmo Zona 2/moderato —
+   valori standard da tabelle di compendio dell'attività fisica. Servono solo
+   a stimare le kcal bruciate (kcal/min = MET × 3.5 × pesoKg / 200), non è
+   un dato clinico preciso: è una stima per orientarsi, non un cardiofrequenzimetro. */
+const CARDIO_ATTIVITA = [
+  { key:'cyclette', label:'Cyclette', icona:'🚴', met:6.8 },
+  { key:'tapis', label:'Tapis roulant in salita', icona:'⛰️', met:6.0 },
+  { key:'step', label:'Step', icona:'🪜', met:7.0 }
+];
+
 /* Blocchi futuri (non ancora attivabili): anteprima informativa fedele al piano PDF.
    L'ex voce "Impostazione" è stata rimossa da qui perché ora è una scheda vera
    (Blocco 2 — Giorno A/B) e comparirebbe due volte, come testo statico e come
@@ -1755,7 +1777,7 @@ async function scegliAvatarFoto(input){
 }
 
 /* ============ AUTH + FIRESTORE ============ */
-const cache = { sessioni: [], misure: [], dietaLog: [], alimentiPersonalizzati: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, giornoAllenamento:null } };
+const cache = { sessioni: [], misure: [], dietaLog: [], alimentiPersonalizzati: [], cardioSessioni: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, giornoAllenamento:null } };
 let currentUid = null;
 let profiloUtente = null;
 // Promessa di loadData() già avviata da boot() in parallelo con le altre
@@ -2033,15 +2055,17 @@ function allenamentoFattoOggi(){
 }
 
 async function loadData(){
-  const [sessioniSnap, misureSnap, dietaLogSnap, alimentiCustomSnap] = await Promise.all([
+  const [sessioniSnap, misureSnap, dietaLogSnap, alimentiCustomSnap, cardioSnap] = await Promise.all([
     userCollection('sessioni').orderBy('data','asc').get(),
     userCollection('misure').orderBy('data','asc').get(),
     userCollection('dietaLog').get().catch(()=>({docs:[]})),
-    userCollection('alimentiPersonalizzati').get().catch(()=>({docs:[]}))
+    userCollection('alimentiPersonalizzati').get().catch(()=>({docs:[]})),
+    userCollection('cardioSessioni').orderBy('data','asc').get().catch(()=>({docs:[]}))
   ]);
   cache.sessioni = sessioniSnap.docs.map(d => ({ id:d.id, ...d.data() }));
   cache.misure = misureSnap.docs.map(d => ({ id:d.id, ...d.data() }));
   cache.alimentiPersonalizzati = alimentiCustomSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+  cache.cardioSessioni = cardioSnap.docs.map(d => ({ id:d.id, ...d.data() }));
   cache.dietaLog = dietaLogSnap.docs
     .map(d => ({ id:d.id, ...d.data() }))
     .sort((a,b)=> a.id.localeCompare(b.id));
@@ -2186,6 +2210,8 @@ let route = {name:'home'};
 let sessionDraft = null;
 let restTimerHandle = null;
 let restWakeLock = null; // Wake Lock API: tiene lo schermo acceso durante il recupero
+let cardioDraft = null; // sessione cardio in corso: {tipo, avviata, startAt, paused, pausedAt, pausedAccumMs}
+let cardioTimerHandle = null;
 
 const view = document.getElementById('view');
 const pageTitle = document.getElementById('pageTitle');
@@ -2199,7 +2225,7 @@ const headerEl = document.querySelector('header');
    questo). Solo due domini hanno un colore proprio, tutto il resto (Home,
    Statistiche, Misure, Profilo...) resta sul verde di base. */
 function sectionAccentColor(routeName){
-  const allenamento = ['allenamento-list','sessione','sessione-modifica'];
+  const allenamento = ['allenamento-list','sessione','sessione-modifica','sessione-cardio'];
   const dieta = ['alimentazione','diario','settimana-alimentare','menu-alimentare','lista-spesa','cerca-alimento','crea-alimento-custom','scansiona-barcode'];
   if(allenamento.includes(routeName)) return 'var(--accent-3)';
   if(dieta.includes(routeName)) return 'var(--accent-2)';
@@ -2208,6 +2234,7 @@ function sectionAccentColor(routeName){
 
 const BACK_MAP = {
   'allenamento-list':'home',
+  'sessione-cardio':'allenamento-list',
   'alimentazione':'home',
   'cerca-alimento':'alimentazione',
   'scansiona-barcode':'cerca-alimento',
@@ -2513,6 +2540,11 @@ function setRoute(r){
 
 function render(){
   clearRestTimer();
+  // Il tick del cronometro cardio aggiorna elementi presenti solo nella
+  // schermata 'sessione-cardio': fuori da lì lo fermiamo (i minuti trascorsi
+  // restano comunque corretti, si ricalcolano da cardioDraft.startAt appena
+  // si torna sulla schermata — vedi cardioElapsedMs()).
+  if(route.name!=='sessione-cardio' && cardioTimerHandle){ clearInterval(cardioTimerHandle); cardioTimerHandle=null; }
   renderHeaderAvatar();
   if(headerEl){
     headerEl.style.setProperty('--section-accent', sectionAccentColor(route.name));
@@ -2533,6 +2565,7 @@ function render(){
   else if(route.name==='menu-alimentare') renderMenuAlimentare();
   else if(route.name==='lista-spesa') renderListaSpesa();
   else if(route.name==='sessione') renderSessione();
+  else if(route.name==='sessione-cardio') renderSessioneCardio();
   else if(route.name==='alimentazione') renderAlimentazione();
   else if(route.name==='misure') renderMisure();
   else if(route.name==='storico') renderStorico();
@@ -2772,14 +2805,16 @@ function renderAllenamentoList(){
 
   if(gruppiMostrati.has(CARDIO_INFO.gruppo)){
     const righeHtml = CARDIO_INFO.righe.map(r=>`<div class="cardio-row"><b>${r.label}</b><span>${r.testo}</span></div>`).join('');
+    const fatteSettimana = cardioSessioniUltimi7Giorni();
     html += `<div class="cardio-card">
       <div class="cardio-head">
         <span class="cardio-icon">🫁</span>
         <div>
           <h3>${CARDIO_INFO.titolo}</h3>
-          <span class="cardio-freq">${CARDIO_INFO.frequenza}</span>
+          <span class="cardio-freq">${fatteSettimana>0 ? `${fatteSettimana} fatta${fatteSettimana===1?'':'e'} negli ultimi 7 giorni` : CARDIO_INFO.frequenza}</span>
         </div>
       </div>
+      <button class="btn" style="margin-bottom:8px;" onclick="avviaSessioneCardio()">▶ Avvia sessione cardio</button>
       <button class="cardio-toggle" onclick="toggleCardioEspansa()">${cardioEspansa ? '– Nascondi dettagli' : '+ Come funziona'}</button>
       ${cardioEspansa ? `
         <div class="cardio-rows">${righeHtml}</div>
@@ -2813,6 +2848,188 @@ function renderAllenamentoList(){
   }
 
   view.innerHTML = html;
+}
+
+/* ============ SESSIONE CARDIO ============
+   A differenza della sessione pesi (avviaSessione), qui non c'è una scheda
+   con esercizi: si sceglie solo l'attività, si avvia un cronometro e alla
+   fine si stima quante kcal sono state bruciate dal tempo trascorso. Il
+   cronometro è basato su un istante di inizio assoluto (startAt) più un
+   accumulo del tempo passato in pausa, non su un contatore incrementato ad
+   ogni tick — stesso principio robusto già usato per il timer di recupero
+   (vedi startRestTimer): se il telefono va in stand-by, al ritorno il tempo
+   trascorso si ricalcola comunque giusto da Date.now(). */
+function pesoUtenteStimato(){
+  const conPeso = cache.misure.filter(m=>m.peso!=null).slice().sort((a,b)=> new Date(b.data)-new Date(a.data));
+  return conPeso.length ? conPeso[0].peso : 75; // stima ragionevole se non ci sono ancora misure salvate
+}
+
+function formatMMSS(ms){
+  const totalSec = Math.max(0, Math.floor(ms/1000));
+  const m = Math.floor(totalSec/60);
+  const s = totalSec%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+// kcal/min = MET × 3.5 × pesoKg / 200 (formula standard di stima da MET)
+function kcalStimateCardio(tipoKey, ms){
+  const att = CARDIO_ATTIVITA.find(a=>a.key===tipoKey);
+  if(!att) return 0;
+  const minuti = ms/60000;
+  return (att.met * 3.5 * pesoUtenteStimato() / 200) * minuti;
+}
+
+function cardioSessioniUltimi7Giorni(){
+  const settimanaFa = Date.now() - 7*24*60*60*1000;
+  return cache.cardioSessioni.filter(s=> new Date(s.data).getTime() >= settimanaFa).length;
+}
+
+function avviaSessioneCardio(){
+  cardioDraft = { tipo:null, avviata:false };
+  setRoute({name:'sessione-cardio'});
+}
+
+function scegliTipoCardio(tipo){
+  if(!cardioDraft) return;
+  cardioDraft.tipo = tipo;
+  renderSessioneCardio();
+}
+
+function iniziaCronometroCardio(){
+  if(!cardioDraft || !cardioDraft.tipo) return;
+  cardioDraft.avviata = true;
+  cardioDraft.startAt = Date.now();
+  cardioDraft.pausedAccumMs = 0;
+  cardioDraft.paused = false;
+  cardioDraft.pausedAt = null;
+  richiediRestWakeLock();
+  renderSessioneCardio();
+}
+
+function cardioElapsedMs(){
+  if(!cardioDraft || !cardioDraft.startAt) return 0;
+  if(cardioDraft.paused) return cardioDraft.pausedAt - cardioDraft.startAt - cardioDraft.pausedAccumMs;
+  return Date.now() - cardioDraft.startAt - cardioDraft.pausedAccumMs;
+}
+
+function togglePausaCardio(){
+  if(!cardioDraft) return;
+  if(cardioDraft.paused){
+    cardioDraft.pausedAccumMs += Date.now() - cardioDraft.pausedAt;
+    cardioDraft.pausedAt = null;
+    cardioDraft.paused = false;
+    richiediRestWakeLock();
+  } else {
+    cardioDraft.paused = true;
+    cardioDraft.pausedAt = Date.now();
+    rilasciaRestWakeLock();
+  }
+  renderSessioneCardio();
+}
+
+// Chiamata ogni secondo mentre il cronometro è attivo: aggiorna solo i due
+// elementi che cambiano, senza un renderSessioneCardio() completo — stesso
+// motivo per cui il timer di recupero fa così: un re-render intero ogni
+// secondo scatterebbe animazioni CSS e potrebbe far perdere lo scroll.
+function aggiornaDisplayCardio(){
+  if(!cardioDraft || !cardioDraft.avviata) return;
+  const t = document.getElementById('cardioT');
+  if(!t) return; // schermata cambiata: verrà fermato dal prossimo render()
+  const ms = cardioElapsedMs();
+  t.textContent = formatMMSS(ms);
+  const kcalEl = document.getElementById('cardioKcalLive');
+  if(kcalEl) kcalEl.textContent = Math.round(kcalStimateCardio(cardioDraft.tipo, ms));
+  const fill = document.getElementById('cardioTargetFill');
+  const label = document.getElementById('cardioTargetLabel');
+  if(fill && label){
+    const targetMs = 22.5*60*1000;
+    const pct = Math.min(100, Math.round(ms/targetMs*100));
+    fill.style.width = pct+'%';
+    label.textContent = pct>=100 ? 'Obiettivo 20-25 min raggiunto 💪' : `${pct}% dell'obiettivo (20-25 min)`;
+  }
+}
+
+async function terminaSessioneCardio(){
+  if(!cardioDraft || !cardioDraft.avviata) return;
+  const elapsedMs = cardioElapsedMs();
+  if(!(await mostraConferma('Terminare e salvare questa sessione cardio?', 'accent'))) return;
+  if(cardioTimerHandle){ clearInterval(cardioTimerHandle); cardioTimerHandle=null; }
+  rilasciaRestWakeLock();
+  const kcal = Math.round(kcalStimateCardio(cardioDraft.tipo, elapsedMs));
+  const payload = {
+    tipo: cardioDraft.tipo,
+    durataSec: Math.round(elapsedMs/1000),
+    kcalStimate: kcal,
+    data: new Date().toISOString()
+  };
+  try{
+    const ref = await userCollection('cardioSessioni').add(payload);
+    cache.cardioSessioni.push({ id: ref.id, ...payload });
+  }catch(e){
+    alert('Errore nel salvataggio: '+e.message);
+  }
+  cardioDraft = null;
+  setRoute({name:'allenamento-list'});
+}
+
+async function annullaSessioneCardio(){
+  if(cardioDraft && cardioDraft.avviata){
+    if(!(await mostraConferma('Interrompere senza salvare questa sessione cardio?', 'danger'))) return;
+    if(cardioTimerHandle){ clearInterval(cardioTimerHandle); cardioTimerHandle=null; }
+    rilasciaRestWakeLock();
+  }
+  cardioDraft = null;
+  setRoute({name:'allenamento-list'});
+}
+
+function renderSessioneCardio(){
+  pageTitle.textContent = 'Sessione cardio';
+  if(!cardioDraft){ setRoute({name:'allenamento-list'}); return; }
+
+  if(!cardioDraft.avviata){
+    const peso = pesoUtenteStimato();
+    const chipsHtml = CARDIO_ATTIVITA.map(a=>`
+      <div class="chip${cardioDraft.tipo===a.key?' active':''}" onclick="scegliTipoCardio('${a.key}')">${a.icona} ${a.label}</div>
+    `).join('');
+    view.innerHTML = `
+      <div class="card">
+        <h3 style="margin-top:0;">🫁 Nuova sessione cardio</h3>
+        <p style="color:var(--text-dim);font-size:12.5px;line-height:1.6;margin:0 0 16px;">Scegli l'attività, poi avvia il cronometro. Obiettivo: 20-25 minuti continui in Zona 2 — riesci a parlare a frasi intere ma non a cantare.</p>
+        <div class="field">
+          <label>Attività</label>
+          <div class="chip-select">${chipsHtml}</div>
+        </div>
+        <p class="field-hint" style="margin:0 0 18px;">Le kcal si stimano dal tuo peso più recente (${peso} kg, da Registra progressi) — è una stima orientativa, non una misura precisa.</p>
+        <button class="btn" ${cardioDraft.tipo ? '' : 'disabled'} onclick="iniziaCronometroCardio()">▶ Avvia cronometro</button>
+        <button class="btn secondary" style="margin-top:10px;" onclick="annullaSessioneCardio()">Annulla</button>
+      </div>
+    `;
+    return;
+  }
+
+  const elapsedMs = cardioElapsedMs();
+  const att = CARDIO_ATTIVITA.find(a=>a.key===cardioDraft.tipo);
+  const kcal = Math.round(kcalStimateCardio(cardioDraft.tipo, elapsedMs));
+  const targetMs = 22.5*60*1000;
+  const pct = Math.min(100, Math.round(elapsedMs/targetMs*100));
+  view.innerHTML = `
+    <div class="card cardio-session-card">
+      <p class="cardio-session-tipo">${att.icona} ${att.label}</p>
+      <div class="cardio-timer-display" id="cardioT">${formatMMSS(elapsedMs)}</div>
+      <div class="cardio-target-bar"><div class="cardio-target-fill" id="cardioTargetFill" style="width:${pct}%;"></div></div>
+      <p class="cardio-target-label" id="cardioTargetLabel">${pct>=100 ? 'Obiettivo 20-25 min raggiunto 💪' : `${pct}% dell'obiettivo (20-25 min)`}</p>
+      <p class="cardio-kcal-live"><span id="cardioKcalLive">${kcal}</span> kcal stimate</p>
+      <p class="field-hint" style="margin:14px 0 0;">Zona 2: riesci a parlare a frasi intere ma non a cantare.</p>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button class="btn secondary" style="flex:1;" onclick="togglePausaCardio()">${cardioDraft.paused ? '▶ Riprendi' : '⏸ Pausa'}</button>
+      <button class="btn" style="flex:1;" onclick="terminaSessioneCardio()">⏹ Termina</button>
+    </div>
+  `;
+  if(!cardioDraft.paused){
+    if(cardioTimerHandle) clearInterval(cardioTimerHandle);
+    cardioTimerHandle = setInterval(aggiornaDisplayCardio, 1000);
+  }
 }
 
 function avviaSessione(schedaId){
