@@ -3134,14 +3134,17 @@ function renderStorico(){
   view.innerHTML = `
     <div class="home-cat" onclick="setRoute({name:'storico-allenamento'})">
       <div class="icon">🏋️</div>
-      <div><div class="label">Allenamento</div><div class="sub">Le sedute salvate</div></div>
+      <div><div class="label">Allenamento</div><div class="sub">${cache.sessioni.length} ${cache.sessioni.length===1?'seduta salvata':'sedute salvate'}</div></div>
     </div>
     <div class="home-cat" onclick="setRoute({name:'storico-misure'})">
       <div class="icon">📏</div>
-      <div><div class="label">Misure</div><div class="sub">Le rilevazioni salvate</div></div>
+      <div><div class="label">Misure</div><div class="sub">${cache.misure.length} rilevazion${cache.misure.length===1?'e':'i'} salvat${cache.misure.length===1?'a':'e'}</div></div>
     </div>
-    <button class="btn secondary" style="margin-top:6px;" onclick="esportaCSV()">⬇ Esporta dati (CSV)</button>
-    <button class="btn secondary" style="margin-top:10px;" onclick="window.print()">🖨 Stampa / esporta PDF</button>
+    <p class="section-label">Esporta</p>
+    <div class="diet-quicklinks">
+      <div class="qlink" onclick="esportaCSV()" title="Esporta dati in CSV"><span class="qi">⬇️</span><span class="ql">CSV</span></div>
+      <div class="qlink" onclick="window.print()" title="Stampa o esporta PDF"><span class="qi">🖨️</span><span class="ql">Stampa/PDF</span></div>
+    </div>
   `;
 }
 
