@@ -4461,18 +4461,16 @@ const INTEGRAZIONE_PIANO = {
   noteImportanti: "Sei in terapia con Lyrica (pregabalin) e Zarelis (venlafaxina): non sono note interazioni rilevanti con omega 3 o creatina monoidrato. Per lo ZMA, distanzia l'assunzione di almeno 2 ore dai farmaci per sicurezza. Qualunque nuovo integratore — in particolare multivitaminici a dosaggi elevati o prodotti \"pre-workout\" con stimolanti — andrebbe comunque verificato con il medico o il farmacista prima dell'introduzione. Questo piano di integrazione non sostituisce una valutazione medica."
 };
 
-let suppOpenSet = new Set();
-
 // Stato del foglio "scegli opzione" (bottom sheet) aperto sopra il piano del
 // giorno: quale pasto sto scegliendo (null = foglio chiuso) e quale opzione
 // ha il dettaglio ingredienti/valori espanso al suo interno.
 let selettorePastoIdx = null;
 let selettoreDettaglioOi = null;
 
-function toggleIntegratore(idx){
-  if(suppOpenSet.has(idx)) suppOpenSet.delete(idx); else suppOpenSet.add(idx);
-  renderAlimentazione();
-}
+// Stato del bottom sheet di dettaglio di un integratore (indicazioni d'uso,
+// particolarità): null = chiuso. Lo spunta "preso oggi" NON passa più da
+// qui, sta direttamente sulla riga nella lista (vedi suppHtml).
+let dettaglioIntegratoreIdx = null;
 let dietaOpzioneSel = {};
 let dietaTab = 'piano';
 function setDietaTab(tab){ dietaTab = tab; renderAlimentazione(); }
@@ -4890,27 +4888,23 @@ function renderAlimentazione(){
     </div>`;
   }).join('');
 
+  // Stessa checklist "a riga piatta" già usata per i pasti (.meal-row):
+  // si spuntano subito col cerchietto, senza dover aprire ciascun
+  // integratore prima. Il dettaglio (indicazioni d'uso, particolarità) si
+  // apre in un bottom sheet toccando il resto della riga.
   const suppHtml = INTEGRAZIONE_PIANO.integratori.map((s,i)=>{
-    const open = suppOpenSet.has(i);
     const preso = !!cache.dietaLogOggi.integratoriFatti[s.nome];
     return `
-    <div class="meal-card${open?' open':''}">
-      <div class="meal-head" onclick="toggleIntegratore(${i})">
-        <div class="icon">${s.icona}</div>
-        <div class="mh-info">
-          <div class="mh-name">${s.nome}${preso ? ' <span class="done-tick">✅</span>' : ''}</div>
-          <div class="mh-time">${s.dose}</div>
+    <div class="meal-row${preso?' done':''}">
+      <button class="meal-check${preso?' checked':''}" onclick="event.stopPropagation();toggleIntegratoreFatto('${s.nome.replace(/'/g,"\\'")}')" aria-label="${preso?'Segna come non preso':'Segna come preso'}">${preso?'✓':''}</button>
+      <div class="meal-row-main" onclick="apriDettaglioIntegratore(${i})">
+        <div class="meal-row-icon">${s.icona}</div>
+        <div class="meal-row-info">
+          <div class="meal-row-name">${s.nome}</div>
+          <div class="meal-row-opt">${s.dose}</div>
         </div>
-        <div class="mh-chev">▾</div>
+        <div class="meal-row-chev">›</div>
       </div>
-      <div class="meal-body"><div class="meal-body-in">
-        <div class="meal-prep" style="margin-top:0;"><b>Indicazioni d'uso:</b> ${s.indicazioni}</div>
-        ${s.particolarita ? `<div class="meal-prep"><b>Particolarità:</b> ${s.particolarita}</div>` : ''}
-        <label class="done-toggle">
-          <input type="checkbox" ${preso?'checked':''} onchange="event.stopPropagation();toggleIntegratoreFatto('${s.nome.replace(/'/g,"\\'")}')">
-          Preso oggi
-        </label>
-      </div></div>
     </div>`;
   }).join('');
 
@@ -5088,6 +5082,50 @@ function chiudiSelettoreOpzione(){
   if(overlay) overlay.remove();
   selettorePastoIdx = null;
   selettoreDettaglioOi = null;
+}
+
+/* ============ DETTAGLIO INTEGRATORE (bottom sheet) ============
+   Indicazioni d'uso e particolarità di un integratore, in un foglio a
+   parte: lo spunta "preso oggi" NON è più qui dentro, sta già sulla riga
+   nella lista (si spunta subito, senza aprire nulla). */
+function apriDettaglioIntegratore(i){
+  dettaglioIntegratoreIdx = i;
+  hapticaLieve();
+  mostraDettaglioIntegratoreOverlay();
+}
+
+function mostraDettaglioIntegratoreOverlay(){
+  const s = INTEGRAZIONE_PIANO.integratori[dettaglioIntegratoreIdx];
+  if(!s){ chiudiDettaglioIntegratore(); return; }
+  const preso = !!cache.dietaLogOggi.integratoriFatti[s.nome];
+  let overlay = document.getElementById('suppSheetOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'suppSheetOverlay';
+    overlay.className = 'sheet-overlay';
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudiDettaglioIntegratore(); });
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `<div class="sheet-box" id="suppSheetBox"><div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">${s.icona} ${s.nome}</div>
+      <button class="sheet-close" onclick="chiudiDettaglioIntegratore()" aria-label="Chiudi">✕</button>
+    </div>
+    <p class="field-hint" style="margin:-4px 0 14px;">${s.dose}</p>
+    <div class="meal-prep" style="margin-top:0;"><b>Indicazioni d'uso:</b> ${s.indicazioni}</div>
+    ${s.particolarita ? `<div class="meal-prep"><b>Particolarità:</b> ${s.particolarita}</div>` : ''}
+    <label class="done-toggle" style="margin-top:14px;">
+      <input type="checkbox" ${preso?'checked':''} onchange="toggleIntegratoreFatto('${s.nome.replace(/'/g,"\\'")}');mostraDettaglioIntegratoreOverlay();">
+      Preso oggi
+    </label>
+  </div>`;
+  attachSwipeDownToDismiss(overlay.querySelector('#suppSheetBox'), chiudiDettaglioIntegratore);
+}
+
+function chiudiDettaglioIntegratore(){
+  const overlay = document.getElementById('suppSheetOverlay');
+  if(overlay) overlay.remove();
+  dettaglioIntegratoreIdx = null;
 }
 
 /* ============ DIARIO ALIMENTARE STORICO ============
