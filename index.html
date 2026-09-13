@@ -2676,7 +2676,7 @@ function toggleAlternativa(ei){
   if(!e.alternativa || e.alternativa==='—') return;
   draft.usaAlternativa = !draft.usaAlternativa;
   draft.nome = draft.usaAlternativa ? e.alternativa : e.nome;
-  renderSessione();
+  renderSessionePreservandoScroll();
 }
 
 function esercizioCompletato(ei){
@@ -2689,7 +2689,21 @@ function refreshLocks(){
   const precedenti = sessionDraft._locks || [];
   const cambiati = nuovi.length !== precedenti.length || nuovi.some((v,i)=>v!==precedenti[i]);
   sessionDraft._locks = nuovi;
-  if(cambiati) renderSessione();
+  if(cambiati) renderSessionePreservandoScroll();
+}
+
+/* renderSessione() sostituisce tutto view.innerHTML: senza precauzioni il
+   browser perde la posizione di scroll e "salta" in cima alla pagina ogni
+   volta che si sblocca un esercizio o si cambia alternativa — proprio
+   mentre si sta compilando una serie, il momento peggiore per un salto
+   visivo. Qui salviamo la posizione di scroll prima del re-render e la
+   ripristiniamo subito dopo: gli esercizi già sbloccati sopra il punto in
+   cui ti trovi non cambiano altezza tra un render e l'altro, quindi la
+   vista resta stabile invece di "sminchiarsi". */
+function renderSessionePreservandoScroll(){
+  const scrollY = window.scrollY;
+  renderSessione();
+  window.scrollTo(0, scrollY);
 }
 
 function updateNotaEsercizio(ei, val){
