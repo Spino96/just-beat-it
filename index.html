@@ -2881,10 +2881,10 @@ function renderSessione(){
         <span>${si+1}</span>
         <div class="peso-stepper">
           <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},-1.25)" aria-label="Togli peso">–</button>
-          <input type="number" min="0" max="500" placeholder="kg" id="peso-${ei}-${si}" value="${set.peso}" oninput="updateSet(${ei},${si},'peso',this.value)">
+          <input type="number" inputmode="decimal" min="0" max="500" placeholder="kg" id="peso-${ei}-${si}" value="${set.peso}" oninput="updateSet(${ei},${si},'peso',this.value)">
           <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},1.25)" aria-label="Aggiungi peso">+</button>
         </div>
-        <input type="text" placeholder="rip / sec" value="${set.rip}" oninput="updateSet(${ei},${si},'rip',this.value)">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" placeholder="rip / sec" value="${set.rip}" oninput="updateSet(${ei},${si},'rip',this.value)">
         <select onchange="setRPESet(${ei},${si},this.value)">
           <option value="">RPE</option>
           ${[6,7,8,9,10].map(v=>`<option value="${v}" ${set.rpe===v?'selected':''}>${v}</option>`).join('')}
@@ -3813,8 +3813,8 @@ function renderSessioneModifica(){
     e.sets.forEach((set,si)=>{
       html += `<div class="set-row">
         <span>${si+1}</span>
-        <input type="number" min="0" max="500" placeholder="peso kg" value="${set.peso??''}" oninput="updateSetModifica(${ei},${si},'peso',this.value)">
-        <input type="text" placeholder="rip / sec" value="${set.rip??''}" oninput="updateSetModifica(${ei},${si},'rip',this.value)">
+        <input type="number" inputmode="decimal" min="0" max="500" placeholder="peso kg" value="${set.peso??''}" oninput="updateSetModifica(${ei},${si},'peso',this.value)">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" placeholder="rip / sec" value="${set.rip??''}" oninput="updateSetModifica(${ei},${si},'rip',this.value)">
         <select onchange="setRPESetModifica(${ei},${si},this.value)">
           <option value="">RPE</option>
           ${[6,7,8,9,10].map(v=>`<option value="${v}" ${Number(set.rpe)===v?'selected':''}>${v}</option>`).join('')}
