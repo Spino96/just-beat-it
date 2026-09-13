@@ -5265,10 +5265,22 @@ function renderDiario(){
 
     const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)<span class="diario-item-actions"><button class="diario-mini-btn" onclick="confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${a.kcal} kcal</b></div>`).join('');
 
+    // Prot/carb/grassi erano già calcolati ma non venivano mai mostrati da
+    // nessuna parte: li aggiungiamo come mini-riepilogo macro (stesso
+    // componente .meal-macro-mini già usato nel dettaglio alimento) in cima
+    // al giorno espanso, cosi' il totale kcal nell'header ha un dettaglio
+    // sotto invece di restare un numero isolato.
+    const macroMiniHtml = kcalTot>0 ? `<div class="meal-macro-mini">
+      <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b>${Math.round(protTot)}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b>${Math.round(carbTot)}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b>${Math.round(grassiTot)}g</b></span>
+    </div>` : '';
+
     return `<div class="meal-card${open?' open':''}">
       <div class="meal-head" onclick="toggleDiarioGiorno('${g.id}')">
         <div class="icon">📅</div>
         <div class="mh-info">
+          ${g.id===oggiK ? `<span class="turn-badge" style="margin-bottom:4px;">📍 Oggi</span>` : ''}
           <div class="mh-name">${dataLabel}</div>
           <div class="mh-time">${numPastiFatti}/${DIETA_PIANO.pasti.length} pasti · ${numIntegrFatti} integratori · ${((g.acquaMl||0)/1000).toFixed(1).replace('.',',')} L${tipoGiornoLabel}</div>
         </div>
@@ -5277,6 +5289,7 @@ function renderDiario(){
         <div class="mh-chev">▾</div>
       </div>
       <div class="meal-body"><div class="meal-body-in">
+        ${macroMiniHtml}
         ${pastiRighe || '<p style="margin:0 0 8px;color:var(--text-dim);font-size:12.5px;">Nessun pasto segnato.</p>'}
         ${integrRighe}
         ${extraRighe}
