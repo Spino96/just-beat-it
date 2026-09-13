@@ -634,8 +634,9 @@
   }
   .chip.active{background:var(--accent);color:#04140d;border-color:transparent;box-shadow:0 0 16px -5px #39ff9488;}
 
-  /* ===== DIETA: checklist compatta dei pasti (sostituisce le vecchie card
-     sempre-espanse) — vedi mealsHtml/apriSelettoreOpzione in JS ===== */
+  /* ===== Checklist "a riga piatta" riusata da Integratori (spunta subito
+     dalla lista). Era nata per i pasti del Piano (ora rimosso dalla UI, la
+     usava mealsHtml) — vedi renderAlimentazione() in JS. ===== */
   .meal-row{
     display:flex;align-items:center;gap:10px;
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
@@ -4764,10 +4765,10 @@ function chiudiGiornoSettimana(){
 }
 
 /* ============ SELETTORE OPZIONE PASTO (bottom sheet) ============
-   Sostituisce le vecchie card sempre-aperte con tabella ingredienti: ora
-   il piano del giorno è una checklist compatta (mealsHtml sopra) e il
-   dettaglio/scelta tra le 5 opzioni si apre solo su richiesta, in un
-   foglio a comparsa dal basso (vedi apriSelettoreOpzione più sotto). */
+   Non più raggiungibile dalla tab "Segna pasto" (che mostra solo i target
+   numerici, senza nomi di piatti): resta nel codice perché "Lista della
+   spesa" (stima rapida) legge ancora dietaOpzioneSel, e alcuni test la
+   richiamano direttamente. */
 function renderSelettoreOpzioneBody(){
   const i = selettorePastoIdx;
   const p = DIETA_PIANO.pasti[i];
@@ -4949,27 +4950,11 @@ function renderAlimentazione(){
     </div>`;
   }).join('');
 
-  // Raggruppati per pasto (come in MyFitnessPal/Yazio) invece di una lista
-  // piatta: ogni alimento extra porta con sé il pasto scelto al momento del
-  // salvataggio (confermaAggiungiAlimento). Le voci salvate prima di questa
-  // funzionalità non hanno "pasto": finiscono nel gruppo "Altro" invece di
-  // sparire o rompere il rendering.
-  const extraGruppiHtml = DIETA_PIANO.pasti.map((p,pi)=>{
-    const voci = alimentiExtra.filter(a=> a.pasto===pi);
-    if(!voci.length) return '';
-    const subKcal = voci.reduce((s,a)=>s+a.kcal,0);
-    return `<div class="extra-food-group">
-      <div class="efg-head"><span>${p.icona} ${p.nome}</span><span>${subKcal} kcal</span></div>
-      <div class="extra-food-list">${voci.map(a=>`
-        <div class="extra-food-item">
-          <div class="efi-info">
-            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
-            <div class="efi-m">${a.grammi}g · ${a.kcal} kcal · P ${a.prot}g · C ${a.carb}g · G ${a.grassi}g</div>
-          </div>
-          <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
-        </div>`).join('')}</div>
-    </div>`;
-  }).join('');
+  // Le voci extra salvate senza un pasto (dati vecchi, prima che ogni extra
+  // portasse con sé il pasto scelto al salvataggio) finiscono qui, nel
+  // gruppo "Altro" mostrato in fondo a Segna pasto, invece di sparire o
+  // rompere il rendering. Le voci con un pasto valido sono invece mostrate
+  // direttamente dentro la card del pasto corrispondente (vedi pastiTargetHtml).
   const extraSenzaPasto = alimentiExtra.filter(a=> a.pasto==null || a.pasto<0 || a.pasto>=DIETA_PIANO.pasti.length);
   const extraSenzaPastoHtml = extraSenzaPasto.length ? `<div class="extra-food-group">
       <div class="efg-head"><span>❔ Altro</span><span>${extraSenzaPasto.reduce((s,a)=>s+a.kcal,0)} kcal</span></div>
@@ -4984,10 +4969,10 @@ function renderAlimentazione(){
     </div>` : '';
 
   // "Aggiungi di nuovo": stessi alimenti recenti/personalizzati già usati
-  // dalla ricerca completa, ma qui tappabili direttamente nella tab Extra —
-  // aprono un foglio rapido (grammi + pasto) invece di portarti su un'altra
-  // schermata. Risponde a "deve rimanere in memoria e essere facile da
-  // inserire": non serve ricercare da capo un alimento già loggato prima.
+  // dalla ricerca completa, ma qui tappabili direttamente nella tab Segna
+  // pasto — aprono un foglio rapido (grammi + pasto) invece di portarti su
+  // un'altra schermata. Risponde a "deve rimanere in memoria e essere facile
+  // da inserire": non serve ricercare da capo un alimento già loggato prima.
   const extraRecenti = (profiloUtente && profiloUtente.alimentiRecenti) || [];
   const extraPersonalizzati = cache.alimentiPersonalizzati || [];
   const rigaQuickAdd = (p, origine, i, sottotitolo) => `
@@ -6453,7 +6438,7 @@ async function onBarcodeRilevato(codice){
       micro100, acqua100
     };
     ricercaAlimentoState.grammi = 100;
-    ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
+    if(ricercaAlimentoState.pastoIdx==null) ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
     ricercaAlimentoState.fonte = suggerisciFonte(ricercaAlimentoState.selezionato);
     setRoute({name:'cerca-alimento'});
   }catch(e){
