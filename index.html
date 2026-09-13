@@ -499,14 +499,85 @@
     display:flex;align-items:center;justify-content:center;
   }
   .photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .photo-grid-item{position:relative;aspect-ratio:3/4;border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;background:var(--panel-2);}
+  .photo-grid-item{position:relative;aspect-ratio:3/4;border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;background:var(--panel-2);border:1px solid var(--border);transition:transform .12s ease;}
+  .photo-grid-item:active{transform:scale(.97);}
   .photo-grid-item img{width:100%;height:100%;object-fit:cover;display:block;}
   .photo-grid-tag{
     position:absolute;left:6px;bottom:6px;background:#00000099;color:var(--text);
     font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;
   }
+  .photo-zoom-badge{
+    position:absolute;right:6px;bottom:6px;width:26px;height:26px;border-radius:50%;
+    background:#00000099;display:flex;align-items:center;justify-content:center;font-size:13px;
+    backdrop-filter:blur(2px);
+  }
   .lightbox-overlay{padding:16px;}
   .lightbox-img{max-width:100%;max-height:100%;border-radius:14px;object-fit:contain;touch-action:pan-x;}
+
+  /* ===== Confronta foto: header con selettori data + swap ===== */
+  .compare-head{padding:16px 16px 14px;}
+  .compare-dates{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;}
+  .compare-field{margin-bottom:0;}
+  .compare-field label{text-align:center;}
+  .compare-field select{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    border-radius:14px;padding:12px 8px;font-size:12.5px;font-weight:700;text-align:center;
+  }
+  .compare-field select:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+  .compare-swap-btn{
+    width:38px;height:38px;border-radius:50%;background:var(--panel-2);border:1px solid var(--border);
+    color:var(--accent);font-size:16px;font-weight:800;cursor:pointer;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;margin-bottom:1px;transition:transform .12s ease;
+  }
+  .compare-swap-btn:active{background:var(--accent);color:#04140d;border-color:transparent;transform:scale(.9) rotate(180deg);}
+  .compare-distanza{margin:12px 2px 0;text-align:center;font-size:12px;color:var(--text-dim);font-weight:700;}
+  .compare-zoom-hint{margin:10px 2px 0;text-align:center;}
+
+  /* ===== Confronta foto: righe differenze modernizzate ===== */
+  .diff-row{
+    display:grid;grid-template-columns:24px 1fr auto;grid-template-rows:auto auto;
+    column-gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);
+  }
+  .diff-row:last-child{border-bottom:none;}
+  .diff-icon{font-size:16px;text-align:center;grid-row:1/3;}
+  .diff-label{font-size:13px;font-weight:700;grid-column:2;grid-row:1;}
+  .diff-vals{font-size:11.5px;color:var(--text-dim);font-weight:600;grid-column:2;grid-row:2;}
+  .diff-delta{
+    font-size:12px;font-weight:800;grid-column:3;grid-row:1/3;white-space:nowrap;
+    padding:5px 10px;border-radius:20px;background:var(--panel-2);color:var(--text-dim);
+  }
+  .diff-delta.up{color:var(--accent-2);}
+  .diff-delta.down{color:var(--accent-3);}
+
+  /* ===== Confronto foto a schermo intero con slider prima/dopo ===== */
+  .compare-lightbox{
+    position:fixed;inset:0;background:#000;z-index:999;
+    display:flex;flex-direction:column;animation:confirmFadeIn .18s ease;
+  }
+  .cl-imgs{position:relative;flex:1;overflow:hidden;touch-action:none;background:#000;}
+  .cl-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;user-select:none;pointer-events:none;-webkit-user-drag:none;}
+  .cl-b-wrap{position:absolute;top:0;left:0;height:100%;overflow:hidden;}
+  .cl-divider{
+    position:absolute;top:0;bottom:0;width:0;transform:translateX(-50%);
+    border-left:2px solid #fff;pointer-events:none;
+  }
+  .cl-handle{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:40px;height:40px;border-radius:50%;background:#fff;color:#111;
+    display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;
+    box-shadow:0 2px 10px rgba(0,0,0,.5);
+  }
+  .cl-labels{position:absolute;top:14px;left:0;right:0;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none;}
+  .cl-label{background:#000000b3;color:#fff;font-size:12px;font-weight:800;padding:5px 12px;border-radius:20px;}
+  .cl-close{
+    position:absolute;top:14px;right:14px;z-index:2;width:38px;height:38px;border-radius:50%;
+    background:#000000b3;color:#fff;border:none;font-size:16px;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cl-hint{
+    text-align:center;color:#ffffffcc;font-size:12px;font-weight:600;
+    padding:14px 16px calc(14px + env(safe-area-inset-bottom));margin:0;background:#000;
+  }
   .carousel{position:relative;overflow:hidden;border-radius:var(--radius-sm);aspect-ratio:3/4;background:var(--panel-2);}
   .carousel-track{display:flex;height:100%;width:100%;touch-action:pan-y;}
   .carousel-slide{position:relative;flex:0 0 100%;height:100%;cursor:pointer;}
@@ -6595,6 +6666,90 @@ function apriLightbox(src){
   attachSwipeDownToDismiss(overlay.querySelector('.lightbox-img'), ()=>{ hapticaLieve(); overlay.remove(); });
 }
 
+// Punto di ingresso dalla schermata "Confronta foto": apre lo slider a
+// schermo intero con entrambe le foto dell'angolazione corrente, o la
+// lightbox singola se per quella data manca la foto della controparte.
+function apriLightboxConfronto(){
+  const { idA, idB, tab, fotoA, fotoB } = confrontaState;
+  const fA = fotoA.find(f=>f.ordine===tab);
+  const fB = fotoB.find(f=>f.ordine===tab);
+  if(fA && fB){
+    const mA = cache.misure.find(m=>m.id===idA);
+    const mB = cache.misure.find(m=>m.id===idB);
+    const fmt = d => new Date(d).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'});
+    apriCompareSlider(fA.foto, fB.foto, mA?fmt(mA.data):'Prima', mB?fmt(mB.data):'Dopo');
+  } else if(fA){
+    apriLightbox(fA.foto);
+  } else if(fB){
+    apriLightbox(fB.foto);
+  }
+}
+
+// Confronto a schermo intero con slider trascinabile: la foto "dopo" è
+// ritagliata (non ridimensionata) da un divisore verticale che si sposta col
+// dito, cosi' le due foto restano alla stessa scala mentre si confrontano —
+// lo stesso pattern degli slider prima/dopo delle app di trasformazione fisica.
+function apriCompareSlider(srcA, srcB, labelA, labelB){
+  const overlay = document.createElement('div');
+  overlay.className = 'compare-lightbox';
+  overlay.innerHTML = `
+    <button type="button" class="cl-close" aria-label="Chiudi">✕</button>
+    <div class="cl-imgs" id="clImgs">
+      <img src="${srcA}" class="cl-img cl-img-a" draggable="false" alt="${labelA}">
+      <div class="cl-b-wrap" id="clBWrap" style="width:50%;">
+        <img src="${srcB}" class="cl-img cl-img-b" draggable="false" alt="${labelB}">
+      </div>
+      <div class="cl-divider" id="clDivider" style="left:50%;"><div class="cl-handle">↔</div></div>
+    </div>
+    <div class="cl-labels">
+      <span class="cl-label">${labelA}</span>
+      <span class="cl-label">${labelB}</span>
+    </div>
+    <p class="cl-hint">↔ Trascina per confrontare</p>`;
+  document.body.appendChild(overlay);
+
+  const imgsEl = overlay.querySelector('#clImgs');
+  const bWrap = overlay.querySelector('#clBWrap');
+  const divider = overlay.querySelector('#clDivider');
+  const imgB = overlay.querySelector('.cl-img-b');
+
+  // L'immagine "dopo" ha larghezza fissa pari al contenitore: restringere il
+  // wrapper che la contiene la ritaglia invece di scalarla, dando l'effetto
+  // slider invece di uno schiacciamento dell'immagine.
+  function fissaLarghezzaImgB(){
+    imgB.style.width = imgsEl.getBoundingClientRect().width + 'px';
+  }
+  fissaLarghezzaImgB();
+  window.addEventListener('resize', fissaLarghezzaImgB);
+
+  function setPosizione(clientX){
+    const rect = imgsEl.getBoundingClientRect();
+    let pct = ((clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(0, Math.min(100, pct));
+    bWrap.style.width = pct + '%';
+    divider.style.left = pct + '%';
+  }
+
+  let trascinando = false;
+  const onDown = e=>{ trascinando = true; setPosizione(e.clientX); e.preventDefault(); };
+  const onMove = e=>{ if(trascinando) setPosizione(e.clientX); };
+  const onUp = ()=>{ trascinando = false; };
+  imgsEl.addEventListener('pointerdown', onDown);
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+
+  const chiudi = ()=>{
+    window.removeEventListener('resize', fissaLarghezzaImgB);
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', onUp);
+    overlay.remove();
+    hapticaLieve();
+  };
+  overlay.querySelector('.cl-close').addEventListener('click', chiudi);
+}
+
 /* ============ CONFRONTO FOTO PROGRESSI ============
    Affianca le foto di due rilevazioni diverse, stessa angolazione, per vedere
    i cambiamenti che il numero sulla bilancia da solo non racconta. */
@@ -6618,15 +6773,17 @@ function renderConfrontaFoto(){
 
   const opzione = m => `<option value="${m.id}">${new Date(m.data).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'})}${m.peso?' · '+m.peso+'kg':''}</option>`;
 
-  view.innerHTML = `<div class="card">
-    <div class="grid2">
-      <div class="field"><label>Prima</label>
+  view.innerHTML = `<div class="card compare-head">
+    <div class="compare-dates">
+      <div class="field compare-field"><label>📅 Prima</label>
         <select id="compareSelA" onchange="cambiaConfronto()">${misureConFoto.map(opzione).join('')}</select>
       </div>
-      <div class="field"><label>Dopo</label>
+      <button type="button" class="compare-swap-btn" onclick="scambiaConfronto()" aria-label="Inverti prima e dopo" title="Inverti">⇄</button>
+      <div class="field compare-field"><label>📅 Dopo</label>
         <select id="compareSelB" onchange="cambiaConfronto()">${misureConFoto.map(opzione).join('')}</select>
       </div>
     </div>
+    <p class="compare-distanza" id="compareDistanza"></p>
   </div>
   <div id="compareBody">${spinnerHtml('Carico le foto...')}</div>`;
 
@@ -6639,6 +6796,30 @@ function cambiaConfronto(){
   const idA = document.getElementById('compareSelA').value;
   const idB = document.getElementById('compareSelB').value;
   caricaConfronto(idA, idB);
+}
+
+// Inverte le due date selezionate (utile quando si vuole vedere il
+// confronto "al contrario" senza dover riaprire le due tendine a mano).
+function scambiaConfronto(){
+  const selA = document.getElementById('compareSelA');
+  const selB = document.getElementById('compareSelB');
+  if(!selA || !selB) return;
+  const tmp = selA.value;
+  selA.value = selB.value;
+  selB.value = tmp;
+  hapticaLieve();
+  cambiaConfronto();
+}
+
+// Testo "X giorni / settimane di distanza" mostrato sotto ai selettori data.
+function aggiornaDistanzaConfronto(mA, mB){
+  const el = document.getElementById('compareDistanza');
+  if(!el || !mA || !mB) return;
+  const giorni = Math.round(Math.abs(new Date(mB.data) - new Date(mA.data)) / 86400000);
+  if(giorni===0){ el.textContent = 'Stessa data'; return; }
+  if(giorni < 14){ el.textContent = `${giorni} giorn${giorni===1?'o':'i'} di distanza`; return; }
+  const settimane = Math.round(giorni/7);
+  el.textContent = `${settimane} settimane di distanza (${giorni} giorni)`;
 }
 
 async function caricaConfronto(idA, idB){
@@ -6677,14 +6858,14 @@ function selezionaTabConfronto(i){
 }
 
 const CAMPI_CONFRONTO_MISURE = [
-  {key:'peso', label:'Peso', unit:'kg'},
-  {key:'vita', label:'Vita', unit:'cm'},
-  {key:'petto', label:'Petto', unit:'cm'},
-  {key:'fianchi', label:'Fianchi', unit:'cm'},
-  {key:'braccioDx', label:'Braccio Dx', unit:'cm'},
-  {key:'braccioSx', label:'Braccio Sx', unit:'cm'},
-  {key:'cosciaDx', label:'Coscia Dx', unit:'cm'},
-  {key:'cosciaSx', label:'Coscia Sx', unit:'cm'}
+  {key:'peso', label:'Peso', unit:'kg', icon:'⚖️'},
+  {key:'vita', label:'Vita', unit:'cm', icon:'📏'},
+  {key:'petto', label:'Petto', unit:'cm', icon:'📏'},
+  {key:'fianchi', label:'Fianchi', unit:'cm', icon:'📏'},
+  {key:'braccioDx', label:'Braccio Dx', unit:'cm', icon:'💪'},
+  {key:'braccioSx', label:'Braccio Sx', unit:'cm', icon:'💪'},
+  {key:'cosciaDx', label:'Coscia Dx', unit:'cm', icon:'🦵'},
+  {key:'cosciaSx', label:'Coscia Sx', unit:'cm', icon:'🦵'}
 ];
 
 function renderComparePane(){
@@ -6702,29 +6883,40 @@ function renderComparePane(){
 
   const fA = fotoA.find(f=>f.ordine===tab);
   const fB = fotoB.find(f=>f.ordine===tab);
+  const puoIngrandire = !!(fA || fB);
   const paneHtml = `<div class="photo-grid" id="comparePhotoPane">
-    <div class="photo-grid-item" ${fA?`onclick="apriLightbox('${fA.foto}')"`:''}>
-      ${fA ? `<img src="${fA.foto}">` : `<div class="empty" style="padding:30px 6px;font-size:12px;">Nessuna foto</div>`}
+    <div class="photo-grid-item" ${fA?`onclick="apriLightboxConfronto()"`:''}>
+      ${fA ? `<img src="${fA.foto}"><span class="photo-zoom-badge">🔍</span>` : `<div class="empty" style="padding:30px 6px;font-size:12px;">Nessuna foto</div>`}
       <span class="photo-grid-tag">${new Date(mA.data).toLocaleDateString('it-IT',{day:'numeric',month:'short'})}</span>
     </div>
-    <div class="photo-grid-item" ${fB?`onclick="apriLightbox('${fB.foto}')"`:''}>
-      ${fB ? `<img src="${fB.foto}">` : `<div class="empty" style="padding:30px 6px;font-size:12px;">Nessuna foto</div>`}
+    <div class="photo-grid-item" ${fB?`onclick="apriLightboxConfronto()"`:''}>
+      ${fB ? `<img src="${fB.foto}"><span class="photo-zoom-badge">🔍</span>` : `<div class="empty" style="padding:30px 6px;font-size:12px;">Nessuna foto</div>`}
       <span class="photo-grid-tag">${new Date(mB.data).toLocaleDateString('it-IT',{day:'numeric',month:'short'})}</span>
     </div>
-  </div>`;
+  </div>
+  ${puoIngrandire ? `<p class="field-hint compare-zoom-hint">🔍 Tocca una foto per il confronto a schermo intero${(fA&&fB)?' con slider':''}</p>` : ''}`;
 
   const righeDiff = CAMPI_CONFRONTO_MISURE
     .filter(c=> mA[c.key]!=null && mB[c.key]!=null)
     .map(c=>{
       const delta = Math.round((mB[c.key]-mA[c.key])*10)/10;
       const segno = delta>0 ? '+' : '';
-      return `<div class="micro-row"><span>${c.label}</span><b>${mA[c.key]}${c.unit} → ${mB[c.key]}${c.unit} (${segno}${delta}${c.unit})</b></div>`;
+      const direzione = delta>0 ? 'up' : (delta<0 ? 'down' : '');
+      const freccia = delta>0 ? '▲' : (delta<0 ? '▼' : '＝');
+      const testoDelta = delta===0 ? 'invariato' : `${freccia} ${segno}${delta}${c.unit}`;
+      return `<div class="diff-row">
+        <span class="diff-icon">${c.icon}</span>
+        <span class="diff-label">${c.label}</span>
+        <span class="diff-vals">${mA[c.key]}${c.unit} → ${mB[c.key]}${c.unit}</span>
+        <span class="diff-delta ${direzione}">${testoDelta}</span>
+      </div>`;
     }).join('');
 
   body.innerHTML = `<div class="card">${tabsHtml}${paneHtml}${angoliDisponibili.length>1?`<p class="field-hint" style="margin:10px 2px 0;text-align:center;">← scorri per cambiare angolazione →</p>`:''}</div>
     ${righeDiff ? `<div class="card"><h3 style="margin-top:0;font-size:15px;">Differenze</h3>${righeDiff}</div>` : ''}`;
 
   attachSwipeTabConfronto(angoliDisponibili, tab);
+  aggiornaDistanzaConfronto(mA, mB);
 }
 
 // Permette di scorrere tra le angolazioni disponibili nel confronto foto con
