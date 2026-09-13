@@ -478,7 +478,25 @@
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .empty{text-align:center;color:var(--text-dim);font-size:13.5px;padding:34px 10px;font-weight:600;line-height:1.6;}
   .empty-icon{display:block;font-size:34px;margin-bottom:10px;opacity:.85;}
-  .photo-thumb{width:56px;height:56px;border-radius:12px;object-fit:cover;}
+  .photo-thumb{width:56px;height:56px;border-radius:12px;object-fit:cover;flex-shrink:0;}
+  /* ===== Storico misure: card rilevazione modernizzate ===== */
+  .misura-card{display:flex;align-items:center;gap:14px;}
+  .misura-thumb-placeholder{
+    width:56px;height:56px;border-radius:12px;flex-shrink:0;
+    background:var(--panel-2);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:22px;
+  }
+  .misura-card-info{flex:1;min-width:0;}
+  .misura-card-info h3{margin:0 0 7px;font-size:15.5px;}
+  .misura-card-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .misura-pill{
+    font-size:12px;font-weight:700;color:var(--text-dim);
+    background:var(--panel-2);padding:4px 10px;border-radius:20px;
+  }
+  .misura-delta{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:20px;background:var(--panel-2);}
+  .misura-delta.up{color:var(--accent-2);}
+  .misura-delta.down{color:var(--accent-3);}
+  .misura-chevron{color:var(--text-dim);font-size:19px;flex-shrink:0;}
   .photo-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .photo-slot{position:relative;aspect-ratio:3/4;border-radius:var(--radius-sm);overflow:hidden;background:var(--panel-2);border:1px solid var(--border);}
   .photo-slot input[type=file]{position:absolute;inset:0;opacity:0;pointer-events:none;}
@@ -3191,28 +3209,59 @@ function renderStoricoMisure(){
     html += `<div class="success-banner">Rilevazione salvata ✅</div>`;
   }
   if(misure.length===0){
-    html += `<p class="empty"><span class="empty-icon">📏</span>Nessuna misura registrata ancora.</p>`;
+    html += `<p class="empty"><span class="empty-icon">📏</span>Nessuna misura registrata ancora.</p>
+      <div class="home-cat" onclick="setRoute({name:'misure'})">
+        <div class="icon">➕</div>
+        <div><div class="label">Nuova misurazione</div><div class="sub">Registra peso, misure e foto di oggi</div></div>
+      </div>`;
     view.innerHTML = html;
     return;
   }
+
+  // Due azioni principali in cima, stesso linguaggio visivo delle card di
+  // Home (icona in cerchio + titolo + sottotitolo): più coerente della vecchia
+  // riga di bottoni ed eredita gratis l'animazione di apertura al tocco.
+  html += `<div class="home-cat" onclick="setRoute({name:'misure'})">
+    <div class="icon">➕</div>
+    <div><div class="label">Nuova misurazione</div><div class="sub">Registra peso, misure e foto di oggi</div></div>
+  </div>`;
   const misureConFoto = cache.misure.filter(m=>m.fotoThumb || m.foto);
   if(misureConFoto.length>=2){
-    html += `<button class="btn secondary" style="width:100%;margin-bottom:14px;" onclick="setRoute({name:'confronta-foto'})">📸 Confronta foto tra due date</button>`;
+    html += `<div class="home-cat" onclick="setRoute({name:'confronta-foto'})">
+      <div class="icon">📸</div>
+      <div><div class="label">Confronta foto</div><div class="sub">Vedi i cambiamenti tra due date</div></div>
+    </div>`;
   }
+
   html += `<p class="swipe-hint">Tocca una voce per vedere il dettaglio, scorrila verso sinistra per eliminarla</p>`;
-  misure.forEach((m)=>{
+  misure.forEach((m, i)=>{
     const thumb = m.fotoThumb || m.foto;
+    const precedente = misure[i+1]; // rilevazione precedente in ordine cronologico (più vecchia)
+
+    let deltaHtml = '';
+    if(m.peso!=null && precedente && precedente.peso!=null){
+      const delta = Math.round((m.peso - precedente.peso)*10)/10;
+      if(delta !== 0){
+        const dir = delta>0 ? 'up' : 'down';
+        const freccia = delta>0 ? '▲' : '▼';
+        deltaHtml = `<span class="misura-delta ${dir}">${freccia} ${delta>0?'+':''}${delta}kg</span>`;
+      }
+    }
+
     html += `<div class="swipe-row" data-id="${m.id}">
       <div class="swipe-delete">Elimina</div>
-      <div class="list-item" data-route-name="misura-detail" data-route-id="${m.id}" style="display:flex;align-items:center;gap:12px;justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          ${thumb ? `<img class="photo-thumb" src="${thumb}">` : ''}
-          <div>
-            <h3 style="margin:0;">${new Date(m.data).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}</h3>
-            <p>${m.peso?m.peso+' kg':''} ${m.vita?'· vita '+m.vita+'cm':''}</p>
+      <div class="list-item misura-card" data-route-name="misura-detail" data-route-id="${m.id}">
+        ${thumb ? `<img class="photo-thumb" src="${thumb}">` : `<div class="misura-thumb-placeholder">📏</div>`}
+        <div class="misura-card-info">
+          ${i===0 ? `<span class="turn-badge">📍 Più recente</span>` : ''}
+          <h3>${new Date(m.data).toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}</h3>
+          <div class="misura-card-meta">
+            ${m.peso ? `<span class="misura-pill">⚖️ ${m.peso} kg</span>` : ''}
+            ${deltaHtml}
+            ${m.vita ? `<span class="misura-pill">📏 vita ${m.vita}cm</span>` : ''}
           </div>
         </div>
-        <span style="color:var(--text-dim);font-size:18px;">›</span>
+        <span class="misura-chevron">›</span>
       </div>
     </div>`;
   });
