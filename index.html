@@ -459,6 +459,15 @@
   .oggi-row:last-child{border-bottom:none;}
   .oggi-row span{color:var(--text-dim);}
   .oggi-row b{color:var(--text);font-size:14px;font-family:var(--mono);letter-spacing:.01em;}
+  .oggi-water-row{flex-wrap:wrap;gap:8px;}
+  .oggi-water-ctrl{display:flex;align-items:center;gap:9px;}
+  .oggi-water-ctrl .water-bar.mini{width:52px;height:7px;}
+  .oggi-water-btn{
+    background:linear-gradient(135deg,#2ac7ff22,#2ac7ff11);border:1px solid #2ac7ff40;
+    color:var(--text);border-radius:20px;padding:5px 11px;font-size:11.5px;font-weight:700;
+    font-family:inherit;white-space:nowrap;cursor:pointer;
+  }
+  .oggi-water-btn:active{background:#2ac7ff33;}
   .oggi-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:2px;}
   .oggi-stat{
     background:var(--panel-2);border:1px solid var(--border);border-radius:16px;
@@ -2124,7 +2133,10 @@ function toggleMealDone(i){
 function aggiungiAcqua(delta){
   cache.dietaLogOggi.acquaMl = Math.max(0, (cache.dietaLogOggi.acquaMl||0) + delta);
   salvaDietaLogOggi();
-  renderAlimentazione();
+  // Il conteggio acqua ora vive solo in Home (non più in Dieta): ri-rendo
+  // la schermata da cui è stato chiamato, invece di assumere sempre Dieta.
+  if(route.name==='home') renderHome();
+  else renderAlimentazione();
 }
 
 function toggleIntegratoreFatto(nome){
@@ -2680,19 +2692,28 @@ function renderOggiPanel(){
     pastoRow = `<div class="oggi-row"><span>🍽️ Prossimo da segnare</span><b>${prossimo}</b></div>`;
   }
 
-  // Le due streak diventano chip con fiamma invece di righe di testo — lo
-  // stesso linguaggio visivo (badge, non elenco) usato da molte app di
-  // fitness per rinforzare la costanza a colpo d'occhio.
-  const streakDieta = pianoPersonale ? calcolaStreakDieta() : 0;
-  const streakSettimane = calcolaStreakSettimaneAllenamento();
-  const chips = [];
-  if(streakSettimane>0) chips.push(`<span class="streak-chip"><span class="flame">🔥</span><b>${streakSettimane}</b>&nbsp;settiman${streakSettimane===1?'a':'e'} di fila con allenamento</span>`);
-  if(streakDieta>1) chips.push(`<span class="streak-chip"><span class="flame">🔥</span><b>${streakDieta}</b>&nbsp;giorni di fila con dieta tracciata</span>`);
+  // Al posto della dicitura "N settimane di fila con allenamento", qui in Home
+  // ora c'è il conteggio dell'acqua con un tasto rapido +250ml: è un dato che
+  // si aggiorna più spesso durante la giornata, quindi più utile a colpo
+  // d'occhio della streak. Rimane il target di obiettiviAttivi() (2500ml),
+  // indipendente da pianoPersonale.
+  const tAcqua = obiettiviAttivi(!!cache.dietaLogOggi.giornoAllenamento);
+  const acquaMl = cache.dietaLogOggi.acquaMl || 0;
+  const acquaL = (acquaMl/1000).toFixed(2).replace('.', ',');
+  const acquaPct = Math.min(100, Math.round((acquaMl/tAcqua.acquaMl)*100));
+  const acquaRow = `<div class="oggi-row oggi-water-row">
+    <span>💧 Acqua oggi</span>
+    <div class="oggi-water-ctrl">
+      <div class="water-bar mini"><div class="water-fill" style="width:${acquaPct}%;"></div></div>
+      <b>${acquaL} L</b>
+      <button class="oggi-water-btn" onclick="aggiungiAcqua(250)">+250 ml</button>
+    </div>
+  </div>`;
 
   return `<div class="oggi-panel">
     <div class="oggi-stats">${statsTiles.join('')}</div>
     ${pastoRow}
-    ${chips.length ? `<div class="oggi-streaks">${chips.join('')}</div>` : ''}
+    ${acquaRow}
   </div>`;
 }
 
@@ -3608,7 +3629,7 @@ function renderStorico(){
   view.innerHTML = `
     <div class="home-cat" onclick="setRoute({name:'storico-allenamento'})">
       <div class="icon">🏋️</div>
-      <div><div class="label">Allenamento</div><div class="sub">${cache.sessioni.length} ${cache.sessioni.length===1?'seduta salvata':'sedute salvate'}</div></div>
+      <div><div class="label">Allenamento</div><div class="sub">${cache.sessioni.length + cache.cardioSessioni.length} ${(cache.sessioni.length + cache.cardioSessioni.length)===1?'seduta salvata':'sedute salvate'}</div></div>
     </div>
     <div class="home-cat" onclick="setRoute({name:'storico-misure'})">
       <div class="icon">📏</div>
@@ -3643,6 +3664,15 @@ function esportaCSV(){
     });
   });
   righe.push('');
+  righe.push('=== CARDIO ===');
+  righe.push(['Data','Attività','Durata (min)','Kcal stimate'].join(','));
+  cache.cardioSessioni.slice().sort((a,b)=> new Date(a.data)-new Date(b.data)).forEach(s=>{
+    const data = new Date(s.data).toLocaleDateString('it-IT');
+    const att = CARDIO_ATTIVITA.find(a=>a.key===s.tipo);
+    const label = att ? att.label : s.tipo;
+    righe.push([data, csvEscape(label), Math.round((s.durataSec||0)/60), s.kcalStimate||0].join(','));
+  });
+  righe.push('');
   righe.push('=== MISURE ===');
   righe.push(['Data','Peso','Vita','Petto','Fianchi','Collo','Braccio Dx','Braccio Sx','Coscia Dx','Coscia Sx','% Massa grassa stimata'].join(','));
   cache.misure.slice().sort((a,b)=> new Date(a.data)-new Date(b.data)).forEach(m=>{
@@ -3675,41 +3705,84 @@ function etichettaGiornoRelativa(data){
 
 function renderStoricoAllenamento(){
   pageTitle.textContent = 'Storico allenamento';
-  const sessioni = cache.sessioni.slice().reverse();
+  const voci = [
+    ...cache.sessioni.map(s=>({ tipo:'pesi', data:s.data, s })),
+    ...cache.cardioSessioni.map(s=>({ tipo:'cardio', data:s.data, s }))
+  ].sort((a,b)=> new Date(b.data)-new Date(a.data));
   let html = '';
   if(route.justSaved){
     html += `<div class="success-banner">Allenamento salvato ✅</div>`;
   }
-  if(sessioni.length===0){
+  if(voci.length===0){
     html += `<p class="empty"><span class="empty-icon">📋</span>Nessun allenamento salvato ancora.<br>Completa una seduta in "Allenamento" per vederla qui.</p>`;
     view.innerHTML = html;
     return;
   }
   html += `<p class="swipe-hint">Tocca una voce per vedere il dettaglio, scorrila verso sinistra per eliminarla</p>`;
-  sessioni.forEach((s, i)=>{
-    const nEsercizi = (s.esercizi||[]).length;
-    const rpeValori = (s.esercizi||[]).flatMap(e=> (e.sets||[]).map(x=>x.rpe)).filter(v=>v!=null && !isNaN(v));
-    const rpeMedio = rpeValori.length ? Math.round((rpeValori.reduce((a,b)=>a+b,0)/rpeValori.length)*10)/10 : null;
+  voci.forEach((v, i)=>{
+    const badge = i===0 ? `<span class="turn-badge">📍 Più recente</span>` : '';
+    if(v.tipo==='pesi'){
+      const s = v.s;
+      const nEsercizi = (s.esercizi||[]).length;
+      const rpeValori = (s.esercizi||[]).flatMap(e=> (e.sets||[]).map(x=>x.rpe)).filter(v=>v!=null && !isNaN(v));
+      const rpeMedio = rpeValori.length ? Math.round((rpeValori.reduce((a,b)=>a+b,0)/rpeValori.length)*10)/10 : null;
 
-    html += `<div class="swipe-row" data-id="${s.id}">
-      <div class="swipe-delete">Elimina</div>
-      <div class="list-item sessione-card" data-route-name="progressi-detail" data-route-id="${s.id}">
-        <div class="sessione-card-icon">🏋️</div>
-        <div class="sessione-card-info">
-          ${i===0 ? `<span class="turn-badge">📍 Più recente</span>` : ''}
-          <h3>${s.schedaNome}</h3>
-          <p class="sessione-card-date">${etichettaGiornoRelativa(s.data)}</p>
-          <div class="misura-card-meta">
-            <span class="misura-pill">🏋️ ${nEsercizi} esercizi${nEsercizi===1?"o":""}</span>
-            ${rpeMedio!=null ? `<span class="misura-pill">📊 RPE medio ${rpeMedio}</span>` : ''}
+      html += `<div class="swipe-row" data-id="p_${s.id}">
+        <div class="swipe-delete">Elimina</div>
+        <div class="list-item sessione-card" data-route-name="progressi-detail" data-route-id="${s.id}">
+          <div class="sessione-card-icon">🏋️</div>
+          <div class="sessione-card-info">
+            ${badge}
+            <h3>${s.schedaNome}</h3>
+            <p class="sessione-card-date">${etichettaGiornoRelativa(s.data)}</p>
+            <div class="misura-card-meta">
+              <span class="misura-pill">🏋️ ${nEsercizi} esercizi${nEsercizi===1?"o":""}</span>
+              ${rpeMedio!=null ? `<span class="misura-pill">📊 RPE medio ${rpeMedio}</span>` : ''}
+            </div>
+          </div>
+          <span class="misura-chevron">›</span>
+        </div>
+      </div>`;
+    } else {
+      const s = v.s;
+      const att = CARDIO_ATTIVITA.find(a=>a.key===s.tipo);
+      const icona = att ? att.icona : '🫁';
+      const label = att ? att.label : s.tipo;
+      const minuti = Math.round((s.durataSec||0)/60);
+
+      html += `<div class="swipe-row" data-id="c_${s.id}">
+        <div class="swipe-delete">Elimina</div>
+        <div class="list-item sessione-card">
+          <div class="sessione-card-icon">${icona}</div>
+          <div class="sessione-card-info">
+            ${badge}
+            <h3>Cardio · ${label}</h3>
+            <p class="sessione-card-date">${etichettaGiornoRelativa(s.data)}</p>
+            <div class="misura-card-meta">
+              <span class="misura-pill">⏱️ ${minuti} min</span>
+              <span class="misura-pill">🔥 ${s.kcalStimate||0} kcal</span>
+            </div>
           </div>
         </div>
-        <span class="misura-chevron">›</span>
-      </div>
-    </div>`;
+      </div>`;
+    }
   });
   view.innerHTML = html;
-  attachSwipeHandlers(view, eliminaSessione);
+  attachSwipeHandlers(view, eliminaVoceStorico);
+}
+
+function eliminaVoceStorico(id){
+  if(id.startsWith('c_')) return eliminaCardioSessione(id.slice(2));
+  if(id.startsWith('p_')) return eliminaSessione(id.slice(2));
+}
+
+async function eliminaCardioSessione(id){
+  if(!(await mostraConferma('Eliminare questa sessione cardio dallo storico?'))) return;
+  try{
+    await userCollection('cardioSessioni').doc(id).delete();
+    cache.cardioSessioni = cache.cardioSessioni.filter(s=>s.id!==id);
+    setRoute({name:'storico-allenamento'});
+  }catch(e){ alert('Errore: '+e.message); }
 }
 
 function renderStoricoMisure(){
@@ -5292,11 +5365,6 @@ function renderAlimentazione(){
     </div>`;
   }).join('');
 
-  const acquaMl = cache.dietaLogOggi.acquaMl || 0;
-  const acquaTargetMl = t.acquaMl;
-  const acquaPct = Math.min(100, Math.round((acquaMl/acquaTargetMl)*100));
-  const acquaL = (acquaMl/1000).toFixed(2).replace('.', ',');
-
   const timingHtml = allenamentoFattoOggi()
     ? `<div class="note-box">💪 Ti sei allenato oggi: nelle prossime ore punta su un pasto con proteine e carboidrati per favorire il recupero.</div>`
     : '';
@@ -5349,19 +5417,6 @@ function renderAlimentazione(){
     ${extraSenzaPastoHtml}
 
     <button class="btn secondary" style="width:100%;margin-bottom:16px;" onclick="setRoute({name:'cerca-alimento'})">🔍 Cerca un alimento nuovo</button>
-
-    <div class="diet-info-card">
-      <div class="dic-t">💧 Idratazione di oggi</div>
-      <div class="dic-b" style="margin-bottom:10px;">Obiettivo ${(acquaTargetMl/1000).toFixed(2).replace('.', ',')} L/die.</div>
-      <div class="water-row">
-        <div class="water-bar"><div class="water-fill" style="width:${acquaPct}%;"></div></div>
-        <span class="water-val">${acquaL} L</span>
-      </div>
-      <div class="water-btns">
-        <button class="btn small secondary" onclick="aggiungiAcqua(-250)">−250 ml</button>
-        <button class="btn small secondary" onclick="aggiungiAcqua(250)">+250 ml</button>
-      </div>
-    </div>
 
     <div class="diet-info-card">
       <div class="dic-t">📝 Note pratiche</div>
