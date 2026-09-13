@@ -47,11 +47,15 @@
   *{box-sizing:border-box;}
   /* Il viewport meta (maximum-scale/user-scalable=no) blocca lo zoom sulla
      maggior parte dei browser, ma Safari iOS lo ignora per accessibilità:
-     touch-action qui blocca comunque il gesto di pinch-to-zoom sulla pagina,
-     lasciando passare solo lo scroll verticale/orizzontale normale. */
-  html{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y;}
+     touch-action qui blocca comunque il gesto di pinch-to-zoom. pan-y (non
+     "pan-x pan-y") blocca anche lo scorrimento/trascinamento laterale
+     dell'intera pagina: l'app deve muoversi solo su e giù, mai a destra o
+     sinistra. overflow-x:hidden su html/body è una seconda rete di
+     sicurezza nel caso qualche elemento sfori la larghezza per errore. */
+  html{-webkit-tap-highlight-color:transparent;touch-action:pan-y;overflow-x:hidden;}
   body{
     margin:0;
+    overflow-x:hidden;
     font-family:'Manrope',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     /* Sfondo ambientale: due glow radiali molto tenui (verde in alto, viola
        più in basso a destra) sopra il fondo scuro piatto di prima, per dare
