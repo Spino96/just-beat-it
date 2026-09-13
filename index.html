@@ -702,15 +702,22 @@
   /* Pillola "Oggi riposo/allenamento": prima un bottone secondario piatto,
      ora un badge con bordo sfumato e icona ben visibile — invita al tocco
      invece di sembrare testo informativo. */
-  .day-mode-pill{
-    display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;margin-bottom:4px;
-    padding:11px 16px;border-radius:14px;cursor:pointer;
-    background:linear-gradient(135deg,#39ff9418,#8b6bff12);
-    border:1px solid #39ff9440;color:var(--text);font-size:13.5px;font-weight:800;
-    transition:transform .12s ease;
+  /* Due bottoni distinti invece di un pill "tocca per cambiare" che apriva
+     un dialog: la scelta riposo/allenamento è diretta, un tap e basta, col
+     bottone attivo evidenziato — uno switch, non una domanda. */
+  .day-mode-toggle{display:flex;gap:8px;width:100%;margin-top:10px;margin-bottom:4px;}
+  .dmt-btn{
+    flex:1;padding:11px 10px;border-radius:14px;cursor:pointer;text-align:center;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text-dim);
+    font-size:13px;font-weight:800;transition:transform .12s ease, background .2s ease, border-color .2s ease, color .2s ease;
   }
-  .day-mode-pill:active{transform:scale(.97);}
-  .day-mode-pill .dmp-hint{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--text-dim);text-transform:none;}
+  .dmt-btn:active{transform:scale(.96);}
+  .dmt-btn.active{
+    color:var(--text);
+    background:linear-gradient(135deg,#39ff9422,#8b6bff18);
+    border-color:#39ff9455;
+    box-shadow:0 0 0 1px #39ff9433 inset;
+  }
   .kcal-ring-wrap{position:relative;width:164px;height:164px;margin:14px auto 22px;}
   /* Alone sfumato dietro l'anello: verde/viola quando sei nell'obiettivo,
      rosso quando lo superi — visibile subito anche con lo sguardo di
@@ -2277,12 +2284,22 @@ async function chiediEImpostaGiornoAllenamento(){
   salvaDietaLogOggi();
 }
 
-// Usata dal pill "tocca per cambiare" dentro Dieta: se non risposto ancora
-// (rete di sicurezza, non dovrebbe succedere perché ci pensa già l'avvio
-// dell'app) o quando l'utente vuole cambiare idea a metà giornata (forza=true).
+// Usata come rete di sicurezza dentro Dieta se il giorno non è ancora stato
+// impostato (non dovrebbe succedere perché ci pensa già l'avvio dell'app).
 async function impostaGiornoAllenamento(forza){
   if(!forza && cache.dietaLogOggi.giornoAllenamento !== null) return;
   await chiediEImpostaGiornoAllenamento();
+  renderAlimentazione();
+}
+
+// Usata dai due bottoni "Riposo"/"Allenamento" dentro Dieta: qui la scelta è
+// già esplicita (l'utente ha toccato uno dei due), quindi si imposta subito
+// senza riaprire il dialog di conferma "Oggi ti alleni? Sì/No".
+function impostaGiornoDiretto(valore){
+  if(cache.dietaLogOggi.giornoAllenamento === valore) return;
+  cache.dietaLogOggi.giornoAllenamento = valore;
+  hapticaLieve();
+  salvaDietaLogOggi();
   renderAlimentazione();
 }
 
@@ -5145,7 +5162,10 @@ function renderAlimentazione(){
     <div class="diet-summary diet-summary-glow">
       <div class="tlt">Piano nutrizionale</div>
       <div class="tsb">${DIETA_PIANO.fase}<br>5 pasti al giorno · segna cosa mangi davvero, pasto per pasto</div>
-      ${cache.dietaLogOggi.giornoAllenamento!==null ? `<button class="day-mode-pill" onclick="impostaGiornoAllenamento(true)">${cache.dietaLogOggi.giornoAllenamento ? '🏋️ Oggi ti alleni' : '🛋️ Oggi riposo'} <span class="dmp-hint">tocca per cambiare</span></button>` : ''}
+      ${cache.dietaLogOggi.giornoAllenamento!==null ? `<div class="day-mode-toggle">
+        <button class="dmt-btn${!cache.dietaLogOggi.giornoAllenamento?' active':''}" onclick="impostaGiornoDiretto(false)">🛋️ Riposo</button>
+        <button class="dmt-btn${cache.dietaLogOggi.giornoAllenamento?' active':''}" onclick="impostaGiornoDiretto(true)">🏋️ Allenamento</button>
+      </div>` : ''}
       <div class="kcal-ring-wrap">
         <div class="kcal-ring-glow${kcalOver?' over':''}"></div>
         <svg viewBox="0 0 120 120" class="kcal-ring">
