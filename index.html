@@ -3361,17 +3361,13 @@ function renderVolumeGruppiCard(){
     const n = conteggio[g];
     const pct = Math.min(100, Math.round((n/20)*100));
     const etichetta = n<10 ? 'basso' : (n<=20 ? 'nel range comune' : 'alto');
-    return `<div style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;">
-        <span>${g}</span><span>${n} serie · ${etichetta}</span>
-      </div>
-      <div style="height:8px;border-radius:5px;background:var(--panel-2);overflow:hidden;">
-        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),#1fae63);"></div>
-      </div>
+    return `<div class="blocco-progress">
+      <p class="bp-label">${g} · ${n} serie · ${etichetta}</p>
+      <div class="bp-bar"><div class="bp-fill" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
   return `<div class="card">
-    <h3 style="margin-top:0;font-size:15px;">Volume settimanale per gruppo</h3>
+    <h3 style="margin-top:0;font-size:15px;">💪 Volume settimanale per gruppo</h3>
     <p class="field-hint" style="margin:0 0 14px;">Serie completate negli ultimi 7 giorni per gruppo muscolare. 10-20 serie/settimana per gruppo è un range spesso citato come riferimento generale per l'ipertrofia — non una prescrizione, solo un punto di partenza.</p>
     ${righe}
   </div>`;
@@ -3398,7 +3394,7 @@ function calcolaValoreEsercizio(sessione, nomeEsercizio, metrica){
 function renderAderenzaCard(){
   const blocchiAttivi = schedeAssegnateUtente().filter(s=> blocchiIniziati[s.id]);
   if(!blocchiAttivi.length) return '';
-  let html = `<div class="card"><h3 style="margin-top:0;font-size:15px;">Costanza</h3>`;
+  let html = `<div class="card"><h3 style="margin-top:0;font-size:15px;">🔥 Costanza</h3>`;
   blocchiAttivi.forEach(s=>{
     const inizio = new Date(blocchiIniziati[s.id]);
     const oggi = new Date();
@@ -3410,13 +3406,9 @@ function renderAderenzaCard(){
     const attese = Math.max(1, Math.round((giorniTrascorsi/7) * freq));
     const fatte = cache.sessioni.filter(sess=> sess.schedaId===s.id && new Date(sess.data) >= inizio).length;
     const pct = Math.min(100, Math.round((fatte/attese)*100));
-    html += `<div style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:6px;">
-        <span>${s.nome}</span><span>${fatte}/${attese} sedute</span>
-      </div>
-      <div style="height:8px;border-radius:5px;background:var(--panel-2);overflow:hidden;">
-        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),#1fae63);"></div>
-      </div>
+    html += `<div class="blocco-progress">
+      <p class="bp-label">${s.nome} · ${fatte}/${attese} sedute</p>
+      <div class="bp-bar"><div class="bp-fill" style="width:${pct}%"></div></div>
     </div>`;
   });
   html += `</div>`;
@@ -3431,7 +3423,7 @@ function renderRiepilogoSettimanale(){
   const rpeValori = sessioniSettimana.flatMap(s=> (s.esercizi||[]).flatMap(e=> (e.sets||[]).map(x=>x.rpe))).filter(v=>v!=null && !isNaN(v));
   const rpeMedio = rpeValori.length ? (rpeValori.reduce((a,b)=>a+b,0)/rpeValori.length).toFixed(1) : null;
 
-  let aderenzaHtml = '';
+  let aderenzaTiles = '';
   if(pianoPersonale){
     const giorniLog = cache.dietaLog.filter(d=> new Date(d.id) >= seiGiorniFa);
     const numPasti = DIETA_PIANO.pasti.length;
@@ -3439,19 +3431,24 @@ function renderRiepilogoSettimanale(){
     if(giorniLog.length){
       const pastiPctTot = giorniLog.reduce((sum,g)=> sum + (Object.values(g.pastiFatti||{}).filter(Boolean).length/numPasti)*100, 0);
       const integrPctTot = giorniLog.reduce((sum,g)=> sum + (Object.values(g.integratoriFatti||{}).filter(Boolean).length/numIntegratori)*100, 0);
-      aderenzaHtml = `
-        <div class="week-stat"><span>Aderenza pasti</span><b>${Math.round(pastiPctTot/giorniLog.length)}%</b></div>
-        <div class="week-stat"><span>Aderenza integratori</span><b>${Math.round(integrPctTot/giorniLog.length)}%</b></div>`;
+      aderenzaTiles = `
+        <div class="oggi-stat"><div class="v">${Math.round(pastiPctTot/giorniLog.length)}%</div><div class="l">Aderenza<br>pasti</div></div>
+        <div class="oggi-stat"><div class="v">${Math.round(integrPctTot/giorniLog.length)}%</div><div class="l">Aderenza<br>integratori</div></div>`;
     }
   }
 
-  if(!sessioniSettimana.length && !aderenzaHtml) return '';
+  if(!sessioniSettimana.length && !aderenzaTiles) return '';
 
+  // Tile a griglia (stesso componente .oggi-stats della Home) invece delle
+  // righe di testo: più leggibile a colpo d'occhio, coerente col resto
+  // dell'app e si dispone automaticamente su più righe se gli stat crescono.
   return `<div class="card">
-    <h3 style="margin-top:0;font-size:15px;">Ultimi 7 giorni</h3>
-    <div class="week-stat"><span>Allenamenti fatti</span><b>${sessioniSettimana.length}</b></div>
-    ${rpeMedio!=null ? `<div class="week-stat"><span>RPE medio</span><b>${rpeMedio}/10</b></div>` : ''}
-    ${aderenzaHtml}
+    <h3 style="margin-top:0;font-size:15px;">📅 Ultimi 7 giorni</h3>
+    <div class="oggi-stats">
+      <div class="oggi-stat"><div class="v">${sessioniSettimana.length}</div><div class="l">Allenamenti<br>fatti</div></div>
+      ${rpeMedio!=null ? `<div class="oggi-stat"><div class="v">${rpeMedio}</div><div class="l">RPE medio<br>/10</div></div>` : ''}
+      ${aderenzaTiles}
+    </div>
   </div>`;
 }
 
@@ -3484,7 +3481,7 @@ function renderStatistiche(){
   html += renderObiettivoCorpoStatCard();
   if(haveSessioni) html += renderVolumeGruppiCard();
   if(haveSessioni){
-    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Carichi esercizi</h3>
+    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">📊 Carichi esercizi</h3>
       <div class="chip-select" id="metricaChips">
         ${METRICHE_ESERCIZIO.map((m,i)=>`<div class="chip ${i===0?'active':''}" data-m="${m.key}">${m.label}</div>`).join('')}
       </div>
@@ -3493,13 +3490,13 @@ function renderStatistiche(){
     </div>`;
   }
   if(haveMisureStats){
-    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Misure corporee</h3>
+    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">📏 Misure corporee</h3>
       <div class="chip-select" id="misureChips"></div>
       <canvas class="chart-canvas" id="misureChart" height="180"></canvas>
     </div>`;
   }
   if(haveAderenza){
-    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">Aderenza nutrizione</h3>
+    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">🍎 Aderenza nutrizione</h3>
       <canvas class="chart-canvas" id="aderenzaChart" height="180"></canvas>
     </div>`;
   }
