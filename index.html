@@ -236,13 +236,13 @@
   .list-item.turno{border-left-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow-card);}
   .turn-badge{
     display:inline-block;font-size:11px;font-weight:800;letter-spacing:.3px;
-    background:var(--accent);color:#04140d;padding:3px 9px;border-radius:20px;
-    margin-bottom:8px;
+    background:linear-gradient(90deg,var(--accent),#1fae63);color:#04140d;padding:3px 9px;border-radius:20px;
+    margin-bottom:8px;box-shadow:0 0 12px -3px #39ff94aa;
   }
   .blocco-progress{margin:2px 2px 10px;}
   .blocco-progress .bp-label{margin:0 0 5px;font-size:12px;color:var(--text-dim);font-weight:700;}
   .blocco-progress .bp-bar{height:6px;border-radius:4px;background:var(--panel-2);border:1px solid var(--border);overflow:hidden;}
-  .blocco-progress .bp-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .35s ease;}
+  .blocco-progress .bp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-3));border-radius:4px;transition:width .35s ease;box-shadow:0 0 10px -1px #39ff9488;}
   .section-label{
     font-size:12px;text-transform:uppercase;letter-spacing:.6px;
     color:var(--text-dim);font-weight:800;margin:20px 2px 10px;
@@ -294,8 +294,13 @@
   .exercise-card{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
     box-shadow:var(--shadow-card);
-    padding:18px;margin-bottom:14px;border-top:3px solid var(--accent);
+    padding:18px;margin-bottom:14px;position:relative;overflow:hidden;
   }
+  .exercise-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-3));
+  }
+  .exercise-card.locked-ex::before{background:var(--text-dim);opacity:.4;}
   .exercise-card h3{margin:0 0 3px;font-size:16.5px;font-weight:800;}
   .ex-meta{font-size:12.5px;color:var(--text-dim);margin-bottom:12px;font-weight:700;}
   .ex-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
@@ -352,7 +357,7 @@
   .finish-bar-progress{margin:0 0 10px;}
   .finish-bar-progress .bp-label{margin:0 0 6px;font-size:12.5px;color:var(--text-dim);font-weight:700;}
   .finish-bar-progress .bp-bar{height:7px;border-radius:4px;background:var(--panel-2);border:1px solid var(--border);overflow:hidden;}
-  .finish-bar-progress .bp-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .35s ease;}
+  .finish-bar-progress .bp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-3));border-radius:4px;transition:width .35s ease;box-shadow:0 0 10px -1px #39ff9488;}
   .rpe-legend{font-size:11px;color:var(--text-dim);font-weight:600;margin:2px 0 10px;line-height:1.5;}
   .note-user{
     width:100%;font-family:inherit;resize:vertical;min-height:46px;
@@ -399,6 +404,11 @@
   .oggi-panel{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
     box-shadow:var(--shadow-card);padding:16px 18px;margin-bottom:14px;
+    position:relative;overflow:hidden;
+  }
+  .oggi-panel::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-3));
   }
   .oggi-row{
     display:flex;justify-content:space-between;align-items:center;
@@ -412,7 +422,11 @@
     background:var(--panel-2);border:1px solid var(--border);border-radius:16px;
     padding:14px 10px;text-align:center;
   }
-  .oggi-stat .v{font-family:var(--mono);font-size:23px;font-weight:700;color:var(--text);line-height:1;}
+  .oggi-stat .v{
+    font-family:var(--mono);font-size:23px;font-weight:800;line-height:1;
+    background:linear-gradient(90deg,var(--accent),#1fae63);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
   .oggi-stat .l{font-size:10.5px;color:var(--text-dim);font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:.03em;line-height:1.35;}
   .oggi-streaks{display:flex;flex-wrap:wrap;gap:8px;padding-top:6px;}
   .streak-chip{
