@@ -4959,13 +4959,41 @@ function renderAlimentazione(){
         </div>`).join('')}</div>
     </div>` : '';
 
+  // "Aggiungi di nuovo": stessi alimenti recenti/personalizzati già usati
+  // dalla ricerca completa, ma qui tappabili direttamente nella tab Extra —
+  // aprono un foglio rapido (grammi + pasto) invece di portarti su un'altra
+  // schermata. Risponde a "deve rimanere in memoria e essere facile da
+  // inserire": non serve ricercare da capo un alimento già loggato prima.
+  const extraRecenti = (profiloUtente && profiloUtente.alimentiRecenti) || [];
+  const extraPersonalizzati = cache.alimentiPersonalizzati || [];
+  const rigaQuickAdd = (p, fonte, i, sottotitolo) => `
+    <div class="food-search-item" onclick="apriAggiungiExtraRapido('${fonte}', ${i})">
+      <div class="fsi-info">
+        <div class="fsi-n">${p.nome}</div>
+        ${sottotitolo?`<div class="fsi-brand">${sottotitolo}</div>`:''}
+      </div>
+      <div class="fsi-kcal">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
+    </div>`;
+  const personalizzatiQuickHtml = extraPersonalizzati.map((p,i)=> rigaQuickAdd(p, 'personalizzato', i, 'Personalizzato')).join('');
+  const recentiQuickHtml = extraRecenti.map((p,i)=> rigaQuickAdd(p, 'recente', i, p.marca||'')).join('');
+  const quickAddSectionHtml = (personalizzatiQuickHtml || recentiQuickHtml) ? `<div class="diet-info-card">
+      <div class="dic-t">⚡ Aggiungi di nuovo</div>
+      <div class="dic-b" style="margin-bottom:10px;">Tocca un alimento già usato: puoi cambiare grammatura e pasto prima di confermare.</div>
+      ${personalizzatiQuickHtml ? `<p class="section-label" style="margin-top:0;">I miei alimenti e ricette</p>${personalizzatiQuickHtml}` : ''}
+      ${recentiQuickHtml ? `<p class="section-label"${personalizzatiQuickHtml?'':' style="margin-top:0;"'}>Aggiunti di recente</p>${recentiQuickHtml}` : ''}
+    </div>` : '';
+
   const extraTabHtml = `
     <div class="diet-info-card">
-      <div class="dic-t">🔍 Alimenti extra di oggi</div>
-      <div class="dic-b" style="margin-bottom:${alimentiExtra.length?'10px':'14px'};">Qualcosa fuori dal piano? Cercalo e aggiungilo con la grammatura giusta, scegliendo il pasto: si somma ai macro qui sopra.</div>
-      ${extraGruppiHtml}${extraSenzaPastoHtml}
-      <button class="btn small secondary" style="width:100%;margin-top:2px;" onclick="setRoute({name:'cerca-alimento'})">+ Cerca e aggiungi alimento</button>
+      <div class="dic-t">🔍 Extra di oggi</div>
+      ${alimentiExtra.length
+        ? `<div class="dic-b" style="margin-bottom:10px;">Si sommano ai macro qui sopra.</div>${extraGruppiHtml}${extraSenzaPastoHtml}`
+        : `<div class="dic-b" style="margin-bottom:2px;">Qualcosa fuori dal piano? Aggiungilo qui sotto: tocca un alimento già usato per riaggiungerlo in pochi secondi, o cercane uno nuovo.</div>`}
     </div>
+
+    ${quickAddSectionHtml}
+
+    <button class="btn secondary" style="width:100%;margin-bottom:16px;" onclick="setRoute({name:'cerca-alimento'})">🔍 Cerca un alimento nuovo</button>
 
     <div class="diet-info-card">
       <div class="dic-t">💧 Idratazione di oggi</div>
@@ -6074,14 +6102,12 @@ function toggleMicroSearch(){
   if(el) el.classList.toggle('open');
 }
 
-function confermaAggiungiAlimento(){
-  const p = ricercaAlimentoState.selezionato;
-  const g = ricercaAlimentoState.grammi;
+// Logica condivisa fra la schermata di ricerca completa (Cerca alimento) e
+// il foglio rapido "Aggiungi di nuovo" nella tab Extra: entrambi finiscono
+// per chiamare questa, così il comportamento (somma kcal, segna il pasto
+// fatto, ricorda l'alimento) resta identico indipendentemente da dove parte.
+function eseguiAggiungiAlimentoExtra(p, g, pastoIdx){
   const fattore = g/100;
-  // pastoIdx dovrebbe sempre avere un valore (suggerito in base all'ora quando
-  // si seleziona l'alimento), ma per sicurezza degrada su "Colazione" invece
-  // di bloccare il salvataggio se per qualche motivo manca.
-  const pastoIdx = ricercaAlimentoState.pastoIdx!=null ? ricercaAlimentoState.pastoIdx : 0;
   aggiungiAlimentoExtra({
     id: 'extra-'+Date.now(),
     nome: p.nome,
@@ -6100,8 +6126,107 @@ function confermaAggiungiAlimento(){
   // tocchiamo lo snapshot esistente.
   segnaPastoFattoDaExtra(pastoIdx);
   registraAlimentoRecente(p);
+}
+
+function confermaAggiungiAlimento(){
+  const p = ricercaAlimentoState.selezionato;
+  const g = ricercaAlimentoState.grammi;
+  // pastoIdx dovrebbe sempre avere un valore (suggerito in base all'ora quando
+  // si seleziona l'alimento), ma per sicurezza degrada su "Colazione" invece
+  // di bloccare il salvataggio se per qualche motivo manca.
+  const pastoIdx = ricercaAlimentoState.pastoIdx!=null ? ricercaAlimentoState.pastoIdx : 0;
+  eseguiAggiungiAlimentoExtra(p, g, pastoIdx);
   ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx:null };
   setRoute({name:'alimentazione'});
+}
+
+/* ============ AGGIUNGI DI NUOVO (foglio rapido dalla tab Extra) ============
+   Stessa logica di "Cerca alimento" ma senza cambiare schermata: pensato per
+   ri-aggiungere un alimento già usato (recente o personalizzato) in pochi
+   secondi, senza dover ricercare o navigare altrove. */
+let extraRapidoState = null; // { p, grammi, pastoIdx }
+
+function apriAggiungiExtraRapido(fonte, idx){
+  const p = fonte==='recente'
+    ? (profiloUtente && profiloUtente.alimentiRecenti || [])[idx]
+    : (cache.alimentiPersonalizzati || [])[idx];
+  if(!p) return;
+  extraRapidoState = { p, grammi:100, pastoIdx: pastoSuggeritoOra() };
+  hapticaLieve();
+  mostraAggiungiExtraRapidoOverlay();
+}
+
+function mostraAggiungiExtraRapidoOverlay(){
+  const st = extraRapidoState;
+  if(!st) return;
+  const { p, grammi, pastoIdx } = st;
+  const fattore = grammi/100;
+  const kcal = Math.round(p.kcal100*fattore);
+  const prot = Math.round(p.prot100*fattore*10)/10;
+  const carb = Math.round(p.carb100*fattore*10)/10;
+  const grassi = Math.round(p.grassi100*fattore*10)/10;
+  const pastoChipsHtml = DIETA_PIANO.pasti.map((pp,pi)=>
+    `<div class="chip${pi===pastoIdx?' active':''}" onclick="sceglieCategoriaPastoExtraRapido(${pi})">${pp.icona} ${pp.nome}</div>`
+  ).join('');
+  let overlay = document.getElementById('extraRapidoOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'extraRapidoOverlay';
+    overlay.className = 'sheet-overlay';
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudiAggiungiExtraRapido(); });
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `<div class="sheet-box" id="extraRapidoBox"><div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">${p.nome}</div>
+      <button class="sheet-close" onclick="chiudiAggiungiExtraRapido()" aria-label="Chiudi">✕</button>
+    </div>
+    ${p.marca ? `<p class="field-hint" style="margin:-8px 0 14px;">${p.marca}</p>` : ''}
+    <div class="field"><label>In quale pasto lo aggiungi?</label><div class="chip-select">${pastoChipsHtml}</div></div>
+    <div class="field"><label>Quantità (grammi)</label><input type="number" min="1" id="erGrammiInput" value="${grammi}" oninput="aggiornaAnteprimaGrammiRapido()"></div>
+    <div class="meal-macro-mini" style="margin-bottom:14px;">
+      <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b id="erProt">${prot}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b id="erCarb">${carb}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b id="erGrassi">${grassi}g</b></span>
+    </div>
+    <p style="font-size:13px;color:var(--text-dim);font-weight:700;margin:0 0 16px;" id="erKcalLine">${kcal} kcal totali per ${grammi}g</p>
+    <button class="btn" onclick="confermaAggiungiExtraRapido()">Aggiungi a oggi</button>
+  </div>`;
+  attachSwipeDownToDismiss(overlay.querySelector('#extraRapidoBox'), chiudiAggiungiExtraRapido);
+}
+
+function sceglieCategoriaPastoExtraRapido(pi){
+  if(!extraRapidoState) return;
+  extraRapidoState.pastoIdx = pi;
+  mostraAggiungiExtraRapidoOverlay();
+}
+
+function aggiornaAnteprimaGrammiRapido(){
+  if(!extraRapidoState) return;
+  const input = document.getElementById('erGrammiInput');
+  const g = Math.max(0, Number(input.value)||0);
+  extraRapidoState.grammi = g;
+  const p = extraRapidoState.p;
+  const fattore = g/100;
+  document.getElementById('erProt').textContent = (Math.round(p.prot100*fattore*10)/10)+'g';
+  document.getElementById('erCarb').textContent = (Math.round(p.carb100*fattore*10)/10)+'g';
+  document.getElementById('erGrassi').textContent = (Math.round(p.grassi100*fattore*10)/10)+'g';
+  document.getElementById('erKcalLine').textContent = Math.round(p.kcal100*fattore)+' kcal totali per '+g+'g';
+}
+
+function confermaAggiungiExtraRapido(){
+  const st = extraRapidoState;
+  if(!st) return;
+  const pastoIdx = st.pastoIdx!=null ? st.pastoIdx : 0;
+  eseguiAggiungiAlimentoExtra(st.p, st.grammi, pastoIdx);
+  chiudiAggiungiExtraRapido();
+  renderAlimentazione();
+}
+
+function chiudiAggiungiExtraRapido(){
+  const overlay = document.getElementById('extraRapidoOverlay');
+  if(overlay) overlay.remove();
+  extraRapidoState = null;
 }
 
 function segnaPastoFattoDaExtra(pastoIdx){
