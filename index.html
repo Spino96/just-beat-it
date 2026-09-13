@@ -729,6 +729,11 @@
   .meal-macro-mini span{font-size:11.5px;font-weight:700;color:var(--text-dim);display:flex;align-items:center;gap:5px;}
   .meal-macro-mini span b{color:var(--text);font-weight:800;}
   .meal-macro-mini .mb-dot{width:8px;height:8px;border-radius:50%;}
+  .mh-macro-preview{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;}
+  .mh-macro-preview span{font-size:10.5px;font-weight:700;color:var(--text-dim);display:flex;align-items:center;gap:4px;}
+  .mh-macro-preview span b{color:var(--text);font-weight:800;}
+  .mh-macro-preview .mb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .diario-manuale-note{margin:0 0 10px;color:var(--text-dim);font-size:12.5px;}
   .food-table{width:100%;border-collapse:collapse;font-size:12.5px;}
   .food-table th{text-align:left;color:var(--text-dim);font-weight:700;font-size:11px;padding:0 6px 8px;text-transform:uppercase;letter-spacing:.3px;}
   .food-table td{padding:8px 6px;border-top:1px solid var(--border);color:var(--text);font-weight:600;}
@@ -3446,15 +3451,24 @@ function renderRiepilogoSettimanale(){
 
   let aderenzaTiles = '';
   if(pianoPersonale){
-    const giorniLog = cache.dietaLog.filter(d=> new Date(d.id) >= seiGiorniFa);
+    // I giorni con macro inseriti a mano (manualMacros) non seguono il piano
+    // pasto per pasto: li teniamo fuori da "aderenza pasti/integratori" (non
+    // misurabile per loro) ma li contiamo comunque nelle kcal medie qui sotto.
+    const tuttiGiorniSettimana = cache.dietaLog.filter(d=> new Date(d.id) >= seiGiorniFa);
+    const giorniLog = tuttiGiorniSettimana.filter(d=> !d.manualMacros);
     const numPasti = DIETA_PIANO.pasti.length;
     const numIntegratori = INTEGRAZIONE_PIANO.integratori.length;
     if(giorniLog.length){
       const pastiPctTot = giorniLog.reduce((sum,g)=> sum + (Object.values(g.pastiFatti||{}).filter(Boolean).length/numPasti)*100, 0);
       const integrPctTot = giorniLog.reduce((sum,g)=> sum + (Object.values(g.integratoriFatti||{}).filter(Boolean).length/numIntegratori)*100, 0);
-      aderenzaTiles = `
+      aderenzaTiles += `
         <div class="oggi-stat"><div class="v">${Math.round(pastiPctTot/giorniLog.length)}%</div><div class="l">Aderenza<br>pasti</div></div>
         <div class="oggi-stat"><div class="v">${Math.round(integrPctTot/giorniLog.length)}%</div><div class="l">Aderenza<br>integratori</div></div>`;
+    }
+    const kcalGiorni = tuttiGiorniSettimana.map(g=> calcolaTotaliGiorno(g).kcalTot).filter(v=>v>0);
+    if(kcalGiorni.length){
+      const kcalMedia = Math.round(kcalGiorni.reduce((a,b)=>a+b,0)/kcalGiorni.length);
+      aderenzaTiles += `<div class="oggi-stat"><div class="v">${kcalMedia}</div><div class="l">Kcal medie<br>/giorno</div></div>`;
     }
   }
 
@@ -3628,7 +3642,7 @@ function renderStatistiche(){
   if(haveAderenza){
     const numPasti = DIETA_PIANO.pasti.length;
     const numIntegratori = INTEGRAZIONE_PIANO.integratori.length;
-    const punti = cache.dietaLog.slice(-30).map(g=>({
+    const punti = cache.dietaLog.filter(g=>!g.manualMacros).slice(-30).map(g=>({
       data: new Date(g.id).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}),
       pasti: Math.round((Object.values(g.pastiFatti||{}).filter(Boolean).length/numPasti)*100),
       integr: Math.round((Object.values(g.integratoriFatti||{}).filter(Boolean).length/numIntegratori)*100)
@@ -5105,7 +5119,11 @@ function salvaGiornoDietaLog(giornoId, giorno){
    cache.dietaLogOggi con la stessa forma di default usata in loadData(),
    così Dieta/Home restano coerenti senza bisogno di un reload. */
 async function confermaEliminaGiornoIntero(giornoId){
-  if(!(await mostraConferma('Eliminare questo giorno dal diario? Pasti, integratori, acqua ed extra registrati verranno cancellati e non potrai recuperarli.'))) return;
+  const g = cache.dietaLog.find(d=>d.id===giornoId);
+  const msg = (g && g.manualMacros)
+    ? 'Eliminare questo giorno dal diario? Il totale kcal/macro inserito manualmente verrà cancellato e non potrai recuperarlo.'
+    : 'Eliminare questo giorno dal diario? Pasti, integratori, acqua ed extra registrati verranno cancellati e non potrai recuperarli.';
+  if(!(await mostraConferma(msg))) return;
   cache.dietaLog = cache.dietaLog.filter(d=>d.id!==giornoId);
   if(currentUid) userCollection('dietaLog').doc(giornoId).delete().catch(()=>{});
   if(giornoId === todayKey()){
@@ -5223,6 +5241,112 @@ function chiudiModificaPastoGiorno(){
   diarioModificaState = null;
 }
 
+/* Calcola i totali kcal/macro di un giorno del diario. Se il giorno ha
+   manualMacros (inserito a mano, es. importato da un'altra app invece che
+   segnando i singoli pasti) quello è il totale, punto: non si somma anche
+   a eventuali pasti/extra, che per un giorno "manuale" restano vuoti. */
+function calcolaTotaliGiorno(g){
+  if(g.manualMacros){
+    const m = g.manualMacros;
+    return { kcalTot:m.kcal||0, protTot:m.prot||0, carbTot:m.carb||0, grassiTot:m.grassi||0, dettagliNonDisponibili:false, manuale:true };
+  }
+  const pastiFatti = g.pastiFatti || {};
+  const pastiSnapshot = g.pastiSnapshot || {};
+  const alimentiExtra = g.alimentiExtra || [];
+  let kcalTot = 0, protTot = 0, carbTot = 0, grassiTot = 0, dettagliNonDisponibili = false;
+  Object.keys(pastiFatti).forEach(i=>{
+    if(!pastiFatti[i]) return;
+    const snap = pastiSnapshot[i];
+    if(snap){ kcalTot+=snap.kcal; protTot+=snap.prot; carbTot+=snap.carb; grassiTot+=snap.grassi; }
+    else dettagliNonDisponibili = true;
+  });
+  alimentiExtra.forEach(a=>{ kcalTot+=a.kcal; protTot+=a.prot; carbTot+=a.carb; grassiTot+=a.grassi; });
+  return { kcalTot, protTot, carbTot, grassiTot, dettagliNonDisponibili, manuale:false };
+}
+
+/* ============ GIORNO CON MACRO INSERITI A MANO ============
+   Alternativa al segnare pasto per pasto: utile per un giorno tracciato con
+   un'altra app/a mente, di cui si conosce solo il totale kcal/macro. Riusa
+   lo stesso pattern a bottom-sheet di mostraModificaPastoOverlay(). Limitato
+   a ieri e giorni precedenti: "oggi" resta gestito da Dieta/pastiFatti, che
+   Home e la card Dieta leggono direttamente e non saprebbero interpretare
+   un totale manuale. */
+let giornoManualeState = null; // {mode:'new'|'edit', giornoId}
+
+function chiaveIeri(){
+  const d = new Date(); d.setDate(d.getDate()-1);
+  const pad = n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+function apriGiornoManualeForm(giornoId){
+  const editing = !!giornoId;
+  const g = editing ? cache.dietaLog.find(d=>d.id===giornoId) : null;
+  giornoManualeState = { mode: editing?'edit':'new', giornoId: giornoId||null };
+  let overlay = document.getElementById('giornoManualeOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'giornoManualeOverlay';
+    overlay.className = 'sheet-overlay';
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudiGiornoManualeForm(); });
+    document.body.appendChild(overlay);
+  }
+  const ieriK = chiaveIeri();
+  const dataVal = editing ? giornoId : ieriK;
+  const m = (g && g.manualMacros) || {};
+  overlay.innerHTML = `<div class="sheet-box" id="giornoManualeBox"><div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title">📥 ${editing?'Modifica giorno':'Aggiungi giorno'}</div>
+      <button class="sheet-close" onclick="chiudiGiornoManualeForm()" aria-label="Chiudi">✕</button>
+    </div>
+    <p class="field-hint" style="margin:-4px 0 14px;">Inserisci il totale kcal e macro del giorno (es. tracciato con un'altra app), invece di segnare i singoli pasti. Sovrascrive eventuali pasti già segnati per quel giorno. Disponibile da ieri in poi.</p>
+    <div id="gmError"></div>
+    <div class="field"><label>Data</label><input type="date" id="gmData" max="${ieriK}" value="${dataVal}" ${editing?'disabled':''}></div>
+    <div class="field"><label>Kcal totali</label><input type="number" min="0" id="gmKcal" value="${m.kcal??''}"></div>
+    <div class="grid2">
+      <div class="field"><label>Proteine (g)</label><input type="number" min="0" step="0.1" id="gmProt" value="${m.prot??''}"></div>
+      <div class="field"><label>Carboidrati (g)</label><input type="number" min="0" step="0.1" id="gmCarb" value="${m.carb??''}"></div>
+    </div>
+    <div class="field"><label>Grassi (g)</label><input type="number" min="0" step="0.1" id="gmGrassi" value="${m.grassi??''}"></div>
+    <button class="btn" style="margin-top:6px;" onclick="salvaGiornoManuale()">Salva</button>
+  </div>`;
+  attachSwipeDownToDismiss(overlay.querySelector('#giornoManualeBox'), chiudiGiornoManualeForm);
+}
+
+function chiudiGiornoManualeForm(){
+  const overlay = document.getElementById('giornoManualeOverlay');
+  if(overlay) overlay.remove();
+  giornoManualeState = null;
+}
+
+async function salvaGiornoManuale(){
+  const errBox = document.getElementById('gmError');
+  errBox.innerHTML = '';
+  const dataInput = document.getElementById('gmData');
+  const giornoId = giornoManualeState.mode==='edit' ? giornoManualeState.giornoId : dataInput.value;
+  const kcal = Number(document.getElementById('gmKcal').value);
+  const prot = Number(document.getElementById('gmProt').value);
+  const carb = Number(document.getElementById('gmCarb').value);
+  const grassi = Number(document.getElementById('gmGrassi').value);
+
+  if(!giornoId){ errBox.innerHTML = '<div class="error-banner">Seleziona una data.</div>'; return; }
+  if(giornoId > chiaveIeri()){ errBox.innerHTML = '<div class="error-banner">Puoi inserire macro manuali solo da ieri in poi (per oggi usa Dieta).</div>'; return; }
+  if(!kcal || kcal<=0){ errBox.innerHTML = '<div class="error-banner">Inserisci le kcal totali del giorno.</div>'; return; }
+  if([prot,carb,grassi].some(v=>isNaN(v)||v<0)){ errBox.innerHTML = '<div class="error-banner">Compila proteine, carboidrati e grassi (anche 0).</div>'; return; }
+
+  let g = cache.dietaLog.find(d=>d.id===giornoId);
+  if(!g){
+    g = { id:giornoId, pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, giornoAllenamento:null };
+    cache.dietaLog.push(g);
+  }
+  g.manualMacros = { kcal, prot, carb, grassi };
+  cache.dietaLog.sort((a,b)=> a.id.localeCompare(b.id));
+  salvaGiornoDietaLog(giornoId, g);
+  chiudiGiornoManualeForm();
+  diarioOpenSet.delete(giornoId);
+  renderDiario();
+}
+
 function renderDiario(){
   pageTitle.textContent = 'Diario';
   const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
@@ -5231,92 +5355,102 @@ function renderDiario(){
     return;
   }
   const giorni = cache.dietaLog.slice().sort((a,b)=> b.id.localeCompare(a.id));
+
+  // Azione sempre visibile in cima, anche a diario vuoto: permette di
+  // aggiungere un giorno passato inserendo solo il totale kcal/macro (utile
+  // per recuperare giorni tracciati con un'altra app o a mente).
+  const azioniHtml = `<div class="diet-quicklinks" style="margin-bottom:16px;">
+    <div class="qlink" onclick="apriGiornoManualeForm()"><span class="qi">➕</span><span class="ql">Aggiungi giorno</span></div>
+  </div>`;
+
   if(!giorni.length){
-    view.innerHTML = `<p class="empty"><span class="empty-icon">📖</span>Nessun giorno tracciato ancora.<br>Segna un pasto, un integratore o dell'acqua in Dieta per iniziare il diario.</p>`;
+    view.innerHTML = azioniHtml + `<p class="empty"><span class="empty-icon">📖</span>Nessun giorno tracciato ancora.<br>Segna un pasto, un integratore o dell'acqua in Dieta, oppure aggiungi un giorno passato con le kcal totali.</p>`;
     return;
   }
   const oggiK = todayKey();
 
   const html = giorni.map(g=>{
     const open = diarioOpenSet.has(g.id);
-    const pastiFatti = g.pastiFatti || {};
-    const pastiSnapshot = g.pastiSnapshot || {};
     const integratoriFatti = g.integratoriFatti || {};
     const alimentiExtra = g.alimentiExtra || [];
+    const { kcalTot, protTot, carbTot, grassiTot, dettagliNonDisponibili, manuale } = calcolaTotaliGiorno(g);
 
-    let kcalTot = 0, protTot = 0, carbTot = 0, grassiTot = 0, dettagliNonDisponibili = false;
-    Object.keys(pastiFatti).forEach(i=>{
-      if(!pastiFatti[i]) return;
-      const snap = pastiSnapshot[i];
-      if(snap){ kcalTot+=snap.kcal; protTot+=snap.prot; carbTot+=snap.carb; grassiTot+=snap.grassi; }
-      else dettagliNonDisponibili = true;
-    });
-    alimentiExtra.forEach(a=>{ kcalTot+=a.kcal; protTot+=a.prot; carbTot+=a.carb; grassiTot+=a.grassi; });
-
-    const numPastiFatti = Object.values(pastiFatti).filter(Boolean).length;
+    const numPastiFatti = Object.values(g.pastiFatti||{}).filter(Boolean).length;
     const numIntegrFatti = Object.values(integratoriFatti).filter(Boolean).length;
     const dataLabel = g.id===oggiK ? 'Oggi' : new Date(g.id).toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'});
     const tipoGiornoLabel = g.giornoAllenamento===true ? ' · 🏋️ allenamento' : g.giornoAllenamento===false ? ' · 🛋️ riposo' : '';
 
-    const pastiRighe = DIETA_PIANO.pasti.map((p,i)=>{
-      if(!pastiFatti[i]) return '';
-      const snap = pastiSnapshot[i];
-      const viaExtraGiorno = !!(g.pastiViaExtra && g.pastiViaExtra[i]);
-      // Un pasto "sostituito con alimento extra" ha kcal:0 nello snapshot per
-      // costruzione (le kcal reali sono contate una sola volta, tra gli
-      // alimenti extra qui sotto): mostriamo "vedi extra" invece di "0 kcal",
-      // che sembrerebbe un errore.
-      const valoreKcal = snap ? (viaExtraGiorno ? 'vedi extra ↓' : snap.kcal+' kcal') : 'segnato';
-      // Un pasto sostituito da un extra si modifica/elimina dall'alimento
-      // extra stesso qui sotto, non da qui: qui offriamo solo l'eliminazione
-      // (che rimette il pasto "non segnato"), non la scelta di un'opzione.
-      const azioni = `<span class="diario-item-actions">
-        ${!viaExtraGiorno ? `<button class="diario-mini-btn" onclick="event.stopPropagation();apriModificaPastoGiorno('${g.id}',${i})" title="Cambia opzione mangiata">✏️</button>` : ''}
-        <button class="diario-mini-btn" onclick="event.stopPropagation();confermaEliminaPastoGiorno('${g.id}',${i})" title="Rimuovi dal diario">🗑️</button>
-      </span>`;
-      return `<div class="micro-row"><span>${p.icona} ${p.nome}${snap?` — ${snap.titolo}`:''}${azioni}</span><b>${valoreKcal}</b></div>`;
-    }).join('');
+    const sottotitolo = manuale
+      ? '📥 Inserito manualmente'
+      : `${numPastiFatti}/${DIETA_PIANO.pasti.length} pasti · ${numIntegrFatti} integratori · ${((g.acquaMl||0)/1000).toFixed(1).replace('.',',')} L${tipoGiornoLabel}`;
 
-    const integrRighe = INTEGRAZIONE_PIANO.integratori
-      .filter(s=> integratoriFatti[s.nome])
-      .map(s=>`<div class="micro-row"><span>${s.icona} ${s.nome}</span><b>✅</b></div>`).join('');
-
-    const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)<span class="diario-item-actions"><button class="diario-mini-btn" onclick="confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${a.kcal} kcal</b></div>`).join('');
-
-    // Prot/carb/grassi erano già calcolati ma non venivano mai mostrati da
-    // nessuna parte: li aggiungiamo come mini-riepilogo macro (stesso
-    // componente .meal-macro-mini già usato nel dettaglio alimento) in cima
-    // al giorno espanso, cosi' il totale kcal nell'header ha un dettaglio
-    // sotto invece di restare un numero isolato.
-    const macroMiniHtml = kcalTot>0 ? `<div class="meal-macro-mini">
-      <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b>${Math.round(protTot)}g</b></span>
-      <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b>${Math.round(carbTot)}g</b></span>
-      <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b>${Math.round(grassiTot)}g</b></span>
+    // Anteprima macro sempre visibile in testa alla card (non solo ad
+    // aperta): risponde a "voglio vedere in anteprima le kcal e tutte le
+    // macro" senza dover toccare la card per aprirla.
+    const macroPreviewHtml = kcalTot>0 ? `<div class="mh-macro-preview">
+      <span><span class="mb-dot" style="background:var(--accent);"></span>P <b>${Math.round(protTot)}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-2);"></span>C <b>${Math.round(carbTot)}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-3);"></span>G <b>${Math.round(grassiTot)}g</b></span>
     </div>` : '';
+
+    let corpoHtml;
+    if(manuale){
+      corpoHtml = `<p class="diario-manuale-note">📥 Totale inserito manualmente per questo giorno (non pasto per pasto): quando apri la card vedi solo il riepilogo, perché non ci sono pasti singoli salvati.</p>
+        <button class="btn small secondary" onclick="event.stopPropagation();apriGiornoManualeForm('${g.id}')">✏️ Modifica valori</button>`;
+    } else {
+      const pastiFatti = g.pastiFatti || {};
+      const pastiSnapshot = g.pastiSnapshot || {};
+      const pastiRighe = DIETA_PIANO.pasti.map((p,i)=>{
+        if(!pastiFatti[i]) return '';
+        const snap = pastiSnapshot[i];
+        const viaExtraGiorno = !!(g.pastiViaExtra && g.pastiViaExtra[i]);
+        // Un pasto "sostituito con alimento extra" ha kcal:0 nello snapshot per
+        // costruzione (le kcal reali sono contate una sola volta, tra gli
+        // alimenti extra qui sotto): mostriamo "vedi extra" invece di "0 kcal",
+        // che sembrerebbe un errore.
+        const valoreKcal = snap ? (viaExtraGiorno ? 'vedi extra ↓' : snap.kcal+' kcal') : 'segnato';
+        // Un pasto sostituito da un extra si modifica/elimina dall'alimento
+        // extra stesso qui sotto, non da qui: qui offriamo solo l'eliminazione
+        // (che rimette il pasto "non segnato"), non la scelta di un'opzione.
+        const azioni = `<span class="diario-item-actions">
+          ${!viaExtraGiorno ? `<button class="diario-mini-btn" onclick="event.stopPropagation();apriModificaPastoGiorno('${g.id}',${i})" title="Cambia opzione mangiata">✏️</button>` : ''}
+          <button class="diario-mini-btn" onclick="event.stopPropagation();confermaEliminaPastoGiorno('${g.id}',${i})" title="Rimuovi dal diario">🗑️</button>
+        </span>`;
+        return `<div class="micro-row"><span>${p.icona} ${p.nome}${snap?` — ${snap.titolo}`:''}${azioni}</span><b>${valoreKcal}</b></div>`;
+      }).join('');
+
+      const integrRighe = INTEGRAZIONE_PIANO.integratori
+        .filter(s=> integratoriFatti[s.nome])
+        .map(s=>`<div class="micro-row"><span>${s.icona} ${s.nome}</span><b>✅</b></div>`).join('');
+
+      const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)<span class="diario-item-actions"><button class="diario-mini-btn" onclick="confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${a.kcal} kcal</b></div>`).join('');
+
+      corpoHtml = `${pastiRighe || '<p style="margin:0 0 8px;color:var(--text-dim);font-size:12.5px;">Nessun pasto segnato.</p>'}
+        ${integrRighe}
+        ${extraRighe}
+        ${dettagliNonDisponibili ? '<p class="field-hint" style="margin-top:10px;">Alcuni pasti di questo giorno sono stati segnati prima che il diario registrasse i dettagli: contano come "fatti" ma senza kcal/macro nel totale qui sopra.</p>' : ''}`;
+    }
 
     return `<div class="meal-card${open?' open':''}">
       <div class="meal-head" onclick="toggleDiarioGiorno('${g.id}')">
-        <div class="icon">📅</div>
+        <div class="icon">${manuale?'📥':'📅'}</div>
         <div class="mh-info">
           ${g.id===oggiK ? `<span class="turn-badge" style="margin-bottom:4px;">📍 Oggi</span>` : ''}
           <div class="mh-name">${dataLabel}</div>
-          <div class="mh-time">${numPastiFatti}/${DIETA_PIANO.pasti.length} pasti · ${numIntegrFatti} integratori · ${((g.acquaMl||0)/1000).toFixed(1).replace('.',',')} L${tipoGiornoLabel}</div>
+          <div class="mh-time">${sottotitolo}</div>
+          ${macroPreviewHtml}
         </div>
         <div class="mh-kcal">${kcalTot} kcal</div>
         <button class="diario-mini-btn diario-del-giorno" onclick="event.stopPropagation();confermaEliminaGiornoIntero('${g.id}')" title="Elimina l'intero giorno">🗑️</button>
         <div class="mh-chev">▾</div>
       </div>
       <div class="meal-body"><div class="meal-body-in">
-        ${macroMiniHtml}
-        ${pastiRighe || '<p style="margin:0 0 8px;color:var(--text-dim);font-size:12.5px;">Nessun pasto segnato.</p>'}
-        ${integrRighe}
-        ${extraRighe}
-        ${dettagliNonDisponibili ? '<p class="field-hint" style="margin-top:10px;">Alcuni pasti di questo giorno sono stati segnati prima che il diario registrasse i dettagli: contano come "fatti" ma senza kcal/macro nel totale qui sopra.</p>' : ''}
+        ${corpoHtml}
       </div></div>
     </div>`;
   }).join('');
 
-  view.innerHTML = html;
+  view.innerHTML = azioniHtml + html;
 }
 
 /* ============ LISTA DELLA SPESA ============
