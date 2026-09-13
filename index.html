@@ -2256,7 +2256,6 @@ const BACK_MAP = {
   'misura-modifica':'misura-detail',
   'confronta-foto':'storico-misure',
   'profilo':'home',
-  'trainer':'home'
 };
 
 backBtn.addEventListener('click', async ()=>{
@@ -2580,7 +2579,6 @@ function render(){
   else if(route.name==='sessione-modifica') renderSessioneModifica();
   else if(route.name==='statistiche') renderStatistiche();
   else if(route.name==='profilo') renderProfilo();
-  else if(route.name==='trainer') renderTrainerPanel();
 }
 
 /* ============ HOME ============ */
@@ -2701,9 +2699,7 @@ function renderOggiPanel(){
 function renderHome(){
   pageTitle.textContent = 'Beat Yourself';
   const saluto = profiloUtente ? `<p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0 0 4px;">Ciao, ${profiloUtente.nome} 👋</p>` : '';
-  const links = (profiloUtente && profiloUtente.isTrainer)
-    ? `<p class="profile-link"><span onclick="setRoute({name:'trainer'})">🛠️ Pannello trainer</span></p>`
-    : '';
+  const links = '';
   const haPianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
   const dietaSub = haPianoPersonale ? 'Piano nutrizionale e pasti' : 'In attesa del tuo piano personale';
   const promemoria = promemoriaCostanza();
@@ -4392,50 +4388,6 @@ async function salvaProfiloModifiche(){
 }
 
 /* ============ PANNELLO TRAINER (visibile solo se isTrainer:true sul profilo) ============ */
-function renderTrainerPanel(){
-  pageTitle.textContent = 'Pannello trainer';
-  if(!profiloUtente || !profiloUtente.isTrainer){
-    view.innerHTML = `<p class="empty"><span class="empty-icon">🔒</span>Accesso riservato al trainer.</p>`;
-    return;
-  }
-  view.innerHTML = `<div class="spinner-wrap">Caricamento utenti...</div>`;
-  db.collection('users').get().then(snap=>{
-    const utenti = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-    if(!utenti.length){
-      view.innerHTML = `<p class="empty"><span class="empty-icon">🔍</span>Nessun utente trovato.</p>`;
-      return;
-    }
-    let html = `<p class="note-box" style="margin-top:0;">Tocca una scheda per assegnarla o rimuoverla dall'utente.</p>`;
-    utenti.forEach(u=>{
-      const assegnate = u.schedeAssegnate || [];
-      html += `<div class="card">
-        <h3 style="margin:0 0 4px;font-size:15px;">${u.nome||'—'} ${u.cognome||''}</h3>
-        <p style="margin:0 0 10px;font-size:11.5px;color:var(--text-dim);word-break:break-all;">${u.id}</p>
-        <div class="chip-select">
-          ${SCHEDE.map(s=>`<div class="chip ${assegnate.includes(s.id)?'active':''}" onclick="toggleAssegnazione('${u.id}','${s.id}',this)">${s.nome}</div>`).join('')}
-        </div>
-      </div>`;
-    });
-    view.innerHTML = html;
-  }).catch(e=>{
-    view.innerHTML = `<div class="error-banner">Impossibile caricare gli utenti: ${e.message}</div>`;
-  });
-}
-
-function toggleAssegnazione(uid, schedaId, chipEl){
-  const ref = db.collection('users').doc(uid);
-  const attivo = chipEl.classList.contains('active');
-  const op = attivo ? firebase.firestore.FieldValue.arrayRemove(schedaId) : firebase.firestore.FieldValue.arrayUnion(schedaId);
-  chipEl.style.opacity = '.5';
-  ref.set({ schedeAssegnate: op }, { merge:true }).then(()=>{
-    chipEl.classList.toggle('active');
-    chipEl.style.opacity = '1';
-  }).catch(e=>{
-    chipEl.style.opacity = '1';
-    alert('Errore: '+e.message);
-  });
-}
-
 /* ============ DIETA ============ */
 const DIETA_PIANO = {
   versione: 'v7',
