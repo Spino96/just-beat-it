@@ -5085,49 +5085,11 @@ function renderAlimentazione(){
         </div>`).join('')}</div>
     </div>` : '';
 
-  // "Aggiungi di nuovo": stessi alimenti recenti/personalizzati già usati
-  // dalla ricerca completa, ma qui tappabili direttamente nella tab Segna
-  // pasto — aprono un foglio rapido (grammi + pasto) invece di portarti su
-  // un'altra schermata. Risponde a "deve rimanere in memoria e essere facile
-  // da inserire": non serve ricercare da capo un alimento già loggato prima.
-  const extraRecenti = (profiloUtente && profiloUtente.alimentiRecenti) || [];
-  const extraPersonalizzati = cache.alimentiPersonalizzati || [];
-  const rigaQuickAdd = (p, origine, i, sottotitolo) => `
-    <div class="food-search-item" onclick="apriAggiungiExtraRapido('${origine}', ${i})">
-      <div class="fsi-info">
-        <div class="fsi-n">${p.nome}</div>
-        ${sottotitolo?`<div class="fsi-brand">${sottotitolo}</div>`:''}
-      </div>
-      <div class="fsi-kcal">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
-    </div>`;
-  // Organizziamo "Aggiungi di nuovo" per fonte principale (Carboidrati /
-  // Proteine / Grassi) invece che per provenienza (personalizzato/recente):
-  // così è immediato trovare l'alimento giusto quando si sa cosa si vuole
-  // aggiungere (es. "una fonte di proteine").
-  const quickAddItems = [
-    ...extraPersonalizzati.map((p,i)=> ({ p, origine:'personalizzato', idx:i, sottotitolo:'Personalizzato' })),
-    ...extraRecenti.map((p,i)=> ({ p, origine:'recente', idx:i, sottotitolo:p.marca||'' })),
-  ];
-  const quickAddGruppi = FONTE_OPZIONI
-    .map(fo => ({ ...fo, items: quickAddItems.filter(it => (it.p.fonte || suggerisciFonte(it.p)) === fo.key) }))
-    .filter(g => g.items.length);
-  const quickAddGruppiHtml = quickAddGruppi.map((g,gi) => `
-      <p class="section-label"${gi===0?' style="margin-top:0;"':''}>${g.icona} ${g.label}</p>
-      ${g.items.map(it=> rigaQuickAdd(it.p, it.origine, it.idx, it.sottotitolo)).join('')}
-    `).join('');
-  const quickAddSectionHtml = quickAddItems.length ? `<div class="diet-info-card">
-      <div class="dic-t">⚡ Aggiungi di nuovo</div>
-      <div class="dic-b" style="margin-bottom:10px;">Tocca un alimento già usato: puoi cambiare grammatura e pasto prima di confermare.</div>
-      ${quickAddGruppiHtml}
-    </div>` : '';
-
   const segnaPastoTabHtml = `
     ${timingHtml}
     ${pastiTargetHtml}
 
     ${extraSenzaPastoHtml}
-
-    ${quickAddSectionHtml}
 
     <button class="btn secondary" style="width:100%;margin-bottom:16px;" onclick="setRoute({name:'cerca-alimento'})">🔍 Cerca un alimento nuovo</button>
 
@@ -5891,32 +5853,42 @@ function renderCercaAlimento(){
     risultatiHtml = `<p class="empty"><span class="empty-icon">🔍</span>Nessun risultato per "${s.query}". Prova con un nome più semplice o generico.</p>`;
   }
 
+  // "Aggiunti di recente" e "I miei alimenti" ora raggruppati per fonte
+  // (Carboidrati/Proteine/Grassi) invece che per provenienza: questa
+  // schermata si apre proprio "mentre aggiungo" un alimento a un pasto
+  // specifico (da "+ Aggiungi a [pasto]"), quindi qui — e non più come
+  // blocco fisso sempre visibile nella schermata principale di Segna
+  // pasto — è dove ha senso mostrare la scorciatoia sugli alimenti già usati.
   const recenti = (profiloUtente && profiloUtente.alimentiRecenti) || [];
-  const recentiHtml = (!s.query && recenti.length) ? `
-    <p class="section-label" style="margin-top:0;">Aggiunti di recente</p>
-    ${recenti.map((p,i)=>`
-      <div class="food-search-item" onclick="selezionaAlimentoRecente(${i})">
-        <div class="fsi-info">
-          <div class="fsi-n">${p.nome}</div>
-          ${p.marca?`<div class="fsi-brand">${p.marca}</div>`:''}
-        </div>
-        <div class="fsi-kcal">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
-      </div>`).join('')}
-  ` : '';
-
   const personalizzati = cache.alimentiPersonalizzati || [];
-  const personalizzatiHtml = (!s.query && personalizzati.length) ? `
-    <p class="section-label" style="margin-top:0;">I miei alimenti e ricette</p>
-    ${personalizzati.map((p,i)=>`
-      <div class="food-search-item">
-        <div class="fsi-info" onclick="selezionaAlimentoPersonalizzato(${i})" style="cursor:pointer;">
+  const quickAddItems = (!s.query) ? [
+    ...personalizzati.map((p,i)=> ({ p, tipo:'personalizzato', idx:i })),
+    ...recenti.map((p,i)=> ({ p, tipo:'recente', idx:i })),
+  ] : [];
+  const quickAddGruppi = FONTE_OPZIONI
+    .map(fo => ({ ...fo, items: quickAddItems.filter(it => (it.p.fonte || suggerisciFonte(it.p)) === fo.key) }))
+    .filter(g => g.items.length);
+  const quickAddGruppiHtml = quickAddGruppi.map((g,gi)=> `
+    <p class="section-label"${gi===0?' style="margin-top:0;"':''}>${g.icona} ${g.label}</p>
+    ${g.items.map(it=>{
+      const p = it.p, i = it.idx;
+      const sottotitolo = it.tipo==='personalizzato' ? 'Personalizzato' : (p.marca||'');
+      const clickFn = it.tipo==='personalizzato' ? `selezionaAlimentoPersonalizzato(${i})` : `selezionaAlimentoRecente(${i})`;
+      return `<div class="food-search-item">
+        <div class="fsi-info" onclick="${clickFn}" style="cursor:pointer;">
           <div class="fsi-n">${p.nome}</div>
-          <div class="fsi-brand">Personalizzato</div>
+          ${sottotitolo?`<div class="fsi-brand">${sottotitolo}</div>`:''}
         </div>
-        <div class="fsi-kcal" onclick="selezionaAlimentoPersonalizzato(${i})" style="cursor:pointer;">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
-        <button class="photo-slot-remove" style="position:static;margin-left:8px;flex-shrink:0;" onclick="event.stopPropagation();eliminaAlimentoPersonalizzato('${p.id}')">✕</button>
-      </div>`).join('')}
-  ` : '';
+        <div class="fsi-kcal" onclick="${clickFn}" style="cursor:pointer;">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
+        ${it.tipo==='personalizzato' ? `<button class="photo-slot-remove" style="position:static;margin-left:8px;flex-shrink:0;" onclick="event.stopPropagation();eliminaAlimentoPersonalizzato('${p.id}')">✕</button>` : ''}
+      </div>`;
+    }).join('')}
+  `).join('');
+  const quickAddHtml = quickAddGruppi.length ? `<div class="diet-info-card">
+      <div class="dic-t">⚡ Aggiungi di nuovo</div>
+      <div class="dic-b" style="margin-bottom:10px;">Tocca un alimento già usato per aggiungerlo di nuovo a questo pasto.</div>
+      ${quickAddGruppiHtml}
+    </div>` : '';
 
   view.innerHTML = `
     <div class="field">
@@ -5930,8 +5902,7 @@ function renderCercaAlimento(){
     <p class="field-hint" style="margin:0 0 18px;">I dati arrivano da Open Food Facts (aperto, forte sui prodotti confezionati) e USDA FoodData Central (database ufficiale USA, ottimo per alimenti generici come frutta, verdura e carne — nomi in inglese).</p>
     ${risultatiHtml}
     ${!s.query ? `<button class="btn secondary" style="width:100%;margin-bottom:14px;" onclick="setRoute({name:'crea-alimento-custom'})">➕ Crea alimento o ricetta personalizzata</button>` : ''}
-    ${personalizzatiHtml}
-    ${recentiHtml}
+    ${quickAddHtml}
   `;
   const input = document.getElementById('foodSearchInput');
   if(input) setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
