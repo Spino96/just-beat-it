@@ -727,6 +727,10 @@
   .mbr-top span:last-child{font-family:var(--mono);}
   .mbr-track{height:9px;border-radius:20px;background:#ffffff10;overflow:hidden;}
   .mbr-fill{height:100%;border-radius:20px;transition:width .6s ease;}
+  .mbr-diff{font-size:11px;font-weight:600;color:var(--text-dim);margin-top:5px;text-align:right;}
+  .mbr-diff.over{color:var(--danger);font-weight:800;}
+  .kr-diff{display:block;font-size:11.5px;font-weight:700;color:var(--text-dim);margin-top:2px;}
+  .kr-diff.over{color:var(--danger);font-weight:800;}
   .meal-card{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
     box-shadow:var(--shadow-card);margin-bottom:12px;overflow:hidden;
@@ -4915,17 +4919,33 @@ function renderAlimentazione(){
 
   const kcalPct = t.kcal ? Math.min(100, Math.round((acquisito.kcal/t.kcal)*100)) : 0;
   const kcalOver = acquisito.kcal > t.kcal;
-  const kcalColor = kcalOver ? 'var(--accent-2)' : 'var(--accent)';
+  // Rosso vero (--danger) quando si sfora, non più l'arancione di --accent-2
+  // (che è già usato altrove come colore "neutro" dei carboidrati): deve
+  // saltare all'occhio subito, sia sull'anello che sul numero.
+  const kcalColor = kcalOver ? 'var(--danger)' : 'var(--accent)';
+  const kcalDiff = t.kcal - acquisito.kcal;
+  const kcalDiffHtml = kcalDiff>=0
+    ? `<span class="kr-diff">mancano ${kcalDiff} kcal</span>`
+    : `<span class="kr-diff over">+${Math.abs(kcalDiff)} kcal oltre l'obiettivo</span>`;
   const RING_R = 52, RING_C = 2*Math.PI*RING_R;
   const ringOffset = RING_C * (1 - kcalPct/100);
 
+  // Per ogni macro mostriamo anche quanto manca (o di quanto si è sforato)
+  // rispetto all'obiettivo, non solo "preso / obiettivo": aiuta a regolarsi
+  // durante la giornata senza dover fare il conto a mente. Barra e numero
+  // diventano rossi (--danger) quando si supera l'obiettivo di quel macro.
   const macroBarsHtml = macroDef.map(m=>{
     const val = acquisito[m.key];
     const goal = t[m.key];
     const pct = goal ? Math.min(100, Math.round((val/goal)*100)) : 0;
+    const over = val > goal;
+    const diff = goal - val;
+    const diffLabel = diff>=0 ? `mancano ${diff}g` : `+${Math.abs(diff)}g oltre`;
+    const barColor = over ? 'var(--danger)' : m.color;
     return `<div class="macro-bar-row">
-      <div class="mbr-top"><span>${m.label}</span><span>${val}g / ${goal}g</span></div>
-      <div class="mbr-track"><div class="mbr-fill" style="width:${pct}%;background:${m.color};"></div></div>
+      <div class="mbr-top"><span>${m.label}</span><span style="${over?'color:var(--danger);':''}">${val}g / ${goal}g</span></div>
+      <div class="mbr-track"><div class="mbr-fill" style="width:${pct}%;background:${barColor};"></div></div>
+      <div class="mbr-diff${over?' over':''}">${diffLabel}</div>
     </div>`;
   }).join('');
 
@@ -5099,6 +5119,7 @@ function renderAlimentazione(){
         <div class="kr-center">
           <span class="kr-n" style="color:${kcalColor};">${acquisito.kcal}</span>
           <span class="kr-u">/ ${t.kcal} kcal oggi</span>
+          ${kcalDiffHtml}
         </div>
       </div>
       <div class="macro-bars">${macroBarsHtml}</div>
