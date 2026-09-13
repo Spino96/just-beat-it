@@ -688,49 +688,82 @@
   .diet-summary{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
     box-shadow:var(--shadow-card);padding:20px;margin-bottom:16px;
+    position:relative;overflow:hidden;
+  }
+  /* Barra sfumata in cima alla card principale della Dieta, sullo stesso
+     linguaggio visivo dell'accento colorato sotto l'header: dà subito un
+     tocco "premium" senza aggiungere altro testo o icone. */
+  .diet-summary-glow::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-3));
   }
   .diet-summary .tlt{font-size:15px;font-weight:800;margin-bottom:2px;}
   .diet-summary .tsb{font-size:12px;color:var(--text-dim);font-weight:600;line-height:1.5;margin-bottom:16px;}
-  .diet-kcal-hero{
-    display:flex;align-items:baseline;gap:8px;justify-content:center;
-    padding:14px 0 16px;margin-bottom:14px;border-bottom:1px solid var(--border);
+  /* Pillola "Oggi riposo/allenamento": prima un bottone secondario piatto,
+     ora un badge con bordo sfumato e icona ben visibile — invita al tocco
+     invece di sembrare testo informativo. */
+  .day-mode-pill{
+    display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;margin-bottom:4px;
+    padding:11px 16px;border-radius:14px;cursor:pointer;
+    background:linear-gradient(135deg,#39ff9418,#8b6bff12);
+    border:1px solid #39ff9440;color:var(--text);font-size:13.5px;font-weight:800;
+    transition:transform .12s ease;
   }
-  .diet-kcal-hero .n{
-    font-size:36px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1;
-    background:linear-gradient(90deg,var(--accent),#1fae63);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
+  .day-mode-pill:active{transform:scale(.97);}
+  .day-mode-pill .dmp-hint{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--text-dim);text-transform:none;}
+  .kcal-ring-wrap{position:relative;width:164px;height:164px;margin:14px auto 22px;}
+  /* Alone sfumato dietro l'anello: verde/viola quando sei nell'obiettivo,
+     rosso quando lo superi — visibile subito anche con lo sguardo di
+     sfuggita, non solo leggendo i numeri. */
+  .kcal-ring-glow{
+    position:absolute;inset:6px;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(57,255,148,.22),transparent 72%);
+    filter:blur(1px);transition:background .4s ease;
   }
-  .diet-kcal-hero .u{font-size:14px;color:var(--text-dim);font-weight:700;}
-  .macro-chip-row{display:flex;gap:10px;}
-  .macro-chip{
-    flex:1;text-align:center;padding:14px 8px;border-radius:16px;
-    background:var(--panel-2);border:1px solid var(--border);
-  }
-  .macro-chip .mc-dot{width:9px;height:9px;border-radius:50%;margin:0 auto 8px;}
-  .macro-chip .mc-n{font-size:16.5px;font-weight:900;color:var(--text);line-height:1;}
-  .macro-chip .mc-l{font-size:10.5px;color:var(--text-dim);font-weight:700;margin-top:5px;text-transform:uppercase;letter-spacing:.3px;}
-  .kcal-ring-wrap{position:relative;width:150px;height:150px;margin:6px auto 20px;}
-  .kcal-ring{width:100%;height:100%;transform:rotate(-90deg);}
+  .kcal-ring-glow.over{background:radial-gradient(circle,rgba(255,84,112,.28),transparent 72%);}
+  .kcal-ring{width:100%;height:100%;transform:rotate(-90deg);position:relative;}
   .kr-bg{fill:none;stroke:#ffffff14;stroke-width:10;}
-  .kr-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s ease, stroke .3s ease;}
+  .kr-fill{
+    fill:none;stroke-width:11;stroke-linecap:round;
+    transition:stroke-dashoffset .6s ease;
+    filter:drop-shadow(0 0 6px rgba(57,255,148,.5));
+  }
   .kr-center{
     position:absolute;inset:0;display:flex;flex-direction:column;
     align-items:center;justify-content:center;text-align:center;
   }
-  .kr-n{font-family:var(--disp);font-size:33px;letter-spacing:.02em;font-weight:900;font-variant-numeric:tabular-nums;line-height:1;transition:color .3s ease;}
+  .kr-n{font-family:var(--disp);font-size:38px;letter-spacing:.02em;font-weight:900;font-variant-numeric:tabular-nums;line-height:1;transition:color .3s ease;}
   .kr-u{font-size:11px;color:var(--text-dim);font-weight:700;margin-top:6px;}
-  .macro-bars{margin-top:4px;}
-  .macro-bar-row{margin-bottom:14px;}
-  .macro-bar-row:last-child{margin-bottom:0;}
-  .mbr-top{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--text-dim);margin-bottom:7px;}
-  .mbr-top span:first-child{color:var(--text);}
-  .mbr-top span:last-child{font-family:var(--mono);}
-  .mbr-track{height:9px;border-radius:20px;background:#ffffff10;overflow:hidden;}
-  .mbr-fill{height:100%;border-radius:20px;transition:width .6s ease;}
-  .mbr-diff{font-size:11px;font-weight:600;color:var(--text-dim);margin-top:5px;text-align:right;}
-  .mbr-diff.over{color:var(--danger);font-weight:800;}
-  .kr-diff{display:block;font-size:11.5px;font-weight:700;color:var(--text-dim);margin-top:2px;}
+  .kr-diff{display:block;font-size:11px;font-weight:700;color:var(--text-dim);margin-top:3px;}
   .kr-diff.over{color:var(--danger);font-weight:800;}
+  /* Le tre macro come mini-card affiancate (icona, valore, barretta,
+     differenza) invece della vecchia lista di righe piatte: più aria,
+     più a colpo d'occhio, in linea con l'estetica "dashboard" del resto
+     dell'app (macro-chip, stat-tile). */
+  .macro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:2px;}
+  .macro-tile{
+    --tile-color:var(--accent);
+    background:var(--panel-2);border:1px solid var(--border);border-radius:16px;
+    padding:12px 8px 10px;text-align:center;position:relative;overflow:hidden;
+    transition:border-color .3s ease;
+  }
+  .macro-tile::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--tile-color);opacity:.85;
+  }
+  .macro-tile.over{border-color:#ff547055;}
+  .macro-tile .mt-icon{font-size:17px;display:block;margin-bottom:3px;}
+  .macro-tile .mt-label{
+    font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.25px;
+    color:var(--text-dim);margin-bottom:7px;
+  }
+  .macro-tile .mt-val{font-family:var(--mono);font-size:15px;font-weight:800;color:var(--text);}
+  .macro-tile.over .mt-val{color:var(--danger);}
+  .macro-tile .mt-val .mt-goal{font-size:10.5px;color:var(--text-dim);font-weight:600;}
+  .macro-tile .mt-track{height:6px;border-radius:20px;background:#ffffff10;overflow:hidden;margin:8px 0 6px;}
+  .macro-tile .mt-fill{height:100%;border-radius:20px;background:var(--tile-color);transition:width .6s ease;}
+  .macro-tile .mt-diff{font-size:9.5px;font-weight:700;color:var(--text-dim);}
+  .macro-tile.over .mt-diff{color:var(--danger);font-weight:800;}
   .meal-card{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
     box-shadow:var(--shadow-card);margin-bottom:12px;overflow:hidden;
@@ -4888,9 +4921,9 @@ function renderAlimentazione(){
   const t = obiettiviAttivi(!!cache.dietaLogOggi.giornoAllenamento);
 
   const macroDef = [
-    {key:'prot', label:'Proteine', color:'var(--accent)'},
-    {key:'carb', label:'Carboidrati', color:'var(--accent-2)'},
-    {key:'grassi', label:'Grassi', color:'var(--accent-3)'},
+    {key:'prot', label:'Proteine', color:'var(--accent)', icona:'🍗'},
+    {key:'carb', label:'Carboidrati', color:'var(--accent-2)', icona:'🍞'},
+    {key:'grassi', label:'Grassi', color:'var(--accent-3)', icona:'🥑'},
   ];
 
   // Macro/kcal acquisiti oggi: somma delle opzioni dei pasti che hai spuntato
@@ -4926,13 +4959,13 @@ function renderAlimentazione(){
   const kcalDiff = t.kcal - acquisito.kcal;
   const kcalDiffHtml = kcalDiff>=0
     ? `<span class="kr-diff">mancano ${kcalDiff} kcal</span>`
-    : `<span class="kr-diff over">+${Math.abs(kcalDiff)} kcal oltre l'obiettivo</span>`;
+    : `<span class="kr-diff over">+${Math.abs(kcalDiff)} kcal oltre</span>`;
   const RING_R = 52, RING_C = 2*Math.PI*RING_R;
   const ringOffset = RING_C * (1 - kcalPct/100);
 
   // Per ogni macro mostriamo anche quanto manca (o di quanto si è sforato)
   // rispetto all'obiettivo, non solo "preso / obiettivo": aiuta a regolarsi
-  // durante la giornata senza dover fare il conto a mente. Barra e numero
+  // durante la giornata senza dover fare il conto a mente. Tile e numero
   // diventano rossi (--danger) quando si supera l'obiettivo di quel macro.
   const macroBarsHtml = macroDef.map(m=>{
     const val = acquisito[m.key];
@@ -4941,11 +4974,13 @@ function renderAlimentazione(){
     const over = val > goal;
     const diff = goal - val;
     const diffLabel = diff>=0 ? `mancano ${diff}g` : `+${Math.abs(diff)}g oltre`;
-    const barColor = over ? 'var(--danger)' : m.color;
-    return `<div class="macro-bar-row">
-      <div class="mbr-top"><span>${m.label}</span><span style="${over?'color:var(--danger);':''}">${val}g / ${goal}g</span></div>
-      <div class="mbr-track"><div class="mbr-fill" style="width:${pct}%;background:${barColor};"></div></div>
-      <div class="mbr-diff${over?' over':''}">${diffLabel}</div>
+    const tileColor = over ? 'var(--danger)' : m.color;
+    return `<div class="macro-tile${over?' over':''}" style="--tile-color:${tileColor};">
+      <span class="mt-icon">${m.icona}</span>
+      <div class="mt-label">${m.label}</div>
+      <div class="mt-val">${val}<span class="mt-goal">/${goal}g</span></div>
+      <div class="mt-track"><div class="mt-fill" style="width:${pct}%;"></div></div>
+      <div class="mt-diff">${diffLabel}</div>
     </div>`;
   }).join('');
 
@@ -5107,14 +5142,21 @@ function renderAlimentazione(){
   const tabContentHtml = dietaTab==='integratori' ? integratoriTabHtml : segnaPastoTabHtml;
 
   view.innerHTML = `
-    <div class="diet-summary">
+    <div class="diet-summary diet-summary-glow">
       <div class="tlt">Piano nutrizionale</div>
       <div class="tsb">${DIETA_PIANO.fase}<br>5 pasti al giorno · segna cosa mangi davvero, pasto per pasto</div>
-      ${cache.dietaLogOggi.giornoAllenamento!==null ? `<button class="btn small secondary" style="margin-top:10px;" onclick="impostaGiornoAllenamento(true)">${cache.dietaLogOggi.giornoAllenamento ? '🏋️ Oggi ti alleni' : '🛋️ Oggi riposo'} · tocca per cambiare</button>` : ''}
+      ${cache.dietaLogOggi.giornoAllenamento!==null ? `<button class="day-mode-pill" onclick="impostaGiornoAllenamento(true)">${cache.dietaLogOggi.giornoAllenamento ? '🏋️ Oggi ti alleni' : '🛋️ Oggi riposo'} <span class="dmp-hint">tocca per cambiare</span></button>` : ''}
       <div class="kcal-ring-wrap">
+        <div class="kcal-ring-glow${kcalOver?' over':''}"></div>
         <svg viewBox="0 0 120 120" class="kcal-ring">
+          <defs>
+            <linearGradient id="kcalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="${kcalOver?'#ff5470':'#39ff94'}"></stop>
+              <stop offset="100%" stop-color="${kcalOver?'#ff9d4d':'#8b6bff'}"></stop>
+            </linearGradient>
+          </defs>
           <circle cx="60" cy="60" r="${RING_R}" class="kr-bg"></circle>
-          <circle cx="60" cy="60" r="${RING_R}" class="kr-fill" style="stroke:${kcalColor};stroke-dasharray:${RING_C};stroke-dashoffset:${ringOffset};"></circle>
+          <circle cx="60" cy="60" r="${RING_R}" class="kr-fill" style="stroke:url(#kcalGrad);stroke-dasharray:${RING_C};stroke-dashoffset:${ringOffset};filter:drop-shadow(0 0 6px ${kcalOver?'rgba(255,84,112,.55)':'rgba(57,255,148,.5)'});"></circle>
         </svg>
         <div class="kr-center">
           <span class="kr-n" style="color:${kcalColor};">${acquisito.kcal}</span>
@@ -5122,7 +5164,7 @@ function renderAlimentazione(){
           ${kcalDiffHtml}
         </div>
       </div>
-      <div class="macro-bars">${macroBarsHtml}</div>
+      <div class="macro-grid">${macroBarsHtml}</div>
     </div>
 
     <div class="tab-bar">
