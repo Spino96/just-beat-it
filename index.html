@@ -1588,7 +1588,7 @@ async function scegliAvatarFoto(input){
 }
 
 /* ============ AUTH + FIRESTORE ============ */
-const cache = { sessioni: [], misure: [], dietaLog: [], alimentiPersonalizzati: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, energia:null, dolori:null, giornoAllenamento:null } };
+const cache = { sessioni: [], misure: [], dietaLog: [], alimentiPersonalizzati: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, giornoAllenamento:null } };
 let currentUid = null;
 let profiloUtente = null;
 // Promessa di loadData() già avviata da boot() in parallelo con le altre
@@ -1890,8 +1890,6 @@ async function loadData(){
     // servono a NON sommare anche le kcal dell'opzione del piano per quel
     // pasto, dato che l'alimento extra la sostituisce, non la integra.
     pastiViaExtra: (oggi && oggi.pastiViaExtra) || {},
-    energia: (oggi && oggi.energia!=null) ? oggi.energia : null,
-    dolori: (oggi && oggi.dolori!=null) ? oggi.dolori : null,
     // null = non ancora chiesto oggi ("Oggi ti alleni?" in Dieta); true/false una volta risposto.
     giornoAllenamento: (oggi && typeof oggi.giornoAllenamento === 'boolean') ? oggi.giornoAllenamento : null
   };
@@ -2431,30 +2429,6 @@ function renderOggiPanel(){
   </div>`;
 }
 
-/* Check-in giornaliero rapido (energia/indolenzimento), salvato nello stesso
-   documento "dietaLog" del giorno per riusare senza modifiche il meccanismo
-   di salvataggio già esistente. Utile incrociato con RPE e sonno in Statistiche
-   per capire quando conviene alleggerire invece di spingere ancora. */
-function renderCheckInCard(){
-  if(!profiloUtente) return '';
-  const scala = (campo, attuale) => [1,2,3,4,5].map(v=>
-    `<div class="chip${v===attuale?' active':''}" onclick="salvaCheckInGiornaliero('${campo}',${v})">${v}</div>`
-  ).join('');
-  return `<div class="card">
-    <h3 style="margin-top:0;font-size:15px;">Come ti senti oggi?</h3>
-    <p class="field-hint" style="margin:0 0 6px;">Energia (1 = scarica, 5 = carica)</p>
-    <div class="chip-select" style="margin-bottom:14px;">${scala('energia', cache.dietaLogOggi.energia)}</div>
-    <p class="field-hint" style="margin:0 0 6px;">Indolenzimento muscolare (1 = nessuno, 5 = molto)</p>
-    <div class="chip-select" style="margin-bottom:0;">${scala('dolori', cache.dietaLogOggi.dolori)}</div>
-  </div>`;
-}
-
-function salvaCheckInGiornaliero(campo, valore){
-  cache.dietaLogOggi[campo] = (cache.dietaLogOggi[campo]===valore) ? null : valore; // ritocca lo stesso valore per annullarlo
-  salvaDietaLogOggi();
-  renderHome();
-}
-
 function renderHome(){
   pageTitle.textContent = 'Beat Yourself';
   const saluto = profiloUtente ? `<p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0 0 4px;">Ciao, ${profiloUtente.nome} 👋</p>` : '';
@@ -2465,12 +2439,10 @@ function renderHome(){
   const dietaSub = haPianoPersonale ? 'Piano nutrizionale e pasti' : 'In attesa del tuo piano personale';
   const promemoria = promemoriaCostanza();
   const oggiPanel = renderOggiPanel();
-  const checkInCard = renderCheckInCard();
   view.innerHTML = `
     ${saluto}
     ${oggiPanel}
     ${promemoria}
-    ${checkInCard}
     ${links}
     <div class="home-cat c-allenamento" onclick="setRoute({name:'allenamento-list'})">
       <div class="icon">🏋️</div>
@@ -3387,24 +3359,13 @@ function renderRiepilogoSettimanale(){
     }
   }
 
-  // Check-in energia/indolenzimento della settimana, incrociato con RPE/sonno.
-  const giorniCheckIn = cache.dietaLog.filter(d=> new Date(d.id) >= seiGiorniFa);
-  const energiaValori = giorniCheckIn.map(d=>d.energia).filter(v=>v!=null);
-  const doloriValori = giorniCheckIn.map(d=>d.dolori).filter(v=>v!=null);
-  const energiaMedia = energiaValori.length ? (energiaValori.reduce((a,b)=>a+b,0)/energiaValori.length).toFixed(1) : null;
-  const doloriMedio = doloriValori.length ? (doloriValori.reduce((a,b)=>a+b,0)/doloriValori.length).toFixed(1) : null;
-  const checkInHtml = `
-    ${energiaMedia!=null ? `<div class="week-stat"><span>Energia media (check-in)</span><b>${energiaMedia}/5</b></div>` : ''}
-    ${doloriMedio!=null ? `<div class="week-stat"><span>Indolenzimento medio (check-in)</span><b>${doloriMedio}/5</b></div>` : ''}`;
-
-  if(!sessioniSettimana.length && !aderenzaHtml && energiaMedia==null && doloriMedio==null) return '';
+  if(!sessioniSettimana.length && !aderenzaHtml) return '';
 
   return `<div class="card">
     <h3 style="margin-top:0;font-size:15px;">Ultimi 7 giorni</h3>
     <div class="week-stat"><span>Allenamenti fatti</span><b>${sessioniSettimana.length}</b></div>
     ${rpeMedio!=null ? `<div class="week-stat"><span>RPE medio</span><b>${rpeMedio}/10</b></div>` : ''}
     ${aderenzaHtml}
-    ${checkInHtml}
   </div>`;
 }
 
@@ -5046,8 +5007,7 @@ async function confermaEliminaGiornoIntero(giornoId){
   if(giornoId === todayKey()){
     cache.dietaLogOggi = {
       pastiFatti: {}, acquaMl: 0, integratoriFatti: {}, alimentiExtra: [],
-      pastiSnapshot: {}, pastiViaExtra: {}, energia: null, dolori: null,
-      giornoAllenamento: null
+      pastiSnapshot: {}, pastiViaExtra: {}, giornoAllenamento: null
     };
   }
   renderDiario();
