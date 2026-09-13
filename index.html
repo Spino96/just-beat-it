@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 <title>Beat Yourself</title>
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
@@ -45,7 +45,11 @@
     --mono:'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
   }
   *{box-sizing:border-box;}
-  html{-webkit-tap-highlight-color:transparent;}
+  /* Il viewport meta (maximum-scale/user-scalable=no) blocca lo zoom sulla
+     maggior parte dei browser, ma Safari iOS lo ignora per accessibilità:
+     touch-action qui blocca comunque il gesto di pinch-to-zoom sulla pagina,
+     lasciando passare solo lo scroll verticale/orizzontale normale. */
+  html{-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y;}
   body{
     margin:0;
     font-family:'Manrope',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
