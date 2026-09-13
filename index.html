@@ -497,6 +497,16 @@
   .misura-delta.up{color:var(--accent-2);}
   .misura-delta.down{color:var(--accent-3);}
   .misura-chevron{color:var(--text-dim);font-size:19px;flex-shrink:0;}
+  /* ===== Storico allenamento: card seduta modernizzate ===== */
+  .sessione-card{display:flex;align-items:center;gap:14px;}
+  .sessione-card-icon{
+    width:52px;height:52px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:22px;
+    background:var(--panel-2);border:1.5px solid var(--accent-3);box-shadow:0 0 14px -5px #8b6bffaa;
+  }
+  .sessione-card-info{flex:1;min-width:0;}
+  .sessione-card-info h3{margin:0 0 3px;font-size:15.5px;}
+  .sessione-card-date{margin:0 0 7px;font-size:12.5px;color:var(--text-dim);font-weight:600;text-transform:capitalize;}
   .photo-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .photo-slot{position:relative;aspect-ratio:3/4;border-radius:var(--radius-sm);overflow:hidden;background:var(--panel-2);border:1px solid var(--border);}
   .photo-slot input[type=file]{position:absolute;inset:0;opacity:0;pointer-events:none;}
@@ -3174,6 +3184,18 @@ function esportaCSV(){
   URL.revokeObjectURL(url);
 }
 
+// "Oggi"/"Ieri" al posto della data quando è recentissima, altrimenti il
+// giorno della settimana esteso — più immediato da leggere a colpo d'occhio
+// nelle liste di storico che una data sempre uguale nel formato.
+function etichettaGiornoRelativa(data){
+  const oggi = new Date(); oggi.setHours(0,0,0,0);
+  const target = new Date(data); target.setHours(0,0,0,0);
+  const diffGiorni = Math.round((oggi - target) / 86400000);
+  if(diffGiorni===0) return 'Oggi';
+  if(diffGiorni===1) return 'Ieri';
+  return new Date(data).toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'});
+}
+
 function renderStoricoAllenamento(){
   pageTitle.textContent = 'Storico allenamento';
   const sessioni = cache.sessioni.slice().reverse();
@@ -3186,14 +3208,26 @@ function renderStoricoAllenamento(){
     view.innerHTML = html;
     return;
   }
-  html += `<p class="swipe-hint">Scorri una voce verso sinistra per eliminarla</p>`;
-  sessioni.forEach((s)=>{
-    const d = new Date(s.data);
+  html += `<p class="swipe-hint">Tocca una voce per vedere il dettaglio, scorrila verso sinistra per eliminarla</p>`;
+  sessioni.forEach((s, i)=>{
+    const nEsercizi = (s.esercizi||[]).length;
+    const rpeValori = (s.esercizi||[]).flatMap(e=> (e.sets||[]).map(x=>x.rpe)).filter(v=>v!=null && !isNaN(v));
+    const rpeMedio = rpeValori.length ? Math.round((rpeValori.reduce((a,b)=>a+b,0)/rpeValori.length)*10)/10 : null;
+
     html += `<div class="swipe-row" data-id="${s.id}">
       <div class="swipe-delete">Elimina</div>
-      <div class="list-item" data-route-name="progressi-detail" data-route-id="${s.id}">
-        <h3>${s.schedaNome}</h3>
-        <p>${d.toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'})}</p>
+      <div class="list-item sessione-card" data-route-name="progressi-detail" data-route-id="${s.id}">
+        <div class="sessione-card-icon">🏋️</div>
+        <div class="sessione-card-info">
+          ${i===0 ? `<span class="turn-badge">📍 Più recente</span>` : ''}
+          <h3>${s.schedaNome}</h3>
+          <p class="sessione-card-date">${etichettaGiornoRelativa(s.data)}</p>
+          <div class="misura-card-meta">
+            <span class="misura-pill">🏋️ ${nEsercizi} esercizi${nEsercizi===1?"o":""}</span>
+            ${rpeMedio!=null ? `<span class="misura-pill">📊 RPE medio ${rpeMedio}</span>` : ''}
+          </div>
+        </div>
+        <span class="misura-chevron">›</span>
       </div>
     </div>`;
   });
