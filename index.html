@@ -1659,14 +1659,16 @@ function schedeAssegnateUtente(){
 }
 
 /* Obiettivi nutrizionali attivi: sempre quelli di DIETA_PIANO.target.riposo o
-   .allenamento a seconda del parametro `allenamento`, più 2750ml di acqua.
+   .allenamento a seconda del parametro `allenamento`, più 2500ml di acqua
+   (obiettivo idratazione confermato nel Fascicolo Cliente v4, 12/09/2026 —
+   già raggiunto stabilmente, non serve alzarlo).
    Non esiste più un override modificabile dall'utente in Profilo: la dieta
    la aggiorna il trainer direttamente nel piano (DIETA_PIANO), così i target
    restano sempre coerenti col tipo di giorno invece di restare bloccati su
    un valore fisso. */
 function obiettiviAttivi(allenamento){
   const base = allenamento ? DIETA_PIANO.target.allenamento : DIETA_PIANO.target.riposo;
-  return { kcal:base.kcal, prot:base.prot, carb:base.carb, grassi:base.grassi, acquaMl:2750 };
+  return { kcal:base.kcal, prot:base.prot, carb:base.carb, grassi:base.grassi, acquaMl:2500 };
 }
 
 /* Proiezione di quando (con il trend recente) si raggiungerà un obiettivo corporeo
@@ -4436,9 +4438,9 @@ function toggleAssegnazione(uid, schedaId, chipEl){
 
 /* ============ DIETA ============ */
 const DIETA_PIANO = {
-  versione: 'v6',
-  aggiornato: '30/08/2026',
-  fase: 'Ricomposizione corporea + Blocco 1 di allenamento',
+  versione: 'v7',
+  aggiornato: '12/09/2026',
+  fase: 'Ricomposizione corporea + Blocco 2 di allenamento',
   // Due target distinti: quello attivo lo sceglie obiettiviAttivi() in base alla
   // risposta data ogni giorno a "Oggi ti alleni?" (cache.dietaLogOggi.giornoAllenamento).
   target: {
@@ -5398,7 +5400,7 @@ function renderAlimentazione(){
 
     <div class="diet-info-card">
       <div class="dic-t">💧 Idratazione di oggi</div>
-      <div class="dic-b" style="margin-bottom:10px;">Obiettivo ${(acquaTargetMl/1000).toFixed(2).replace('.', ',')} L/die (modificabile in Profilo).</div>
+      <div class="dic-b" style="margin-bottom:10px;">Obiettivo ${(acquaTargetMl/1000).toFixed(2).replace('.', ',')} L/die.</div>
       <div class="water-row">
         <div class="water-bar"><div class="water-fill" style="width:${acquaPct}%;"></div></div>
         <span class="water-val">${acquaL} L</span>
@@ -5411,7 +5413,7 @@ function renderAlimentazione(){
 
     <div class="diet-info-card">
       <div class="dic-t">📝 Note pratiche</div>
-      <div class="dic-b">Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 150-200g corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Birra (~130 kcal/die media) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
+      <div class="dic-b">Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 150-200g corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Alcol in eliminazione (circa 1 birra media a settimana, ~130 kcal) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
     </div>`;
 
   const integratoriTabHtml = `
