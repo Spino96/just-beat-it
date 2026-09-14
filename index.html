@@ -906,10 +906,11 @@
   .efi-n{font-size:13.5px;font-weight:700;color:var(--text);}
   .efi-brand{color:var(--text-dim);font-weight:600;}
   .efi-m{font-size:11.5px;color:var(--text-dim);font-weight:600;margin-top:3px;}
-  .efi-remove{
+  .efi-remove, .efi-edit{
     flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1px solid var(--border);
     background:var(--panel-2);color:var(--text-dim);font-size:13px;cursor:pointer;
   }
+  .efi-actions{display:flex;gap:6px;flex-shrink:0;}
   .food-search-item{
     display:flex;align-items:center;gap:12px;padding:14px 16px;
     background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-sm);
@@ -2257,6 +2258,60 @@ function aggiungiAlimentoExtra(voce){
    la chiama rimuoviAlimentoExtra (schermata Dieta) o
    rimuoviAlimentoDaSessioneRicerca (schermata Cerca alimento), ciascuna con
    il proprio render di destinazione. */
+/* Ricalcola macro e kcal di una voce "alimento extra" già salvata dopo un
+   cambio di quantità (grammi). Le voci salvate da quando esiste questa
+   funzionalità portano con sé anche i valori per 100g dell'alimento
+   originale (prot100/carb100/grassi100): li usiamo per un ricalcolo preciso
+   anche dopo più modifiche successive. Le voci più vecchie, che non li
+   hanno, si ricalcolano invece in proporzione ai macro già salvati rispetto
+   ai grammi precedenti (un solo passaggio, ma sufficiente). Le kcal restano
+   sempre derivate da 4/4/9 (kcalDaMacro), coerenti col resto dell'app. */
+function ricalcolaVoceExtraPerGrammi(voce, nuoviGrammi){
+  const haPer100 = voce.prot100!=null || voce.carb100!=null || voce.grassi100!=null;
+  if(haPer100){
+    const f = nuoviGrammi/100;
+    voce.prot = round1((voce.prot100||0)*f);
+    voce.carb = round1((voce.carb100||0)*f);
+    voce.grassi = round1((voce.grassi100||0)*f);
+  } else {
+    const vecchiGrammi = voce.grammi || nuoviGrammi || 1;
+    const fattore = nuoviGrammi/vecchiGrammi;
+    voce.prot = round1((voce.prot||0)*fattore);
+    voce.carb = round1((voce.carb||0)*fattore);
+    voce.grassi = round1((voce.grassi||0)*fattore);
+  }
+  voce.kcal = kcalDaMacro(voce.prot, voce.carb, voce.grassi);
+  voce.grammi = nuoviGrammi;
+}
+
+/* Modifica la quantità (grammi) di un alimento extra già salvato in "oggi":
+   usata sia dalla schermata Dieta sia dall'elenco "Aggiunti in questa
+   sessione" di Cerca alimento — passando renderFn si sceglie quale schermata
+   ridisegnare al termine, di default Dieta. */
+async function modificaQuantitaAlimentoExtra(id, renderFn){
+  const voce = (cache.dietaLogOggi.alimentiExtra||[]).find(a=>a.id===id);
+  if(!voce) return;
+  const nuoviGrammi = await mostraModificaGrammiOverlay(voce);
+  if(nuoviGrammi==null) return;
+  ricalcolaVoceExtraPerGrammi(voce, nuoviGrammi);
+  salvaDietaLogOggi();
+  (renderFn || renderAlimentazione)();
+}
+
+/* Stessa modifica quantità, ma su un giorno passato del diario invece che su
+   "oggi". */
+async function modificaQuantitaAlimentoExtraGiorno(giornoId, alimentoId){
+  const g = cache.dietaLog.find(d=>d.id===giornoId);
+  if(!g) return;
+  const voce = (g.alimentiExtra||[]).find(a=>a.id===alimentoId);
+  if(!voce) return;
+  const nuoviGrammi = await mostraModificaGrammiOverlay(voce);
+  if(nuoviGrammi==null) return;
+  ricalcolaVoceExtraPerGrammi(voce, nuoviGrammi);
+  salvaGiornoDietaLog(giornoId, g);
+  renderDiario();
+}
+
 function rimuoviAlimentoExtraCore(id){
   const rimosso = (cache.dietaLogOggi.alimentiExtra||[]).find(a=>a.id===id);
   cache.dietaLogOggi.alimentiExtra = (cache.dietaLogOggi.alimentiExtra||[]).filter(a=>a.id!==id);
@@ -2423,6 +2478,43 @@ function mostraConferma(messaggio, variant){
     overlay.querySelector('#confirmOkBtn').onclick = ()=>{ hapticaMedia(); chiudi(true); };
     overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudi(false); });
     attachSwipeDownToDismiss(overlay.querySelector('.confirm-box'), ()=>chiudi(false));
+  });
+}
+
+/* Piccolo overlay per modificare la quantità (grammi) di un alimento extra
+   già salvato. Risolve con il nuovo valore in grammi (numero intero
+   positivo) oppure null se l'utente annulla. Non salva nulla da sola: chi la
+   chiama decide dove scrivere il risultato (oggi, un giorno passato del
+   diario, o la sessione di ricerca in corso). */
+function mostraModificaGrammiOverlay(alimento){
+  return new Promise(resolve=>{
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <p class="confirm-msg">Modifica quantità<br><span style="font-weight:600;color:var(--text-dim);font-size:12.5px;">${alimento.nome}${alimento.marca?` · ${alimento.marca}`:''}</span></p>
+        <div class="field" style="margin-bottom:6px;">
+          <label>Grammi</label>
+          <input type="number" id="modGrammiInput" inputmode="decimal" min="1" step="1" value="${alimento.grammi}">
+        </div>
+        <div class="confirm-actions">
+          <button class="btn secondary" id="modGrammiCancelBtn">Annulla</button>
+          <button class="btn" id="modGrammiOkBtn">Salva</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const input = overlay.querySelector('#modGrammiInput');
+    const chiudi = esito => { overlay.remove(); resolve(esito); };
+    overlay.querySelector('#modGrammiCancelBtn').onclick = ()=>chiudi(null);
+    overlay.querySelector('#modGrammiOkBtn').onclick = ()=>{
+      const v = Math.round(Number(input.value));
+      if(!v || v<=0){ input.focus(); return; }
+      hapticaLieve();
+      chiudi(v);
+    };
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudi(null); });
+    attachSwipeDownToDismiss(overlay.querySelector('.confirm-box'), ()=>chiudi(null));
+    setTimeout(()=>{ input.focus(); input.select(); }, 50);
   });
 }
 
@@ -5517,7 +5609,10 @@ function renderAlimentazione(){
             <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
             <div class="efi-m">${a.grammi}g · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
           </div>
-          <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
+          <div class="efi-actions">
+            <button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}')" aria-label="Modifica quantità">✏️</button>
+            <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
+          </div>
         </div>`).join('')}</div>` : '';
     return `<div class="diet-info-card">
       <div class="dic-t">${p.icona} ${p.nome} <span style="float:right;font-weight:600;color:var(--text-dim);font-size:12px;">${p.orario}</span></div>
@@ -5541,7 +5636,10 @@ function renderAlimentazione(){
             <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
             <div class="efi-m">${a.grammi}g · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
           </div>
-          <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
+          <div class="efi-actions">
+            <button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}')" aria-label="Modifica quantità">✏️</button>
+            <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
+          </div>
         </div>`).join('')}</div>
     </div>` : '';
 
@@ -6063,7 +6161,7 @@ function renderDiario(){
         .filter(s=> integratoriFatti[s.nome])
         .map(s=>`<div class="micro-row"><span>${s.icona} ${s.nome}</span><b>✅</b></div>`).join('');
 
-      const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)<span class="diario-item-actions"><button class="diario-mini-btn" onclick="confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${fmt1(a.kcal)} kcal</b></div>`).join('');
+      const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)<span class="diario-item-actions"><button class="diario-mini-btn" onclick="event.stopPropagation();modificaQuantitaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Modifica quantità">✏️</button><button class="diario-mini-btn" onclick="event.stopPropagation();confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${fmt1(a.kcal)} kcal</b></div>`).join('');
 
       corpoHtml = `${pastiRighe || '<p style="margin:0 0 8px;color:var(--text-dim);font-size:12.5px;">Nessun pasto segnato.</p>'}
         ${integrRighe}
@@ -6365,7 +6463,10 @@ function renderCercaAlimento(){
             <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
             <div class="efi-m">${a.grammi}g · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g · ${DIETA_PIANO.pasti[a.pasto] ? DIETA_PIANO.pasti[a.pasto].nome : ''}</div>
           </div>
-          <button class="efi-remove" onclick="rimuoviAlimentoDaSessioneRicerca('${a.id}')" aria-label="Rimuovi">✕</button>
+          <div class="efi-actions">
+            <button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}', renderCercaAlimento)" aria-label="Modifica quantità">✏️</button>
+            <button class="efi-remove" onclick="rimuoviAlimentoDaSessioneRicerca('${a.id}')" aria-label="Rimuovi">✕</button>
+          </div>
         </div>`).join('')}</div>
     </div>` : '';
 
@@ -6790,6 +6891,12 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
     prot: protV,
     carb: carbV,
     grassi: grassiV,
+    // Valori per 100g dell'alimento originale: permettono di ricalcolare con
+    // precisione i macro se in seguito si modifica la quantità (vedi
+    // ricalcolaVoceExtraPerGrammi), senza perdere precisione a ogni modifica.
+    prot100: p.prot100,
+    carb100: p.carb100,
+    grassi100: p.grassi100,
     pasto: pastoIdx,
     fonte: fonteFinale
   };
