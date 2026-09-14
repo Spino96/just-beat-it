@@ -2822,17 +2822,55 @@ function calcolaStreakSettimaneAllenamento(){
   return streak;
 }
 
+/* Quante sedute a settimana ci si aspetta in totale, sommando la frequenza
+   di tutti i blocchi attivi al momento (blocchiIniziati e non scaduti). Le
+   schede che condividono lo stesso `gruppo` (es. Blocco 2 Upper/Lower,
+   alternate A/B) sono un unico blocco e contano una sola volta, come già
+   fa renderAderenzaCard. Ritorna 0 se non c'è nessun blocco attivo o se la
+   frequenza non è nota: in quel caso la Home mostra solo il numero fatto,
+   senza "/m". */
+function targetAllenamentiSettimana(){
+  const blocchiAttivi = schedeAssegnateUtente().filter(s=> blocchiIniziati[s.id] && !schedaScaduta(s));
+  let totale = 0;
+  const gruppiContati = new Set();
+  blocchiAttivi.forEach(s=>{
+    if(s.gruppo){
+      if(gruppiContati.has(s.gruppo)) return;
+      gruppiContati.add(s.gruppo);
+      const membri = membriGruppo(s.gruppo);
+      const freq = membri[0] && membri[0].frequenzaSettimanale;
+      if(freq) totale += freq;
+      return;
+    }
+    if(s.frequenzaSettimanale){ totale += s.frequenzaSettimanale; return; }
+    const freqMatch = s.periodo && s.periodo.match(/(\d+)x\/settimana/);
+    if(freqMatch) totale += Number(freqMatch[1]);
+  });
+  return totale;
+}
+
 function renderOggiPanel(){
   if(!profiloUtente) return '';
   const pianoPersonale = profiloUtente.schedeAssegnate === null;
 
-  const seiGiorniFa = new Date(); seiGiorniFa.setDate(seiGiorniFa.getDate()-6); seiGiorniFa.setHours(0,0,0,0);
-  const sessioniSettimana = cache.sessioni.filter(s=> new Date(s.data) >= seiGiorniFa).length;
+  // "Questa settimana" = calendario lun-dom in corso (non gli ultimi 7
+  // giorni a scorrimento): così il numero coincide con quello che ci si
+  // aspetta guardando un calendario, e torna a 0 ogni lunedì invece di
+  // scendere gradualmente giorno per giorno.
+  const inizioSettimana = new Date();
+  const giornoSett = (inizioSettimana.getDay()+6)%7; // 0=lunedì
+  inizioSettimana.setDate(inizioSettimana.getDate()-giornoSett);
+  inizioSettimana.setHours(0,0,0,0);
+  const allenamentiFattiSettimana = cache.sessioni.filter(s=> new Date(s.data) >= inizioSettimana).length;
+  const allenamentiTargetSettimana = targetAllenamentiSettimana();
+  const allenamentiSettimanaLabel = allenamentiTargetSettimana>0
+    ? `${allenamentiFattiSettimana}/${allenamentiTargetSettimana}`
+    : String(allenamentiFattiSettimana);
 
   // I due numeri principali diventano tile (grid), non righe di testo: più
   // leggibili a colpo d'occhio, stesso trattamento "readout" già usato per
   // l'anello kcal e il timer di recupero (vedi --mono/--disp in :root).
-  const statsTiles = [`<div class="oggi-stat"><div class="v">${sessioniSettimana}</div><div class="l">Allenamenti<br>questa settimana</div></div>`];
+  const statsTiles = [`<div class="oggi-stat"><div class="v">${allenamentiSettimanaLabel}</div><div class="l">Allenamenti completati<br>questa settimana</div></div>`];
 
   let pastoRow = '';
   if(pianoPersonale){
