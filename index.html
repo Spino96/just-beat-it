@@ -1685,12 +1685,12 @@ function obiettiviAttivi(allenamento){
   return { kcal:base.kcal, prot:base.prot, carb:base.carb, grassi:base.grassi, acquaMl:2500 };
 }
 
-/* Arrotonda a un solo decimale e formatta sempre con quella precisione
-   (es. 25 -> "25.0"), così il conteggio dei macro è uniforme ovunque venga
-   mostrato invece di alternare interi e numeri con decimali a caso. */
+/* Arrotonda a un solo decimale, ma lo mostra solo se serve: un numero
+   intero resta "25" invece di "25.0", mentre uno con resto diventa "25.4" —
+   mai più di una cifra dopo la virgola. */
 function fmt1(n){
   const v = Math.round((Number(n)||0)*10)/10;
-  return v.toFixed(1);
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
 }
 function round1(n){
   return Math.round((Number(n)||0)*10)/10;
