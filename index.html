@@ -4572,14 +4572,21 @@ async function salvaProfiloModifiche(){
 /* ============ PANNELLO TRAINER (visibile solo se isTrainer:true sul profilo) ============ */
 /* ============ DIETA ============ */
 const DIETA_PIANO = {
-  versione: 'v7',
+  versione: 'v8',
   aggiornato: '12/09/2026',
   fase: 'Ricomposizione corporea + Blocco 2 di allenamento',
   // Due target distinti: quello attivo lo sceglie obiettiviAttivi() in base alla
   // risposta data ogni giorno a "Oggi ti alleni?" (cache.dietaLogOggi.giornoAllenamento).
+  // Correzione macro del Fascicolo Cliente v5 (12/09/2026): nel piano
+  // precedente l'energia extra dei giorni di allenamento (+255 kcal) era
+  // distribuita sia su carboidrati che su grassi (+7g). I grassi non hanno
+  // un ruolo legato al timing dell'allenamento, i carboidrati sì (glicogeno
+  // muscolare): ora i grassi restano fissi a 60g in entrambi i tipi di
+  // giorno e tutta l'energia extra va ai carboidrati (260g → 324g). Kcal
+  // totali e proteine restano invariate.
   target: {
     riposo:      { kcal:2170, prot:147, carb:260, grassi:60 },
-    allenamento: { kcal:2425, prot:147, carb:308, grassi:67 }
+    allenamento: { kcal:2425, prot:147, carb:324, grassi:60 }
   },
   pasti: [
     {
