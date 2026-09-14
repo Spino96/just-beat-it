@@ -1060,15 +1060,6 @@
   .auth-switch span{color:var(--accent);font-weight:800;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
   .spinner-wrap{display:flex;justify-content:center;padding:70px 0;color:var(--text-dim);font-size:14px;font-weight:600;}
 
-  @media print{
-    header, .timer-bar, .btn, .swipe-delete, .profile-link, .swipe-hint{ display:none !important; }
-    body{ background:#fff; color:#000; }
-    .card, .list-item, .exercise-card, .home-cat, .home-square{
-      box-shadow:none !important; border:1px solid #ccc !important; background:#fff !important; color:#000 !important;
-    }
-    .list-item p, .ex-meta, .note-box, .note-user, .field-hint{ color:#333 !important; }
-  }
-
   @media (prefers-reduced-motion: reduce){
     *{ transition:none !important; animation:none !important; }
   }
@@ -1951,7 +1942,6 @@ async function checkProfilo(){
   const snap = await db.collection('users').doc(currentUid).get();
   const data = snap.exists ? snap.data() : {};
   blocchiIniziati = data.blocchiIniziati || {};
-  settimanaAlimentare = data.settimanaAlimentare || {};
   if(data.nome && data.cognome && data.eta){
     profiloUtente = {
       nome:data.nome, cognome:data.cognome, eta:data.eta,
@@ -2366,7 +2356,7 @@ const headerEl = document.querySelector('header');
    Statistiche, Misure, Profilo...) resta sul verde di base. */
 function sectionAccentColor(routeName){
   const allenamento = ['allenamento-list','sessione','sessione-modifica','sessione-cardio'];
-  const dieta = ['alimentazione','diario','settimana-alimentare','menu-alimentare','lista-spesa','cerca-alimento','crea-alimento-custom','scansiona-barcode'];
+  const dieta = ['alimentazione','diario','menu-alimentare','cerca-alimento','crea-alimento-custom','scansiona-barcode'];
   if(allenamento.includes(routeName)) return 'var(--accent-3)';
   if(dieta.includes(routeName)) return 'var(--accent-2)';
   return 'var(--accent)';
@@ -2380,9 +2370,7 @@ const BACK_MAP = {
   'scansiona-barcode':'cerca-alimento',
   'crea-alimento-custom':'cerca-alimento',
   'diario':'alimentazione',
-  'settimana-alimentare':'alimentazione',
   'menu-alimentare':'alimentazione',
-  'lista-spesa':'alimentazione',
   'misure':'home',
   'storico':'home',
   'statistiche':'home',
@@ -2737,9 +2725,7 @@ function render(){
   else if(route.name==='crea-alimento-custom') renderCreaAlimentoCustom();
   else if(route.name==='scansiona-barcode') renderScansionaBarcode();
   else if(route.name==='diario') renderDiario();
-  else if(route.name==='settimana-alimentare') renderSettimanaAlimentare();
   else if(route.name==='menu-alimentare') renderMenuAlimentare();
-  else if(route.name==='lista-spesa') renderListaSpesa();
   else if(route.name==='sessione') renderSessione();
   else if(route.name==='sessione-cardio') renderSessioneCardio();
   else if(route.name==='alimentazione') renderAlimentazione();
@@ -3841,7 +3827,6 @@ function renderStorico(){
     <p class="section-label">Esporta</p>
     <div class="diet-quicklinks">
       <div class="qlink" onclick="esportaCSV()" title="Esporta dati in CSV"><span class="qi">⬇️</span><span class="ql">CSV</span></div>
-      <div class="qlink" onclick="window.print()" title="Stampa o esporta PDF"><span class="qi">🖨️</span><span class="ql">Stampa/PDF</span></div>
     </div>
   `;
 }
@@ -5299,158 +5284,6 @@ function renderMenuOpzioniHtml(i){
   return `<div class="opt-card-list">${cardsHtml}</div>`;
 }
 
-/* ============ PIANIFICATORE SETTIMANALE + LISTA DELLA SPESA REALE ============
-   settimanaAlimentare: { lun:[oi0,oi1,oi2,oi3,oi4], mar:[...], ... }
-   - chiave giorno assente = giorno non toccato ancora.
-   - array presente con voci null = pasto non ancora scelto per quel giorno per
-     quel pasto (indice = indice del pasto in DIETA_PIANO.pasti). Un pasto con
-     voce null non entra nella lista della spesa: è la stessa cosa, ai fini del
-     calcolo, di un giorno "non pianificato" — non serve un flag separato.
-   A differenza di dietaOpzioneSel (solo in sessione, si azzera ad ogni ricarica
-   perché riguarda "cosa mangi oggi"), questo va persistito su Firestore: deve
-   sopravvivere ai giorni per essere utile a fare la spesa in anticipo. */
-let settimanaAlimentare = {};
-const SETTIMANA_GIORNI = [
-  {key:'lun', label:'Lunedì'}, {key:'mar', label:'Martedì'}, {key:'mer', label:'Mercoledì'},
-  {key:'gio', label:'Giovedì'}, {key:'ven', label:'Venerdì'}, {key:'sab', label:'Sabato'},
-  {key:'dom', label:'Domenica'}
-];
-let settimanaGiornoEdit = null; // chiave del giorno aperto nel foglio a comparsa
-
-async function salvaSettimanaAlimentare(){
-  try{
-    await db.collection('users').doc(currentUid).set({ settimanaAlimentare }, { merge:true });
-  }catch(e){
-    alert('Errore nel salvataggio della settimana — riprova.');
-  }
-}
-
-function giorniPianificatiCount(){
-  return SETTIMANA_GIORNI.filter(g=>{
-    const arr = settimanaAlimentare[g.key];
-    return Array.isArray(arr) && arr.some(v=>v!=null);
-  }).length;
-}
-
-/* Somma gli ingredienti dei pasti scelti su ogni giorno della settimana
-   pianificata, moltiplicando per il numero di settimane da coprire. Riusa lo
-   stesso parsing dei grammi da a.q di calcolaListaSpesa (vedi sotto). */
-function calcolaListaSpesaSettimana(settimane){
-  const totali = {};
-  SETTIMANA_GIORNI.forEach(g=>{
-    const scelte = settimanaAlimentare[g.key];
-    if(!Array.isArray(scelte)) return;
-    DIETA_PIANO.pasti.forEach((p,i)=>{
-      const oi = scelte[i];
-      if(oi==null) return;
-      const opz = p.opzioni[oi];
-      if(!opz) return;
-      opz.alimenti.forEach(a=>{
-        const match = String(a.q).match(/^(\d+(?:[.,]\d+)?)/);
-        const grammi = match ? parseFloat(match[1].replace(',','.')) : 0;
-        totali[a.n] = (totali[a.n]||0) + grammi;
-      });
-    });
-  });
-  return Object.keys(totali)
-    .map(nome=>({ nome, grammiTot: Math.round(totali[nome]*settimane) }))
-    .sort((a,b)=> a.nome.localeCompare(b.nome));
-}
-
-function renderSettimanaAlimentare(){
-  pageTitle.textContent = 'La tua settimana';
-  const righe = SETTIMANA_GIORNI.map(g=>{
-    const arr = settimanaAlimentare[g.key] || [];
-    const nPasti = arr.filter(v=>v!=null).length;
-    const sub = nPasti===0 ? 'Non pianificato — tocca per scegliere'
-      : nPasti===DIETA_PIANO.pasti.length ? 'Tutti i pasti scelti'
-      : `${nPasti}/${DIETA_PIANO.pasti.length} pasti scelti`;
-    return `
-      <div class="list-item" style="${nPasti?'':'opacity:.7;'}" onclick="apriGiornoSettimana('${g.key}')">
-        <h3>${g.label}</h3>
-        <p>${sub}</p>
-      </div>`;
-  }).join('');
-
-  view.innerHTML = `
-    <p class="field-hint" style="margin-bottom:14px;">Assegna a ogni giorno le opzioni di pasto che pensi di seguire: ti serve da promemoria e per calcolare la lista della spesa reale della settimana — non registra nulla in automatico, per quello resta il Piano di oggi.</p>
-    ${righe}
-    <button class="btn" style="margin-top:14px;" onclick="setRoute({name:'lista-spesa'})">🛒 Vai alla lista della spesa</button>
-    <p class="profile-link" style="text-align:center;margin-top:14px;" onclick="svuotaSettimanaAlimentare()">Svuota tutta la settimana</p>
-  `;
-}
-
-function svuotaSettimanaAlimentare(){
-  mostraConferma('Svuotare tutta la settimana pianificata? Dovrai riassegnare le opzioni da capo.').then(ok=>{
-    if(!ok) return;
-    settimanaAlimentare = {};
-    salvaSettimanaAlimentare();
-    renderSettimanaAlimentare();
-  });
-}
-
-function apriGiornoSettimana(key){
-  settimanaGiornoEdit = key;
-  hapticaLieve();
-  mostraGiornoSettimanaOverlay();
-}
-
-function mostraGiornoSettimanaOverlay(){
-  let overlay = document.getElementById('settimanaSheetOverlay');
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.id = 'settimanaSheetOverlay';
-    overlay.className = 'sheet-overlay';
-    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudiGiornoSettimana(); });
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML = `<div class="sheet-box" id="settimanaSheetBox"><div class="sheet-handle"></div>${renderGiornoSettimanaBody()}</div>`;
-  attachSwipeDownToDismiss(overlay.querySelector('#settimanaSheetBox'), chiudiGiornoSettimana);
-}
-
-function renderGiornoSettimanaBody(){
-  const key = settimanaGiornoEdit;
-  const giorno = SETTIMANA_GIORNI.find(g=>g.key===key);
-  const scelte = settimanaAlimentare[key] || [];
-  const pastiHtml = DIETA_PIANO.pasti.map((p,i)=>{
-    const selOi = scelte[i]!=null ? scelte[i] : null;
-    const chipsHtml = p.opzioni.map((o,oi)=>`
-      <span class="chip${selOi===oi?' active':''}" onclick="scegliOpzioneSettimana(${i},${oi})">${o.titolo}</span>
-    `).join('');
-    return `
-      <div class="section-label" style="margin-top:16px;">${p.icona} ${p.nome}</div>
-      <div class="chip-select">
-        <span class="chip${selOi==null?' active':''}" onclick="scegliOpzioneSettimana(${i},null)">Nessuna (non entra nella spesa)</span>
-        ${chipsHtml}
-      </div>`;
-  }).join('');
-
-  return `
-    <div class="sheet-header">
-      <div class="sheet-title">${giorno.label}</div>
-      <button class="sheet-close" onclick="chiudiGiornoSettimana()" aria-label="Chiudi">✕</button>
-    </div>
-    <p class="field-hint" style="margin:-2px 0 6px;">Scegli l'opzione che pensi di seguire per ogni pasto. È solo un promemoria: puoi sempre cambiare idea nel Piano del giorno.</p>
-    ${pastiHtml}
-  `;
-}
-
-function scegliOpzioneSettimana(i, oi){
-  const key = settimanaGiornoEdit;
-  const arr = Array.isArray(settimanaAlimentare[key]) ? settimanaAlimentare[key].slice() : DIETA_PIANO.pasti.map(()=>null);
-  arr[i] = oi;
-  settimanaAlimentare[key] = arr;
-  salvaSettimanaAlimentare();
-  mostraGiornoSettimanaOverlay();
-}
-
-function chiudiGiornoSettimana(){
-  const overlay = document.getElementById('settimanaSheetOverlay');
-  if(overlay) overlay.remove();
-  settimanaGiornoEdit = null;
-  renderSettimanaAlimentare();
-}
-
 /* ============ SELETTORE OPZIONE PASTO (bottom sheet) ============
    Non più raggiungibile dalla tab "Segna pasto" (che mostra solo i target
    numerici, senza nomi di piatti): resta nel codice perché "Lista della
@@ -5749,12 +5582,7 @@ function renderAlimentazione(){
     <div class="tab-bar">
       <div class="tab-btn${dietaTab==='segna-pasto'?' active':''}" onclick="setDietaTab('segna-pasto')">🍽️ Segna pasto</div>
       <div class="tab-btn${dietaTab==='integratori'?' active':''}" onclick="setDietaTab('integratori')">💊 Integratori</div>
-    </div>
-
-    <div class="diet-quicklinks">
-      <div class="qlink" onclick="setRoute({name:'diario'})" title="Diario dei giorni passati"><span class="qi">📖</span><span class="ql">Diario</span></div>
-      <div class="qlink" onclick="setRoute({name:'settimana-alimentare'})" title="La tua settimana"><span class="qi">📅</span><span class="ql">Settimana</span></div>
-      <div class="qlink" onclick="setRoute({name:'lista-spesa'})" title="Lista della spesa"><span class="qi">🛒</span><span class="ql">Spesa</span></div>
+      <div class="tab-btn" onclick="setRoute({name:'diario'})" title="Diario dei giorni passati">📖 Diario</div>
     </div>
 
     ${tabContentHtml}
@@ -6227,144 +6055,6 @@ function renderDiario(){
   }).join('');
 
   view.innerHTML = azioniHtml + html;
-}
-
-/* ============ LISTA DELLA SPESA ============
-   Somma le quantità degli ingredienti delle opzioni attualmente selezionate
-   per ciascun pasto (le stesse che vedi nella scheda "Piano"), moltiplicate
-   per un numero di giorni scelto — utile se ripeti la stessa combinazione di
-   opzioni più giorni di fila, com'è già il modo in cui il piano è pensato
-   ("componi la settimana ripetendo o mescolando le opzioni"). */
-let listaSpesaGiorni = 7;
-let listaSpesaSpuntati = new Set();
-
-function calcolaListaSpesa(giorni){
-  const totali = {};
-  DIETA_PIANO.pasti.forEach((p,i)=>{
-    const opz = p.opzioni[dietaOpzioneSel[i] || 0];
-    opz.alimenti.forEach(a=>{
-      const match = String(a.q).match(/^(\d+(?:[.,]\d+)?)/);
-      const grammi = match ? parseFloat(match[1].replace(',','.')) : 0;
-      totali[a.n] = (totali[a.n]||0) + grammi;
-    });
-  });
-  return Object.keys(totali)
-    .map(nome=>({ nome, grammiTot: Math.round(totali[nome]*giorni) }))
-    .sort((a,b)=> a.nome.localeCompare(b.nome));
-}
-
-function formattaQuantitaSpesa(g){
-  if(g>=1000) return (g/1000).toFixed(g%1000===0?0:1).replace('.',',')+' kg';
-  return g+' g';
-}
-
-/* Due modalità: 'settimana' usa le scelte fatte in "La tua settimana" (più
-   precisa, riflette la variabilità reale dei 7 giorni); 'giorni' è la vecchia
-   stima rapida che ripete le opzioni attualmente selezionate in "Piano" per
-   un numero di giorni. 'auto' sceglie da sola: settimana se hai già
-   pianificato qualcosa, altrimenti giorni. */
-let listaSpesaModalita = 'auto';
-let listaSpesaSettimane = 1;
-
-function modalitaListaSpesaEffettiva(){
-  if(listaSpesaModalita==='settimana' || listaSpesaModalita==='giorni') return listaSpesaModalita;
-  return giorniPianificatiCount() > 0 ? 'settimana' : 'giorni';
-}
-
-function setListaSpesaModalita(m){
-  listaSpesaModalita = m;
-  renderListaSpesa();
-}
-
-function listaSpesaAttiva(){
-  return modalitaListaSpesaEffettiva()==='settimana'
-    ? calcolaListaSpesaSettimana(listaSpesaSettimane)
-    : calcolaListaSpesa(listaSpesaGiorni);
-}
-
-function renderListaSpesa(){
-  pageTitle.textContent = 'Lista della spesa';
-  const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
-  if(!pianoPersonale){
-    view.innerHTML = `<p class="empty"><span class="empty-icon">⏳</span>Questa sezione si popolerà quando avrai un piano alimentare personale.</p>`;
-    return;
-  }
-  const usaSettimana = modalitaListaSpesaEffettiva()==='settimana';
-  const pianificati = giorniPianificatiCount();
-  const lista = listaSpesaAttiva();
-  const righe = lista.map(item=>{
-    const spuntato = listaSpesaSpuntati.has(item.nome);
-    return `<div class="extra-food-item" onclick="toggleSpesaSpuntato('${item.nome.replace(/'/g,"\\'")}')" style="cursor:pointer;">
-      <div class="efi-info">
-        <div class="efi-n" style="${spuntato?'text-decoration:line-through;color:var(--text-dim);':''}">${item.nome}</div>
-      </div>
-      <b style="${spuntato?'color:var(--text-dim);text-decoration:line-through;':'color:var(--text);'}">${formattaQuantitaSpesa(item.grammiTot)}</b>
-    </div>`;
-  }).join('');
-
-  const controlliHtml = usaSettimana ? `
-    <div class="dic-t" style="font-size:13.5px;font-weight:800;margin-bottom:10px;">🛒 Quante settimane vuoi coprire?</div>
-    <div class="water-btns" style="margin-top:0;">
-      <button class="btn small secondary" onclick="cambiaSettimaneSpesa(-1)">−1 settimana</button>
-      <span style="align-self:center;font-weight:800;font-size:15px;min-width:96px;text-align:center;">${listaSpesaSettimane} settiman${listaSpesaSettimane===1?'a':'e'}</span>
-      <button class="btn small secondary" onclick="cambiaSettimaneSpesa(1)">+1 settimana</button>
-    </div>
-    <p class="field-hint" style="margin:12px 0 0;">Calcolata su ${pianificati}/${SETTIMANA_GIORNI.length} giorni pianificati in "La tua settimana". <span style="text-decoration:underline;cursor:pointer;" onclick="setRoute({name:'settimana-alimentare'})">Modifica la settimana</span>.</p>
-  ` : `
-    <div class="dic-t" style="font-size:13.5px;font-weight:800;margin-bottom:10px;">🛒 Quanti giorni vuoi coprire?</div>
-    <div class="water-btns" style="margin-top:0;">
-      <button class="btn small secondary" onclick="cambiaGiorniSpesa(-1)">−1 giorno</button>
-      <span style="align-self:center;font-weight:800;font-size:15px;min-width:70px;text-align:center;">${listaSpesaGiorni} giorni</span>
-      <button class="btn small secondary" onclick="cambiaGiorniSpesa(1)">+1 giorno</button>
-    </div>
-    <p class="field-hint" style="margin:12px 0 0;">Stima rapida: ripete le opzioni al momento selezionate in "Piano" per il numero di giorni scelto.${pianificati ? ` Hai già ${pianificati} giorni pianificati: <span style="text-decoration:underline;cursor:pointer;" onclick="setListaSpesaModalita('settimana')">usa quelli</span> per una lista più precisa.` : ` <span style="text-decoration:underline;cursor:pointer;" onclick="setRoute({name:'settimana-alimentare'})">Pianifica la settimana</span> per una lista più precisa.`}</p>
-  `;
-
-  view.innerHTML = `
-    <div class="chip-select" style="margin-bottom:14px;">
-      <span class="chip${usaSettimana?' active':''}" onclick="setListaSpesaModalita('settimana')">Dalla settimana pianificata</span>
-      <span class="chip${!usaSettimana?' active':''}" onclick="setListaSpesaModalita('giorni')">Stima rapida</span>
-    </div>
-    <div class="card">
-      ${controlliHtml}
-    </div>
-    <div class="card">
-      ${righe || '<p class="empty" style="padding:10px 0;">Nessun ingrediente da mostrare.</p>'}
-    </div>
-    <button class="btn secondary" style="width:100%;" onclick="condividiListaSpesa()">📋 Copia lista</button>
-  `;
-}
-
-function cambiaGiorniSpesa(delta){
-  listaSpesaGiorni = Math.max(1, Math.min(30, listaSpesaGiorni+delta));
-  renderListaSpesa();
-}
-
-function cambiaSettimaneSpesa(delta){
-  listaSpesaSettimane = Math.max(1, Math.min(8, listaSpesaSettimane+delta));
-  renderListaSpesa();
-}
-
-function toggleSpesaSpuntato(nome){
-  if(listaSpesaSpuntati.has(nome)) listaSpesaSpuntati.delete(nome); else listaSpesaSpuntati.add(nome);
-  renderListaSpesa();
-}
-
-function condividiListaSpesa(){
-  const usaSettimana = modalitaListaSpesaEffettiva()==='settimana';
-  const lista = listaSpesaAttiva();
-  const intestazione = usaSettimana
-    ? `Lista della spesa (${listaSpesaSettimane} settiman${listaSpesaSettimane===1?'a':'e'}):`
-    : `Lista della spesa (${listaSpesaGiorni} giorni):`;
-  const testo = intestazione + '\n' +
-    lista.map(item=> '- ' + item.nome + ': ' + formattaQuantitaSpesa(item.grammiTot)).join('\n');
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(testo)
-      .then(()=> alert('Lista copiata negli appunti ✅'))
-      .catch(()=> alert(testo));
-  } else {
-    alert(testo);
-  }
 }
 
 /* ============ CERCA ALIMENTO (database Open Food Facts) ============
