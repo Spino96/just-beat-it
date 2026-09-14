@@ -5014,7 +5014,7 @@ function microGridHtmlDaOFF(micro100, acqua100, fattore){
 }
 
 const INTEGRAZIONE_PIANO = {
-  intro: "Nessuno degli integratori sostituisce il cibo: il piano alimentare resta la base, l'integrazione colma solo eventuali gap pratici (proteine, creatina, micronutrienti). Tocca un integratore per vedere quantità, indicazioni d'uso e particolarità.",
+  intro: "Nessuno degli integratori sostituisce il cibo: il piano alimentare resta la base, l'integrazione colma solo eventuali gap pratici (proteine, creatina, digestione, recupero, micronutrienti). Tocca un integratore per vedere quantità, indicazioni d'uso e particolarità.",
   integratori: [
     { nome:'Omega 3 (EPA/DHA)', icona:'🐟',
       dose:'1-2 g/die di EPA+DHA combinati (2-3 capsule: controlla la concentrazione reale in etichetta, varia molto da prodotto a prodotto).',
@@ -5027,17 +5027,26 @@ const INTEGRAZIONE_PIANO = {
     { nome:'Creatina monoidrato', icona:'💪',
       dose:'3-5 g/die, dose fissa e costante (non a cicli, non serve fase di carico).',
       indicazioni:'In qualsiasi momento della giornata, sciolta in acqua o nello shake proteico — non è vincolata al pre/post allenamento. Migliora forza e recupero.',
-      particolarita:"Pensata per l'avvio dell'allenamento strutturato, ma l'effetto è cumulativo: puoi iniziarla quando preferisci, non serve aspettare un momento preciso." },
-    { nome:'Vitamina D', icona:'☀️',
-      dose:'Da definire in base al valore ematico (range comune 1000-2000 UI/die se carente — non stimare senza il dato).',
-      indicazioni:'Mattina, con un pasto che contenga grassi (es. con la colazione).',
-      particolarita:'Da avviare solo dopo aver misurato il valore nel sangue: non va integrata "alla cieca" senza un riferimento.' },
+      particolarita:"L'unico integratore confermato nel Fascicolo Cliente v4 (12/09/2026): sei già in mantenimento, non serve fase di carico né cicli di sospensione." },
+    { nome:'Probiotici', icona:'🦠',
+      dose:'1 capsula o bustina al giorno (indicativamente 5-10 miliardi di UFC, più ceppi — verifica il dosaggio specifico in etichetta).',
+      indicazioni:"Al mattino a digiuno, oppure come indicato in etichetta dal prodotto scelto: lontano da bevande/cibi troppo caldi, che riducono la sopravvivenza dei ceppi.",
+      particolarita:"Aggiunto su tua richiesta, non è nel Fascicolo Cliente della dottoressa: utile soprattutto in caso di fastidi digestivi o dopo un ciclo di antibiotici. Vista la lieve intolleranza al lattosio, scegli un prodotto senza lattosio/derivati del latte e confermalo comunque con lei prima di iniziare, per sicurezza con Lyrica e Zarelis." },
+    { nome:'Aminoacidi essenziali (EAA/BCAA)', icona:'🧬',
+      dose:'5-10 g/die (verifica il dosaggio specifico in etichetta: EAA e BCAA non sono la stessa cosa, controlla quale hai comprato).',
+      indicazioni:'Prima o durante l\'allenamento, soprattutto se ti alleni a distanza da un pasto proteico o a stomaco vuoto.',
+      particolarita:"Aggiunto su tua richiesta, non è nel Fascicolo Cliente della dottoressa: con 147 g di proteine già previste dal piano il fabbisogno è probabilmente già coperto dal cibo — valuta se ti serve davvero (es. nei turni in cui salti un pasto vicino all'allenamento) o se rischia di essere un doppione, e confermalo con lei prima di iniziare." },
     { nome:'Multivitaminico/minerali', icona:'💊',
       dose:"Da valutare — non prioritario se l'alimentazione resta varia come da piano.",
       indicazioni:'Mattina, ai pasti.',
-      particolarita:'Da considerare solo se le analisi mostrano carenze specifiche (es. ferritina bassa); il piano alimentare copre già la maggior parte dei micronutrienti se seguito con costanza.' },
+      particolarita:"Le analisi del 12/09/2026 non mostrano carenze da coprire: ferritina 203 ng/mL (in aumento da 130, buon deposito di ferro) e vitamina D 32,9 ng/mL (sufficiente). Resta quindi non prioritario finché il quadro non cambia." },
   ],
-  noteImportanti: "Sei in terapia con Lyrica (pregabalin) e Zarelis (venlafaxina): non sono note interazioni rilevanti con omega 3 o creatina monoidrato. Per lo ZMA, distanzia l'assunzione di almeno 2 ore dai farmaci per sicurezza. Qualunque nuovo integratore — in particolare multivitaminici a dosaggi elevati o prodotti \"pre-workout\" con stimolanti — andrebbe comunque verificato con il medico o il farmacista prima dell'introduzione. Questo piano di integrazione non sostituisce una valutazione medica."
+  // Vitamina D: non più nella lista sopra perché, a differenza degli altri,
+  // qui c'è qualcosa da NON fare (nessuna integrazione) piuttosto che da
+  // spuntare ogni giorno — tenerla come voce con la spunta "presa oggi"
+  // sarebbe fuorviante. Il suo esito resta comunque visibile in "Note
+  // importanti" qui sotto.
+  noteImportanti: "Sei in terapia con Lyrica (pregabalin) e Zarelis (venlafaxina): non sono note interazioni rilevanti con omega 3, creatina monoidrato o probiotici comuni. Per lo ZMA, distanzia l'assunzione di almeno 2 ore dai farmaci per sicurezza. Probiotici e aminoacidi essenziali sono stati aggiunti su tua richiesta, non fanno parte del piano della dottoressa: confermali con lei prima di iniziare, in particolare i probiotici viste le terapie in corso. Qualunque altro nuovo integratore — in particolare multivitaminici a dosaggi elevati o prodotti \"pre-workout\" con stimolanti — andrebbe comunque verificato con il medico o il farmacista prima dell'introduzione. Questo piano di integrazione non sostituisce una valutazione medica."
 };
 
 // Stato del foglio "scegli opzione" (bottom sheet) aperto sopra il piano del
@@ -5550,11 +5559,11 @@ function renderAlimentazione(){
     </div>
     <div class="diet-info-card warn">
       <div class="dic-t">⚠️ Note importanti</div>
-      <div class="dic-b">Questo piano non sostituisce una valutazione medica. Farmaci in corso (Lyrica, Zarelis) e ADHD sono stati considerati nel quadro generale ma non modificano direttamente il calcolo calorico. AST lievemente elevato nell'ultimo esame (06/09/2025), verosimilmente legato all'allenamento pre-prelievo: da ricontrollare. In caso di sintomi digestivi persistenti o variazioni cliniche, consulta il medico curante.</div>
+      <div class="dic-b">Questo piano non sostituisce una valutazione medica. Farmaci in corso (Lyrica, Zarelis) e ADHD sono stati considerati nel quadro generale ma non modificano direttamente il calcolo calorico. Dalle analisi del 12/09/2026: Vitamina B12 attiva ALTA (217,1 pmol/L, pattern ricorrente già visto il 29/06/24) e AST ALTA (45 U/L, ALT e GGT normali — possibile origine muscolare legata ai carichi in palestra, idealmente da verificare col medico anche con dosaggio CK). Vitamina D risultata sufficiente (32,9 ng/mL): nessuna integrazione necessaria per ora. In caso di sintomi digestivi persistenti o variazioni cliniche, consulta il medico curante.</div>
     </div>
     <div class="diet-info-card">
       <div class="dic-t">📅 Prossima rivalutazione</div>
-      <div class="dic-b">Tra 2-3 settimane (peso, circonferenza vita, foto), oppure al ricevimento del Blocco 2 della scheda di allenamento o di nuove analisi del sangue.</div>
+      <div class="dic-b">Tra circa 4 settimane (fine Blocco 2): peso, vita, foto, feedback sull'allenamento (inclusa risposta al cardio) e follow-up col medico su B12/AST se effettuato. Da anticipare se emergono novità dal medico, fame eccessiva o cali di energia marcati, il peso si muove più velocemente del previsto dopo il cardio, o cambia in modo significativo la scheda di allenamento.</div>
     </div>`;
 
   const tabContentHtml = dietaTab==='integratori' ? integratoriTabHtml : segnaPastoTabHtml;
