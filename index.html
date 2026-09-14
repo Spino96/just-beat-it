@@ -1696,6 +1696,15 @@ function round1(n){
   return Math.round((Number(n)||0)*10)/10;
 }
 
+/* Kcal ricalcolate sempre da 4×proteine + 4×carboidrati + 9×grassi, invece
+   di sommare le kcal "dichiarate" di ciascun alimento (che quasi mai
+   coincidono esattamente col conto sui macro, per via di fibre, alcol e
+   arrotondamenti diversi da fonte a fonte) — su richiesta esplicita, così
+   il numero mostrato coincide sempre col conto fatto a mano sui macro. */
+function kcalDaMacro(prot, carb, grassi){
+  return round1(4*(Number(prot)||0) + 4*(Number(carb)||0) + 9*(Number(grassi)||0));
+}
+
 /* Ridistribuisce il target giornaliero attivo (che dipende dal tipo di
    giorno, riposo/allenamento) sui 5 pasti in proporzione al peso di
    ciascuno nel piano (la media delle sue opzioni, targetPastoMedia). Prima
@@ -2170,7 +2179,7 @@ function toggleMealDone(i){
   if(nuovoStato){
     const p = DIETA_PIANO.pasti[i];
     const opz = p.opzioni[dietaOpzioneSel[i] || 0];
-    cache.dietaLogOggi.pastiSnapshot[i] = { titolo:opz.titolo, kcal:opz.kcal, prot:opz.prot, carb:opz.carb, grassi:opz.grassi };
+    cache.dietaLogOggi.pastiSnapshot[i] = { titolo:opz.titolo, kcal:kcalDaMacro(opz.prot, opz.carb, opz.grassi), prot:opz.prot, carb:opz.carb, grassi:opz.grassi };
   } else {
     delete cache.dietaLogOggi.pastiSnapshot[i];
   }
@@ -2736,16 +2745,10 @@ function renderOggiPanel(){
   let pastoRow = '';
   if(pianoPersonale){
     const t = obiettiviAttivi(!!cache.dietaLogOggi.giornoAllenamento);
-    let kcalOggi = 0;
-    DIETA_PIANO.pasti.forEach((p,i)=>{
-      // Stesso criterio di renderAlimentazione: un pasto segnato "fatto" tramite
-      // un alimento extra (pastiViaExtra) non aggiunge qui le kcal dell'opzione
-      // del piano, altrimenti il residuo mostrato in Home sarebbe sbagliato.
-      if(cache.dietaLogOggi.pastiFatti[i] && !(cache.dietaLogOggi.pastiViaExtra && cache.dietaLogOggi.pastiViaExtra[i])){
-        kcalOggi += p.opzioni[dietaOpzioneSel[i] || 0].kcal;
-      }
-    });
-    (cache.dietaLogOggi.alimentiExtra||[]).forEach(a=> kcalOggi += a.kcal);
+    // Stessa fonte di renderAlimentazione (calcolaTotaliGiorno): kcal
+    // ricalcolate dai macro, non sommate dalle kcal dichiarate di ciascun
+    // alimento, così il residuo qui e in Dieta sono sempre coerenti tra loro.
+    const kcalOggi = calcolaTotaliGiorno(cache.dietaLogOggi).kcalTot;
     const residue = t.kcal - kcalOggi;
     statsTiles.push(`<div class="oggi-stat"><div class="v">${fmt1(Math.abs(residue))}</div><div class="l">Kcal ${residue>=0?'restanti':'oltre il target'}<br>oggi</div></div>`);
 
@@ -5422,7 +5425,6 @@ function renderAlimentazione(){
   DIETA_PIANO.pasti.forEach((p,i)=>{
     if(cache.dietaLogOggi.pastiFatti[i] && !(cache.dietaLogOggi.pastiViaExtra && cache.dietaLogOggi.pastiViaExtra[i])){
       const opz = p.opzioni[dietaOpzioneSel[i] || 0];
-      acquisito.kcal += opz.kcal;
       acquisito.prot += opz.prot;
       acquisito.carb += opz.carb;
       acquisito.grassi += opz.grassi;
@@ -5430,11 +5432,15 @@ function renderAlimentazione(){
   });
   const alimentiExtra = cache.dietaLogOggi.alimentiExtra || [];
   alimentiExtra.forEach(a=>{
-    acquisito.kcal += a.kcal;
     acquisito.prot += a.prot;
     acquisito.carb += a.carb;
     acquisito.grassi += a.grassi;
   });
+  // Kcal ricalcolate da 4×proteine + 4×carboidrati + 9×grassi (kcalDaMacro),
+  // non sommate dalle kcal dichiarate di ciascun alimento: altrimenti, per
+  // via di fibre/alcol/arrotondamenti, l'anello poteva mostrare "oltre"
+  // anche quando il conto a mano sui macro tornava sotto il target.
+  acquisito.kcal = kcalDaMacro(acquisito.prot, acquisito.carb, acquisito.grassi);
 
   const kcalPct = t.kcal ? Math.min(100, Math.round((acquisito.kcal/t.kcal)*100)) : 0;
   const kcalOver = acquisito.kcal > t.kcal;
@@ -5856,7 +5862,7 @@ function sceglieOpzioneModificaGiorno(oi){
   g.pastiFatti[pastoIdx] = true;
   if(g.pastiViaExtra) delete g.pastiViaExtra[pastoIdx]; // torna a un pasto "da piano"
   if(!g.pastiSnapshot) g.pastiSnapshot = {};
-  g.pastiSnapshot[pastoIdx] = { titolo:opz.titolo, kcal:opz.kcal, prot:opz.prot, carb:opz.carb, grassi:opz.grassi };
+  g.pastiSnapshot[pastoIdx] = { titolo:opz.titolo, kcal:kcalDaMacro(opz.prot, opz.carb, opz.grassi), prot:opz.prot, carb:opz.carb, grassi:opz.grassi };
   salvaGiornoDietaLog(giornoId, g);
   chiudiModificaPastoGiorno();
   renderDiario();
@@ -5873,6 +5879,9 @@ function chiudiModificaPastoGiorno(){
    segnando i singoli pasti) quello è il totale, punto: non si somma anche
    a eventuali pasti/extra, che per un giorno "manuale" restano vuoti. */
 function calcolaTotaliGiorno(g){
+  // Il totale kcal di un giorno inserito a mano (apriGiornoManualeForm, per i
+  // giorni tracciati altrove) resta quello scritto dall'utente: è un valore
+  // esplicito, non ricavato dai singoli alimenti, quindi non va ricalcolato.
   if(g.manualMacros){
     const m = g.manualMacros;
     return { kcalTot:m.kcal||0, protTot:m.prot||0, carbTot:m.carb||0, grassiTot:m.grassi||0, dettagliNonDisponibili:false, manuale:true };
@@ -5880,14 +5889,18 @@ function calcolaTotaliGiorno(g){
   const pastiFatti = g.pastiFatti || {};
   const pastiSnapshot = g.pastiSnapshot || {};
   const alimentiExtra = g.alimentiExtra || [];
-  let kcalTot = 0, protTot = 0, carbTot = 0, grassiTot = 0, dettagliNonDisponibili = false;
+  let protTot = 0, carbTot = 0, grassiTot = 0, dettagliNonDisponibili = false;
   Object.keys(pastiFatti).forEach(i=>{
     if(!pastiFatti[i]) return;
     const snap = pastiSnapshot[i];
-    if(snap){ kcalTot+=snap.kcal; protTot+=snap.prot; carbTot+=snap.carb; grassiTot+=snap.grassi; }
+    if(snap){ protTot+=snap.prot; carbTot+=snap.carb; grassiTot+=snap.grassi; }
     else dettagliNonDisponibili = true;
   });
-  alimentiExtra.forEach(a=>{ kcalTot+=a.kcal; protTot+=a.prot; carbTot+=a.carb; grassiTot+=a.grassi; });
+  alimentiExtra.forEach(a=>{ protTot+=a.prot; carbTot+=a.carb; grassiTot+=a.grassi; });
+  // Kcal ricalcolate dai macro (vedi kcalDaMacro) invece di sommare le kcal
+  // dichiarate di ciascun alimento: così il totale del giorno coincide
+  // sempre col conto 4/4/9 fatto sui macro, anche per i giorni già loggati.
+  const kcalTot = kcalDaMacro(protTot, carbTot, grassiTot);
   return { kcalTot, protTot, carbTot, grassiTot, dettagliNonDisponibili, manuale:false };
 }
 
@@ -6035,7 +6048,7 @@ function renderDiario(){
         // costruzione (le kcal reali sono contate una sola volta, tra gli
         // alimenti extra qui sotto): mostriamo "vedi extra" invece di "0 kcal",
         // che sembrerebbe un errore.
-        const valoreKcal = snap ? (viaExtraGiorno ? 'vedi extra ↓' : fmt1(snap.kcal)+' kcal') : 'segnato';
+        const valoreKcal = snap ? (viaExtraGiorno ? 'vedi extra ↓' : fmt1(kcalDaMacro(snap.prot, snap.carb, snap.grassi))+' kcal') : 'segnato';
         // Un pasto sostituito da un extra si modifica/elimina dall'alimento
         // extra stesso qui sotto, non da qui: qui offriamo solo l'eliminazione
         // (che rimette il pasto "non segnato"), non la scelta di un'opzione.
@@ -6236,9 +6249,11 @@ function renderCercaAlimento(){
     const p = s.selezionato;
     const g = s.grammi || 0;
     const fattore = g/100;
-    const kcal = fmt1(p.kcal100*fattore);
     const prot = fmt1(p.prot100*fattore);
     const carb = fmt1(p.carb100*fattore);
+    // Kcal ricalcolate dai macro (kcalDaMacro), non dalla kcal dichiarata
+    // dall'alimento: coerente col totale del giorno, che ora fa lo stesso.
+    const kcal = fmt1(kcalDaMacro(p.prot100*fattore, p.carb100*fattore, p.grassi100*fattore));
     const grassi = fmt1(p.grassi100*fattore);
     const pastoChipsHtml = DIETA_PIANO.pasti.map((pp,pi)=>
       `<div class="chip${pi===s.pastoIdx?' active':''}" onclick="sceglieCategoriaPastoExtra(${pi})">${pp.icona} ${pp.nome}</div>`
@@ -6734,10 +6749,10 @@ function aggiornaAnteprimaGrammi(){
   ricercaAlimentoState.grammi = g;
   const p = ricercaAlimentoState.selezionato;
   const fattore = g/100;
-  const kcal = fmt1(p.kcal100*fattore);
   const prot = fmt1(p.prot100*fattore);
   const carb = fmt1(p.carb100*fattore);
   const grassi = fmt1(p.grassi100*fattore);
+  const kcal = fmt1(kcalDaMacro(p.prot100*fattore, p.carb100*fattore, p.grassi100*fattore));
   document.getElementById('fpProt').textContent = prot+'g';
   document.getElementById('fpCarb').textContent = carb+'g';
   document.getElementById('fpGrassi').textContent = grassi+'g';
@@ -6760,15 +6775,21 @@ function toggleMicroSearch(){
 function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
   const fattore = g/100;
   const fonteFinale = fonte || p.fonte || suggerisciFonte(p);
+  const protV = round1(p.prot100*fattore);
+  const carbV = round1(p.carb100*fattore);
+  const grassiV = round1(p.grassi100*fattore);
   const voce = {
     id: 'extra-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
     nome: p.nome,
     marca: p.marca,
     grammi: g,
-    kcal: round1(p.kcal100*fattore),
-    prot: round1(p.prot100*fattore),
-    carb: round1(p.carb100*fattore),
-    grassi: round1(p.grassi100*fattore),
+    // Kcal ricalcolate dai macro (kcalDaMacro), non dalla kcal dichiarata
+    // dall'alimento: così ogni voce, sommata, torna sempre esatta col totale
+    // del giorno (vedi calcolaTotaliGiorno).
+    kcal: kcalDaMacro(protV, carbV, grassiV),
+    prot: protV,
+    carb: carbV,
+    grassi: grassiV,
     pasto: pastoIdx,
     fonte: fonteFinale
   };
@@ -6826,10 +6847,10 @@ function mostraAggiungiExtraRapidoOverlay(){
   if(!st) return;
   const { p, grammi, pastoIdx, fonte } = st;
   const fattore = grammi/100;
-  const kcal = Math.round(p.kcal100*fattore);
-  const prot = Math.round(p.prot100*fattore*10)/10;
-  const carb = Math.round(p.carb100*fattore*10)/10;
-  const grassi = Math.round(p.grassi100*fattore*10)/10;
+  const prot = round1(p.prot100*fattore);
+  const carb = round1(p.carb100*fattore);
+  const grassi = round1(p.grassi100*fattore);
+  const kcal = kcalDaMacro(prot, carb, grassi);
   const pastoChipsHtml = DIETA_PIANO.pasti.map((pp,pi)=>
     `<div class="chip${pi===pastoIdx?' active':''}" onclick="sceglieCategoriaPastoExtraRapido(${pi})">${pp.icona} ${pp.nome}</div>`
   ).join('');
@@ -6883,10 +6904,13 @@ function aggiornaAnteprimaGrammiRapido(){
   extraRapidoState.grammi = g;
   const p = extraRapidoState.p;
   const fattore = g/100;
-  document.getElementById('erProt').textContent = (Math.round(p.prot100*fattore*10)/10)+'g';
-  document.getElementById('erCarb').textContent = (Math.round(p.carb100*fattore*10)/10)+'g';
-  document.getElementById('erGrassi').textContent = (Math.round(p.grassi100*fattore*10)/10)+'g';
-  document.getElementById('erKcalLine').textContent = Math.round(p.kcal100*fattore)+' kcal totali per '+g+'g';
+  const prot = round1(p.prot100*fattore);
+  const carb = round1(p.carb100*fattore);
+  const grassi = round1(p.grassi100*fattore);
+  document.getElementById('erProt').textContent = prot+'g';
+  document.getElementById('erCarb').textContent = carb+'g';
+  document.getElementById('erGrassi').textContent = grassi+'g';
+  document.getElementById('erKcalLine').textContent = kcalDaMacro(prot, carb, grassi)+' kcal totali per '+g+'g';
 }
 
 function confermaAggiungiExtraRapido(){
