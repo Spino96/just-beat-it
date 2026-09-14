@@ -468,6 +468,11 @@
     font-family:inherit;white-space:nowrap;cursor:pointer;
   }
   .oggi-water-btn:active{background:#2ac7ff33;}
+  .oggi-water-btn-minus{
+    background:linear-gradient(135deg,#ffffff14,#ffffff08);border:1px solid var(--border);
+  }
+  .oggi-water-btn-minus:active{background:#ffffff1f;}
+  .oggi-water-btn:disabled{opacity:.4;cursor:default;}
   .oggi-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:2px;}
   .oggi-stat{
     background:var(--panel-2);border:1px solid var(--border);border-radius:16px;
@@ -1680,6 +1685,49 @@ function obiettiviAttivi(allenamento){
   return { kcal:base.kcal, prot:base.prot, carb:base.carb, grassi:base.grassi, acquaMl:2500 };
 }
 
+/* Arrotonda a un solo decimale e formatta sempre con quella precisione
+   (es. 25 -> "25.0"), così il conteggio dei macro è uniforme ovunque venga
+   mostrato invece di alternare interi e numeri con decimali a caso. */
+function fmt1(n){
+  const v = Math.round((Number(n)||0)*10)/10;
+  return v.toFixed(1);
+}
+function round1(n){
+  return Math.round((Number(n)||0)*10)/10;
+}
+
+/* Ridistribuisce il target giornaliero attivo (che dipende dal tipo di
+   giorno, riposo/allenamento) sui 5 pasti in proporzione al peso di
+   ciascuno nel piano (la media delle sue opzioni, targetPastoMedia). Prima
+   i target per pasto restavano fissi qualunque fosse il tipo di giorno,
+   quindi la loro somma non coincideva col totale giornaliero attivo (che
+   invece cambia tra riposo e allenamento) — qui si ricalcolano ogni volta
+   che cambia il tipo di giorno, e l'ultimo pasto (Cena) assorbe l'arroton-
+   damento così la somma torna a coincidere esattamente col target attivo. */
+function targetPastiCalibrati(allenamento){
+  const t = obiettiviAttivi(allenamento);
+  const pesi = DIETA_PIANO.pasti.map(p => targetPastoMedia(p));
+  const pesoTot = pesi.reduce((s,p)=>({
+    kcal: s.kcal+p.kcal, prot: s.prot+p.prot, carb: s.carb+p.carb, grassi: s.grassi+p.grassi
+  }), {kcal:0, prot:0, carb:0, grassi:0});
+  const chiavi = ['kcal','prot','carb','grassi'];
+  const risultati = pesi.map(()=>({}));
+  chiavi.forEach(k=>{
+    let cum = 0;
+    pesi.forEach((p,i)=>{
+      if(i < pesi.length-1){
+        const quota = pesoTot[k] ? p[k]/pesoTot[k] : 1/pesi.length;
+        const v = round1(t[k] * quota);
+        risultati[i][k] = v;
+        cum += v;
+      } else {
+        risultati[i][k] = round1(t[k] - cum);
+      }
+    });
+  });
+  return risultati;
+}
+
 /* Proiezione di quando (con il trend recente) si raggiungerà un obiettivo corporeo
    (peso o vita). Regressione lineare semplice sui punti delle ultime 6 settimane
    (o sugli ultimi due disponibili se la storia è più corta). */
@@ -2196,7 +2244,11 @@ function aggiungiAlimentoExtra(voce){
   salvaDietaLogOggi();
 }
 
-function rimuoviAlimentoExtra(id){
+/* Rimuove un alimento extra dal giorno corrente. Non ri-renderizza da sola:
+   la chiama rimuoviAlimentoExtra (schermata Dieta) o
+   rimuoviAlimentoDaSessioneRicerca (schermata Cerca alimento), ciascuna con
+   il proprio render di destinazione. */
+function rimuoviAlimentoExtraCore(id){
   const rimosso = (cache.dietaLogOggi.alimentiExtra||[]).find(a=>a.id===id);
   cache.dietaLogOggi.alimentiExtra = (cache.dietaLogOggi.alimentiExtra||[]).filter(a=>a.id!==id);
 
@@ -2216,7 +2268,17 @@ function rimuoviAlimentoExtra(id){
   }
 
   salvaDietaLogOggi();
+}
+
+function rimuoviAlimentoExtra(id){
+  rimuoviAlimentoExtraCore(id);
   renderAlimentazione();
+}
+
+function rimuoviAlimentoDaSessioneRicerca(id){
+  rimuoviAlimentoExtraCore(id);
+  if(ricercaAlimentoState) ricercaAlimentoState.sessionAggiunti = (ricercaAlimentoState.sessionAggiunti||[]).filter(a=>a.id!==id);
+  renderCercaAlimento();
 }
 
 /* ============ STATO / NAVIGAZIONE ============ */
@@ -2685,7 +2747,7 @@ function renderOggiPanel(){
     });
     (cache.dietaLogOggi.alimentiExtra||[]).forEach(a=> kcalOggi += a.kcal);
     const residue = t.kcal - kcalOggi;
-    statsTiles.push(`<div class="oggi-stat"><div class="v">${Math.abs(residue)}</div><div class="l">Kcal ${residue>=0?'restanti':'oltre il target'}<br>oggi</div></div>`);
+    statsTiles.push(`<div class="oggi-stat"><div class="v">${fmt1(Math.abs(residue))}</div><div class="l">Kcal ${residue>=0?'restanti':'oltre il target'}<br>oggi</div></div>`);
 
     const idxProssimo = DIETA_PIANO.pasti.findIndex((p,i)=> !cache.dietaLogOggi.pastiFatti[i]);
     const prossimo = idxProssimo>=0 ? DIETA_PIANO.pasti[idxProssimo].nome : 'Tutto segnato ✅';
@@ -2706,6 +2768,7 @@ function renderOggiPanel(){
     <div class="oggi-water-ctrl">
       <div class="water-bar mini"><div class="water-fill" style="width:${acquaPct}%;"></div></div>
       <b>${acquaL} L</b>
+      <button class="oggi-water-btn oggi-water-btn-minus" onclick="aggiungiAcqua(-250)" ${acquaMl<=0?'disabled':''}>-250 ml</button>
       <button class="oggi-water-btn" onclick="aggiungiAcqua(250)">+250 ml</button>
     </div>
   </div>`;
@@ -3082,6 +3145,12 @@ function toggleAlternativa(ei){
   renderSessionePreservandoScroll();
 }
 
+function aggiungiSet(ei){
+  const draft = sessionDraft.esercizi[ei];
+  draft.sets.push({peso:'', rip:'', fatta:false, rpe:null});
+  renderSessionePreservandoScroll();
+}
+
 function esercizioCompletato(ei){
   const ex = sessionDraft.esercizi[ei];
   return !!ex && ex.sets.length>0 && ex.sets.every(s=>s.fatta && s.rpe!=null);
@@ -3282,6 +3351,7 @@ function renderSessione(){
         <input type="checkbox" ${set.fatta?'checked':''} onchange="markSetDone(${ei},${si},${e.recupero},this.checked,this)">
       </div>`;
     });
+    html += `<button type="button" class="btn small secondary add-set-btn" style="margin-top:10px;" onclick="aggiungiSet(${ei})">+ Aggiungi serie</button>`;
     html += `<div class="note-box">${usaAlt ? `Stai facendo l'alternativa al posto di <b>${e.nome}</b>. ${e.note}` : e.note}</div>`;
     if(e.alternativa && e.alternativa!=='—'){
       html += `<button class="btn small secondary" style="margin-top:10px;" onclick="toggleAlternativa(${ei})">${usaAlt ? '↺ Torna a '+e.nome : '🔁 Usa alternativa: '+e.alternativa}</button>`;
@@ -3942,7 +4012,31 @@ function renderAderenzaCard(){
   const blocchiAttivi = schedeAssegnateUtente().filter(s=> blocchiIniziati[s.id]);
   if(!blocchiAttivi.length) return '';
   let html = `<div class="card"><h3 style="margin-top:0;font-size:15px;">🔥 Costanza</h3>`;
+  const gruppiMostrati = new Set();
   blocchiAttivi.forEach(s=>{
+    // Le schede con lo stesso `gruppo` (es. Blocco 2 Upper/Lower, alternate
+    // A-B) sono in realtà un unico blocco: le sedute vanno conteggiate
+    // insieme e il totale atteso è fisso (frequenza x durata, non prorata sui
+    // giorni trascorsi), altrimenti alternando due schede da "3x/settimana
+    // totali" il conto raddoppiava e non tornava mai al 100%.
+    if(s.gruppo){
+      if(gruppiMostrati.has(s.gruppo)) return;
+      gruppiMostrati.add(s.gruppo);
+      const prog = progressoBlocco(s.gruppo);
+      if(!prog || !prog.seduteTarget) return;
+      const membri = membriGruppo(s.gruppo);
+      const tag = m => { const mm = m.nome.match(/\(([^)]+)\)/); return mm ? mm[1] : m.nome; };
+      const base = membri[0].nome.split('—')[0].trim();
+      const nomeGruppo = membri.length>1 ? `${base} (${membri.map(tag).join('/')})` : membri[0].nome;
+      const fatte = prog.sedute;
+      const attese = prog.seduteTarget;
+      const pct = Math.min(100, Math.round((fatte/attese)*100));
+      html += `<div class="blocco-progress">
+        <p class="bp-label">${nomeGruppo} · ${fatte}/${attese} sedute</p>
+        <div class="bp-bar"><div class="bp-fill" style="width:${pct}%"></div></div>
+      </div>`;
+      return;
+    }
     const inizio = new Date(blocchiIniziati[s.id]);
     const oggi = new Date();
     const fineBlocco = s.durataSettimane ? new Date(new Date(inizio).setDate(inizio.getDate()+s.durataSettimane*7)) : null;
@@ -4243,7 +4337,14 @@ function renderSessioneModifica(){
   if(!s){ setRoute({name:'storico-allenamento'}); return; }
   pageTitle.textContent = 'Modifica seduta';
   modificaSessioneDraft = JSON.parse(JSON.stringify(s));
+  renderSessioneModificaHTML();
+}
 
+/* Ricostruisce l'HTML dalla modificaSessioneDraft corrente senza
+   rigenerarla da cache.sessioni: usata per il re-render dopo "+ Aggiungi
+   serie", altrimenti si perderebbero le modifiche non ancora salvate. */
+function renderSessioneModificaHTML(){
+  const s = modificaSessioneDraft;
   let html = `<div class="card">
     <div id="sessioneModError"></div>
     <div class="field"><label>Data</label><input type="date" id="smData" value="${new Date(s.data).toISOString().slice(0,10)}"></div>
@@ -4264,11 +4365,19 @@ function renderSessioneModifica(){
         <input type="checkbox" ${set.fatta?'checked':''} onchange="updateSetModifica(${ei},${si},'fatta',this.checked)">
       </div>`;
     });
+    html += `<button type="button" class="btn small secondary add-set-btn" style="margin-top:10px;" onclick="aggiungiSetModifica(${ei})">+ Aggiungi serie</button>`;
     html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio" oninput="updateNotaEsercizioModifica(${ei}, this.value)">${e.noteUtente||''}</textarea>`;
     html += `</div>`;
   });
   html += `<button class="btn" id="saveSessioneModBtn" onclick="salvaModificaSessione('${s.id}')">Salva modifiche</button>`;
   view.innerHTML = html;
+}
+
+function aggiungiSetModifica(ei){
+  modificaSessioneDraft.esercizi[ei].sets.push({peso:'', rip:'', fatta:false, rpe:null});
+  const scrollY = window.scrollY;
+  renderSessioneModificaHTML();
+  window.scrollTo(0, scrollY);
 }
 
 function updateSetModifica(ei,si,field,val){
@@ -5319,8 +5428,8 @@ function renderAlimentazione(){
   const kcalColor = kcalOver ? 'var(--danger)' : 'var(--accent)';
   const kcalDiff = t.kcal - acquisito.kcal;
   const kcalDiffHtml = kcalDiff>=0
-    ? `<span class="kr-diff">mancano ${kcalDiff} kcal</span>`
-    : `<span class="kr-diff over">+${Math.abs(kcalDiff)} kcal oltre</span>`;
+    ? `<span class="kr-diff">mancano ${fmt1(kcalDiff)} kcal</span>`
+    : `<span class="kr-diff over">+${fmt1(Math.abs(kcalDiff))} kcal oltre</span>`;
   const RING_R = 52, RING_C = 2*Math.PI*RING_R;
   const ringOffset = RING_C * (1 - kcalPct/100);
 
@@ -5334,12 +5443,12 @@ function renderAlimentazione(){
     const pct = goal ? Math.min(100, Math.round((val/goal)*100)) : 0;
     const over = val > goal;
     const diff = goal - val;
-    const diffLabel = diff>=0 ? `mancano ${diff}g` : `+${Math.abs(diff)}g oltre`;
+    const diffLabel = diff>=0 ? `mancano ${fmt1(diff)}g` : `+${fmt1(Math.abs(diff))}g oltre`;
     const tileColor = over ? 'var(--danger)' : m.color;
     return `<div class="macro-tile${over?' over':''}" style="--tile-color:${tileColor};">
       <span class="mt-icon">${m.icona}</span>
       <div class="mt-label">${m.label}</div>
-      <div class="mt-val">${val}<span class="mt-goal">/${goal}g</span></div>
+      <div class="mt-val">${fmt1(val)}<span class="mt-goal">/${fmt1(goal)}g</span></div>
       <div class="mt-track"><div class="mt-fill" style="width:${pct}%;"></div></div>
       <div class="mt-diff">${diffLabel}</div>
     </div>`;
@@ -5369,24 +5478,28 @@ function renderAlimentazione(){
     ? `<div class="note-box">💪 Ti sei allenato oggi: nelle prossime ore punta su un pasto con proteine e carboidrati per favorire il recupero.</div>`
     : '';
 
-  // Media (kcal/macro) tra le opzioni previste per un pasto: solo numeri,
-  // niente nomi di piatti — l'utente non vuole più vedere esempi fissi, solo
-  // il target da centrare segnando poi cosa ha mangiato davvero.
+  // Target per pasto: non più una media fissa uguale tutti i giorni, ma
+  // ricalibrata sul target giornaliero ATTIVO (riposo o allenamento) ogni
+  // volta che il tipo di giorno cambia — vedi targetPastiCalibrati(). Così
+  // la somma dei 5 target torna a coincidere esattamente col totale del
+  // giorno, invece di restare fissa sulla media mentre solo il totale in
+  // alto (t.kcal) cambiava.
+  const targetPastiOggi = targetPastiCalibrati(!!cache.dietaLogOggi.giornoAllenamento);
   const pastiTargetHtml = DIETA_PIANO.pasti.map((p,pi)=>{
-    const tgt = targetPastoMedia(p);
+    const tgt = targetPastiOggi[pi];
     const voci = alimentiExtra.filter(a=> a.pasto===pi);
     const subKcal = voci.reduce((s,a)=>s+a.kcal,0);
     const vociHtml = voci.length ? `<div class="extra-food-list" style="margin-top:8px;">${voci.map(a=>`
         <div class="extra-food-item">
           <div class="efi-info">
             <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
-            <div class="efi-m">${a.grammi}g · ${a.kcal} kcal · P ${a.prot}g · C ${a.carb}g · G ${a.grassi}g</div>
+            <div class="efi-m">${a.grammi}g · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
           </div>
           <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
         </div>`).join('')}</div>` : '';
     return `<div class="diet-info-card">
       <div class="dic-t">${p.icona} ${p.nome} <span style="float:right;font-weight:600;color:var(--text-dim);font-size:12px;">${p.orario}</span></div>
-      <div class="dic-b" style="margin-bottom:${voci.length?'0':'10px'};">Target: <b>${tgt.kcal} kcal</b> · P ${tgt.prot}g · C ${tgt.carb}g · G ${tgt.grassi}g${voci.length?` &nbsp;·&nbsp; Oggi: <b>${subKcal} kcal</b>`:''}</div>
+      <div class="dic-b" style="margin-bottom:${voci.length?'0':'10px'};">Target: <b>${fmt1(tgt.kcal)} kcal</b> · P ${fmt1(tgt.prot)}g · C ${fmt1(tgt.carb)}g · G ${fmt1(tgt.grassi)}g${voci.length?` &nbsp;·&nbsp; Oggi: <b>${fmt1(subKcal)} kcal</b>`:''}</div>
       ${vociHtml}
       <button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="apriRicercaPerPasto(${pi})">+ Aggiungi a ${p.nome}</button>
     </div>`;
@@ -5399,12 +5512,12 @@ function renderAlimentazione(){
   // direttamente dentro la card del pasto corrispondente (vedi pastiTargetHtml).
   const extraSenzaPasto = alimentiExtra.filter(a=> a.pasto==null || a.pasto<0 || a.pasto>=DIETA_PIANO.pasti.length);
   const extraSenzaPastoHtml = extraSenzaPasto.length ? `<div class="extra-food-group">
-      <div class="efg-head"><span>❔ Altro</span><span>${extraSenzaPasto.reduce((s,a)=>s+a.kcal,0)} kcal</span></div>
+      <div class="efg-head"><span>❔ Altro</span><span>${fmt1(extraSenzaPasto.reduce((s,a)=>s+a.kcal,0))} kcal</span></div>
       <div class="extra-food-list">${extraSenzaPasto.map(a=>`
         <div class="extra-food-item">
           <div class="efi-info">
             <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
-            <div class="efi-m">${a.grammi}g · ${a.kcal} kcal · P ${a.prot}g · C ${a.carb}g · G ${a.grassi}g</div>
+            <div class="efi-m">${a.grammi}g · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
           </div>
           <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
         </div>`).join('')}</div>
@@ -5467,8 +5580,8 @@ function renderAlimentazione(){
           <circle cx="60" cy="60" r="${RING_R}" class="kr-fill" style="stroke:url(#kcalGrad);stroke-dasharray:${RING_C};stroke-dashoffset:${ringOffset};filter:drop-shadow(0 0 6px ${kcalOver?'rgba(255,84,112,.55)':'rgba(57,255,148,.5)'});"></circle>
         </svg>
         <div class="kr-center">
-          <span class="kr-n" style="color:${kcalColor};">${acquisito.kcal}</span>
-          <span class="kr-u">/ ${t.kcal} kcal oggi</span>
+          <span class="kr-n" style="color:${kcalColor};">${fmt1(acquisito.kcal)}</span>
+          <span class="kr-u">/ ${fmt1(t.kcal)} kcal oggi</span>
           ${kcalDiffHtml}
         </div>
       </div>
@@ -5886,9 +5999,9 @@ function renderDiario(){
     // aperta): risponde a "voglio vedere in anteprima le kcal e tutte le
     // macro" senza dover toccare la card per aprirla.
     const macroPreviewHtml = kcalTot>0 ? `<div class="mh-macro-preview">
-      <span><span class="mb-dot" style="background:var(--accent);"></span>P <b>${Math.round(protTot)}g</b></span>
-      <span><span class="mb-dot" style="background:var(--accent-2);"></span>C <b>${Math.round(carbTot)}g</b></span>
-      <span><span class="mb-dot" style="background:var(--accent-3);"></span>G <b>${Math.round(grassiTot)}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent);"></span>P <b>${fmt1(protTot)}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-2);"></span>C <b>${fmt1(carbTot)}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-3);"></span>G <b>${fmt1(grassiTot)}g</b></span>
     </div>` : '';
 
     let corpoHtml;
@@ -5906,7 +6019,7 @@ function renderDiario(){
         // costruzione (le kcal reali sono contate una sola volta, tra gli
         // alimenti extra qui sotto): mostriamo "vedi extra" invece di "0 kcal",
         // che sembrerebbe un errore.
-        const valoreKcal = snap ? (viaExtraGiorno ? 'vedi extra ↓' : snap.kcal+' kcal') : 'segnato';
+        const valoreKcal = snap ? (viaExtraGiorno ? 'vedi extra ↓' : fmt1(snap.kcal)+' kcal') : 'segnato';
         // Un pasto sostituito da un extra si modifica/elimina dall'alimento
         // extra stesso qui sotto, non da qui: qui offriamo solo l'eliminazione
         // (che rimette il pasto "non segnato"), non la scelta di un'opzione.
@@ -5921,7 +6034,7 @@ function renderDiario(){
         .filter(s=> integratoriFatti[s.nome])
         .map(s=>`<div class="micro-row"><span>${s.icona} ${s.nome}</span><b>✅</b></div>`).join('');
 
-      const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)<span class="diario-item-actions"><button class="diario-mini-btn" onclick="confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${a.kcal} kcal</b></div>`).join('');
+      const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)<span class="diario-item-actions"><button class="diario-mini-btn" onclick="confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${fmt1(a.kcal)} kcal</b></div>`).join('');
 
       corpoHtml = `${pastiRighe || '<p style="margin:0 0 8px;color:var(--text-dim);font-size:12.5px;">Nessun pasto segnato.</p>'}
         ${integrRighe}
@@ -5938,7 +6051,7 @@ function renderDiario(){
           <div class="mh-time">${sottotitolo}</div>
           ${macroPreviewHtml}
         </div>
-        <div class="mh-kcal">${kcalTot} kcal</div>
+        <div class="mh-kcal">${fmt1(kcalTot)} kcal</div>
         <button class="diario-mini-btn diario-del-giorno" onclick="event.stopPropagation();confermaEliminaGiornoIntero('${g.id}')" title="Elimina l'intero giorno">🗑️</button>
         <div class="mh-chev">▾</div>
       </div>
@@ -6094,7 +6207,10 @@ function condividiListaSpesa(){
    del piano fisso, con grammatura scelta liberamente. Nessuna chiave API:
    Open Food Facts è un database aperto e gratuito, pensato per essere
    interrogato direttamente dal browser. */
-let ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx:null, fonte:null };
+// sessionAggiunti: alimenti già salvati in questa visita a "Cerca alimento",
+// per poterne aggiungere più di uno di seguito senza dover rientrare da capo
+// nella schermata ogni volta (vedi confermaAggiungiAlimento).
+let ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx:null, fonte:null, sessionAggiunti:[] };
 
 function renderCercaAlimento(){
   pageTitle.textContent = 'Cerca alimento';
@@ -6104,10 +6220,10 @@ function renderCercaAlimento(){
     const p = s.selezionato;
     const g = s.grammi || 0;
     const fattore = g/100;
-    const kcal = Math.round(p.kcal100*fattore);
-    const prot = Math.round(p.prot100*fattore*10)/10;
-    const carb = Math.round(p.carb100*fattore*10)/10;
-    const grassi = Math.round(p.grassi100*fattore*10)/10;
+    const kcal = fmt1(p.kcal100*fattore);
+    const prot = fmt1(p.prot100*fattore);
+    const carb = fmt1(p.carb100*fattore);
+    const grassi = fmt1(p.grassi100*fattore);
     const pastoChipsHtml = DIETA_PIANO.pasti.map((pp,pi)=>
       `<div class="chip${pi===s.pastoIdx?' active':''}" onclick="sceglieCategoriaPastoExtra(${pi})">${pp.icona} ${pp.nome}</div>`
     ).join('');
@@ -6138,8 +6254,8 @@ function renderCercaAlimento(){
         <p style="font-size:13px;color:var(--text-dim);font-weight:700;margin:0 0 16px;" id="fpKcalLine">${kcal} kcal totali per ${g}g</p>
         <button class="toggle-guide" onclick="toggleMicroSearch()">💧🧪 Vitamine, minerali e acqua ▾</button>
         <div class="guide-body" id="micro-search-box">${microGridHtmlDaOFF(p.micro100||{}, p.acqua100, fattore)}</div>
-        <button class="btn" style="margin-top:16px;" onclick="confermaAggiungiAlimento()">Aggiungi a oggi</button>
-        <button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="ricercaAlimentoState.selezionato=null;renderCercaAlimento()">← Torna alla ricerca</button>
+        <button class="btn" style="margin-top:16px;" onclick="confermaAggiungiAlimento()">+ Aggiungi e cerca un altro</button>
+        <button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="ricercaAlimentoState.selezionato=null;renderCercaAlimento()">← Torna alla ricerca senza aggiungere</button>
       </div>`;
     return;
   }
@@ -6202,6 +6318,23 @@ function renderCercaAlimento(){
       ${quickAddGruppiHtml}
     </div>` : '';
 
+  // Alimenti già aggiunti in questa visita alla ricerca: permette di
+  // aggiungerne più di uno allo stesso pasto (o a pasti diversi) senza
+  // uscire e rientrare in "Cerca alimento" ogni volta — confermaAggiungiAlimento
+  // salva e resta qui invece di tornare subito a Dieta.
+  const sessionAggiunti = s.sessionAggiunti || [];
+  const sessionAggiuntiHtml = sessionAggiunti.length ? `<div class="diet-info-card" style="border-left:3px solid var(--accent);">
+      <div class="dic-t">✅ Aggiunti in questa sessione (${sessionAggiunti.length})</div>
+      <div class="extra-food-list">${sessionAggiunti.map(a=>`
+        <div class="extra-food-item">
+          <div class="efi-info">
+            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
+            <div class="efi-m">${a.grammi}g · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g · ${DIETA_PIANO.pasti[a.pasto] ? DIETA_PIANO.pasti[a.pasto].nome : ''}</div>
+          </div>
+          <button class="efi-remove" onclick="rimuoviAlimentoDaSessioneRicerca('${a.id}')" aria-label="Rimuovi">✕</button>
+        </div>`).join('')}</div>
+    </div>` : '';
+
   view.innerHTML = `
     <div class="field">
       <label>Cerca un alimento</label>
@@ -6215,9 +6348,16 @@ function renderCercaAlimento(){
     ${risultatiHtml}
     ${!s.query ? `<button class="btn secondary" style="width:100%;margin-bottom:14px;" onclick="setRoute({name:'crea-alimento-custom'})">➕ Crea alimento o ricetta personalizzata</button>` : ''}
     ${quickAddHtml}
+    ${sessionAggiuntiHtml}
+    <button class="btn" style="width:100%;margin-top:4px;" onclick="terminaRicercaAlimento()">✓ Fatto, torna alla Dieta${sessionAggiunti.length?` (${sessionAggiunti.length} aggiunti)`:''}</button>
   `;
   const input = document.getElementById('foodSearchInput');
   if(input) setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
+}
+
+function terminaRicercaAlimento(){
+  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx:null, fonte:null, sessionAggiunti:[] };
+  setRoute({name:'alimentazione'});
 }
 
 /* ============ RICERCA ALIMENTI: due fonti in parallelo ============
@@ -6552,10 +6692,10 @@ function aggiornaAnteprimaGrammi(){
   ricercaAlimentoState.grammi = g;
   const p = ricercaAlimentoState.selezionato;
   const fattore = g/100;
-  const kcal = Math.round(p.kcal100*fattore);
-  const prot = Math.round(p.prot100*fattore*10)/10;
-  const carb = Math.round(p.carb100*fattore*10)/10;
-  const grassi = Math.round(p.grassi100*fattore*10)/10;
+  const kcal = fmt1(p.kcal100*fattore);
+  const prot = fmt1(p.prot100*fattore);
+  const carb = fmt1(p.carb100*fattore);
+  const grassi = fmt1(p.grassi100*fattore);
   document.getElementById('fpProt').textContent = prot+'g';
   document.getElementById('fpCarb').textContent = carb+'g';
   document.getElementById('fpGrassi').textContent = grassi+'g';
@@ -6573,21 +6713,24 @@ function toggleMicroSearch(){
 // il foglio rapido "Aggiungi di nuovo" nella tab Extra: entrambi finiscono
 // per chiamare questa, così il comportamento (somma kcal, segna il pasto
 // fatto, ricorda l'alimento) resta identico indipendentemente da dove parte.
+// Ritorna la voce salvata: confermaAggiungiAlimento la usa per tenere
+// l'elenco di ciò che è stato aggiunto in questa visita alla ricerca.
 function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
   const fattore = g/100;
   const fonteFinale = fonte || p.fonte || suggerisciFonte(p);
-  aggiungiAlimentoExtra({
-    id: 'extra-'+Date.now(),
+  const voce = {
+    id: 'extra-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
     nome: p.nome,
     marca: p.marca,
     grammi: g,
-    kcal: Math.round(p.kcal100*fattore),
-    prot: Math.round(p.prot100*fattore*10)/10,
-    carb: Math.round(p.carb100*fattore*10)/10,
-    grassi: Math.round(p.grassi100*fattore*10)/10,
+    kcal: round1(p.kcal100*fattore),
+    prot: round1(p.prot100*fattore),
+    carb: round1(p.carb100*fattore),
+    grassi: round1(p.grassi100*fattore),
     pasto: pastoIdx,
     fonte: fonteFinale
-  });
+  };
+  aggiungiAlimentoExtra(voce);
   // Aggiungere un alimento extra a un pasto conta come "aver fatto" quel
   // pasto: se non era già segnato lo spuntiamo qui, con lo stesso snapshot
   // (opzione del piano attualmente selezionata) che userebbe la spunta
@@ -6595,8 +6738,14 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
   // tocchiamo lo snapshot esistente.
   segnaPastoFattoDaExtra(pastoIdx);
   registraAlimentoRecente(p, fonteFinale);
+  return voce;
 }
 
+// Salva l'alimento configurato ma NON esce da "Cerca alimento": resta qui,
+// pronta per un'altra ricerca, così si possono aggiungere più cibi allo
+// stesso pasto (o a pasti diversi) uno via l'altro invece di dover rientrare
+// da capo ogni volta. Si esce esplicitamente con "Fatto, torna alla Dieta"
+// (terminaRicercaAlimento).
 function confermaAggiungiAlimento(){
   const p = ricercaAlimentoState.selezionato;
   const g = ricercaAlimentoState.grammi;
@@ -6604,9 +6753,14 @@ function confermaAggiungiAlimento(){
   // si seleziona l'alimento), ma per sicurezza degrada su "Colazione" invece
   // di bloccare il salvataggio se per qualche motivo manca.
   const pastoIdx = ricercaAlimentoState.pastoIdx!=null ? ricercaAlimentoState.pastoIdx : 0;
-  eseguiAggiungiAlimentoExtra(p, g, pastoIdx, ricercaAlimentoState.fonte);
-  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx:null, fonte:null };
-  setRoute({name:'alimentazione'});
+  const voce = eseguiAggiungiAlimentoExtra(p, g, pastoIdx, ricercaAlimentoState.fonte);
+  if(!ricercaAlimentoState.sessionAggiunti) ricercaAlimentoState.sessionAggiunti = [];
+  ricercaAlimentoState.sessionAggiunti.push(voce);
+  hapticaLieve();
+  ricercaAlimentoState.selezionato = null;
+  ricercaAlimentoState.query = '';
+  ricercaAlimentoState.risultati = [];
+  renderCercaAlimento();
 }
 
 /* ============ AGGIUNGI DI NUOVO (foglio rapido dalla tab Extra) ============
@@ -6752,7 +6906,7 @@ function selezionaAlimentoRecente(i){
    "+ Aggiungi a [pasto]" nelle card target di Segna pasto), invece di
    lasciare che venga dedotto dall'ora attuale. */
 function apriRicercaPerPasto(pi){
-  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx: pi, fonte:null };
+  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx: pi, fonte:null, sessionAggiunti:[] };
   setRoute({name:'cerca-alimento'});
 }
 
