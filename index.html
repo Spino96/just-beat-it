@@ -6281,7 +6281,8 @@ function renderCercaAlimento(){
     risultatiHtml = `<p class="empty"><span class="empty-icon">🔍</span>Nessun risultato per "${s.query}". Prova con un nome più semplice o generico.</p>`;
   }
 
-  // "Aggiunti di recente" e "I miei alimenti" ora raggruppati per fonte
+  // "Aggiungi di nuovo" (i più usati, non i più recenti — vedi
+  // registraAlimentoRecente) e "I miei alimenti" raggruppati per fonte
   // (Carboidrati/Proteine/Grassi) invece che per provenienza: questa
   // schermata si apre proprio "mentre aggiungo" un alimento a un pasto
   // specifico (da "+ Aggiungi a [pasto]"), quindi qui — e non più come
@@ -6300,21 +6301,23 @@ function renderCercaAlimento(){
     <p class="section-label"${gi===0?' style="margin-top:0;"':''}>${g.icona} ${g.label}</p>
     ${g.items.map(it=>{
       const p = it.p, i = it.idx;
-      const sottotitolo = it.tipo==='personalizzato' ? 'Personalizzato' : (p.marca||'');
+      const usiLabel = it.tipo==='recente' && p.usoCount>1 ? ` · usato ${p.usoCount}×` : '';
+      const sottotitolo = it.tipo==='personalizzato' ? 'Personalizzato' : ((p.marca||'')+usiLabel);
       const clickFn = it.tipo==='personalizzato' ? `selezionaAlimentoPersonalizzato(${i})` : `selezionaAlimentoRecente(${i})`;
+      const removeFn = it.tipo==='personalizzato' ? `eliminaAlimentoPersonalizzato('${p.id}')` : `rimuoviAlimentoRecente(${i})`;
       return `<div class="food-search-item">
         <div class="fsi-info" onclick="${clickFn}" style="cursor:pointer;">
           <div class="fsi-n">${p.nome}</div>
           ${sottotitolo?`<div class="fsi-brand">${sottotitolo}</div>`:''}
         </div>
         <div class="fsi-kcal" onclick="${clickFn}" style="cursor:pointer;">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
-        ${it.tipo==='personalizzato' ? `<button class="photo-slot-remove" style="position:static;margin-left:8px;flex-shrink:0;" onclick="event.stopPropagation();eliminaAlimentoPersonalizzato('${p.id}')">✕</button>` : ''}
+        <button class="photo-slot-remove" style="position:static;margin-left:8px;flex-shrink:0;" onclick="event.stopPropagation();${removeFn}" aria-label="Rimuovi dagli alimenti più usati">✕</button>
       </div>`;
     }).join('')}
   `).join('');
   const quickAddHtml = quickAddGruppi.length ? `<div class="diet-info-card">
       <div class="dic-t">⚡ Aggiungi di nuovo</div>
-      <div class="dic-b" style="margin-bottom:10px;">Tocca un alimento già usato per aggiungerlo di nuovo a questo pasto.</div>
+      <div class="dic-b" style="margin-bottom:10px;">I tuoi alimenti più usati: tocca per aggiungerne uno di nuovo a questo pasto, oppure ✕ per toglierlo da questa lista.</div>
       ${quickAddGruppiHtml}
     </div>` : '';
 
@@ -6338,7 +6341,7 @@ function renderCercaAlimento(){
   view.innerHTML = `
     <div class="field">
       <label>Cerca un alimento</label>
-      <input type="text" id="foodSearchInput" placeholder="Es. yogurt greco, pasta, mela..." value="${s.query}" onkeydown="if(event.key==='Enter')eseguiRicercaAlimento()">
+      <input type="text" id="foodSearchInput" placeholder="Es. yogurt greco, pasta, mela..." value="${s.query}" oninput="onFoodSearchInputChange(this.value)" onkeydown="if(event.key==='Enter')eseguiRicercaAlimento()">
     </div>
     <div style="display:flex;gap:10px;margin-bottom:6px;">
       <button class="btn" style="flex:1;" onclick="eseguiRicercaAlimento()">Cerca</button>
@@ -6346,7 +6349,7 @@ function renderCercaAlimento(){
     </div>
     <p class="field-hint" style="margin:0 0 18px;">I dati arrivano da Open Food Facts (aperto, forte sui prodotti confezionati) e USDA FoodData Central (database ufficiale USA, ottimo per alimenti generici come frutta, verdura e carne — nomi in inglese).</p>
     ${risultatiHtml}
-    ${!s.query ? `<button class="btn secondary" style="width:100%;margin-bottom:14px;" onclick="setRoute({name:'crea-alimento-custom'})">➕ Crea alimento o ricetta personalizzata</button>` : ''}
+    <button class="btn secondary" style="width:100%;margin-bottom:14px;" onclick="setRoute({name:'crea-alimento-custom'})">➕ Crea alimento o ricetta personalizzata</button>
     ${quickAddHtml}
     ${sessionAggiuntiHtml}
     <button class="btn" style="width:100%;margin-top:4px;" onclick="terminaRicercaAlimento()">✓ Fatto, torna alla Dieta${sessionAggiunti.length?` (${sessionAggiunti.length} aggiunti)`:''}</button>
@@ -6474,10 +6477,33 @@ function dedupRisultatiAlimenti(lista){
   });
 }
 
+// Se il campo viene svuotato del tutto (es. selezioni tutto e cancelli),
+// azzera subito la ricerca invece di lasciare la schermata bloccata sui
+// risultati (o sul "nessun risultato") di prima: era il bug per cui,
+// cancellando il testo cercato, non si riusciva più a cercare altro.
+function onFoodSearchInputChange(val){
+  if(val.trim()!=='') return;
+  if(!ricercaAlimentoState.query && !ricercaAlimentoState.risultati.length && !ricercaAlimentoState.errore) return;
+  ricercaAlimentoState.query = '';
+  ricercaAlimentoState.risultati = [];
+  ricercaAlimentoState.errore = null;
+  ricercaAlimentoState.loading = false;
+  renderCercaAlimento();
+}
+
 async function eseguiRicercaAlimento(){
   const input = document.getElementById('foodSearchInput');
   const query = input ? input.value.trim() : '';
-  if(!query) return;
+  if(!query){
+    // Stessa situazione di onFoodSearchInputChange: campo vuoto e si preme
+    // comunque "Cerca" o Invio, azzeriamo invece di non fare nulla.
+    ricercaAlimentoState.query = '';
+    ricercaAlimentoState.risultati = [];
+    ricercaAlimentoState.errore = null;
+    ricercaAlimentoState.loading = false;
+    renderCercaAlimento();
+    return;
+  }
   ricercaAlimentoState.query = query;
   ricercaAlimentoState.loading = true;
   ricercaAlimentoState.errore = null;
@@ -6878,16 +6904,33 @@ function segnaPastoFattoDaExtra(pastoIdx){
   salvaDietaLogOggi();
 }
 
-/* Scorciatoia per i cibi che si ripetono spesso: tiene gli ultimi 8 alimenti
-   aggiunti (per valore/100g, non per grammatura specifica) sul profilo, così
-   la prossima volta non serve ricercarli da capo. */
+/* Scorciatoia per i cibi che si ripetono spesso: non tiene più solo gli
+   ultimi aggiunti in ordine di recenza, ma conta quante volte ciascun
+   alimento (per valore/100g, non per grammatura specifica) è stato
+   aggiunto (usoCount). "Aggiungi di nuovo" mostra sempre prima i più
+   usati, a parità i più recenti, fino a un massimo di 12 voci — quando se
+   ne aggiunge una nuova oltre il limite, cade quella meno usata/recente. */
+const MAX_ALIMENTI_RECENTI = 12;
 function registraAlimentoRecente(p, fonte){
   if(!profiloUtente) return;
   const chiave = a => (a.nome+'|'+(a.marca||'')).toLowerCase();
-  const voce = { nome:p.nome, marca:p.marca||'', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100, micro100:p.micro100||{}, acqua100:(p.acqua100!=null?p.acqua100:null), fonte: fonte || p.fonte || suggerisciFonte(p) };
-  let lista = (profiloUtente.alimentiRecenti || []).filter(a=> chiave(a)!==chiave(voce));
-  lista.unshift(voce);
-  lista = lista.slice(0,8);
+  const chiaveNuova = chiave({ nome:p.nome, marca:p.marca||'' });
+  let lista = (profiloUtente.alimentiRecenti || []).slice();
+  const esistente = lista.find(a=> chiave(a)===chiaveNuova);
+  const fonteFinale = fonte || p.fonte || suggerisciFonte(p);
+  if(esistente){
+    esistente.usoCount = (esistente.usoCount||1) + 1;
+    esistente.ultimoUso = Date.now();
+    // Aggiorna anche i valori nutrizionali con quelli appena usati, nel caso
+    // la scheda del prodotto sia cambiata nel frattempo (es. su Open Food Facts).
+    esistente.kcal100 = p.kcal100; esistente.prot100 = p.prot100; esistente.carb100 = p.carb100; esistente.grassi100 = p.grassi100;
+    esistente.micro100 = p.micro100||{}; esistente.acqua100 = (p.acqua100!=null?p.acqua100:null);
+    esistente.fonte = fonteFinale;
+  } else {
+    lista.push({ nome:p.nome, marca:p.marca||'', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100, micro100:p.micro100||{}, acqua100:(p.acqua100!=null?p.acqua100:null), fonte: fonteFinale, usoCount:1, ultimoUso: Date.now() });
+  }
+  lista.sort((a,b)=> (b.usoCount||1)-(a.usoCount||1) || (b.ultimoUso||0)-(a.ultimoUso||0));
+  lista = lista.slice(0, MAX_ALIMENTI_RECENTI);
   profiloUtente.alimentiRecenti = lista;
   db.collection('users').doc(currentUid).set({ alimentiRecenti: lista }, { merge:true }).catch(()=>{});
 }
@@ -6899,6 +6942,21 @@ function selezionaAlimentoRecente(i){
   ricercaAlimentoState.grammi = 100;
   if(ricercaAlimentoState.pastoIdx==null) ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
   ricercaAlimentoState.fonte = p.fonte || suggerisciFonte(p);
+  renderCercaAlimento();
+}
+
+/* Rimuove un alimento dalla lista "Aggiungi di nuovo" (i più usati), su
+   richiesta esplicita: non tocca lo storico di ciò che è già stato
+   registrato nei giorni passati, solo la scorciatoia per il futuro. */
+async function rimuoviAlimentoRecente(i){
+  if(!profiloUtente) return;
+  const lista = (profiloUtente.alimentiRecenti || []).slice();
+  const voce = lista[i];
+  if(!voce) return;
+  if(!(await mostraConferma(`Rimuovere "${voce.nome}" dagli alimenti più usati?`))) return;
+  lista.splice(i,1);
+  profiloUtente.alimentiRecenti = lista;
+  db.collection('users').doc(currentUid).set({ alimentiRecenti: lista }, { merge:true }).catch(()=>{});
   renderCercaAlimento();
 }
 
