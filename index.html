@@ -1404,15 +1404,15 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Seated Row (rematore seduto)', serieTarget:3, ripTarget:'10-12', recupero:90,
-        note:'Nuovo: rinforza la schiena alta, utile per la postura da banco',
-        alternativa:'—',
+        nome:'Row Machine (tirata dritta)', serieTarget:3, ripTarget:'10-12', recupero:90,
+        note:'Nuovo: rinforza la schiena alta, utile per la postura da banco. Preferita alla Low Row perché tirata dritta, meno ridondante con la lat machine (tirata diagonale). Presa neutra',
+        alternativa:'Low Row',
         video:'https://www.youtube.com/watch?v=FTdVAoceD-c',
         immagine:'',
         guida:{
           muscoli:'Dorsali, romboidi, trapezio medio, bicipiti (secondari).',
-          esecuzione:'Seduto con ginocchia leggermente piegate, busto eretto, afferra la maniglia. Tira verso l\'addome portando le scapole indietro e i gomiti vicino al corpo, poi torna con controllo senza incurvare la schiena.',
-          errori:'Non usare lo slancio del busto, non alzare le spalle verso le orecchie: schiena dritta per tutta la serie.'
+          esecuzione:'Seduto con ginocchia leggermente piegate, busto eretto, afferra la maniglia con presa neutra. Tira verso l\'addome portando le scapole indietro e i gomiti vicino al corpo, poi torna con controllo senza incurvare la schiena.',
+          errori:'Non usare lo slancio del busto, non alzare le spalle verso le orecchie: schiena dritta per tutta la serie. Se la macchina non è disponibile, la Low Row va bene ma è più ridondante con la Lat Machine (tirata diagonale anziché dritta).'
         }
       },
       {
@@ -1440,27 +1440,39 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Bicep curl (manubri)', serieTarget:2, ripTarget:'10-12', recupero:60,
-        note:'Nuovo',
-        alternativa:'—',
-        video:'https://www.youtube.com/watch?v=QaXCjUMCp90',
+        nome:'Bicep curl (panca Scott)', serieTarget:2, ripTarget:'10-12', recupero:60,
+        note:'Nuovo: il cuscino blocca il gomito e impedisce lo slancio, più isolato del curl in piedi',
+        alternativa:'Bicep curl in piedi (manubri)',
+        video:'https://www.youtube.com/watch?v=to3m8zws1n8',
         immagine:'',
         guida:{
           muscoli:'Bicipite brachiale, avambraccio.',
-          esecuzione:'In piedi, un manubrio per mano, gomiti vicino al busto. Fletti l\'avambraccio portando il manubrio verso la spalla, poi scendi con controllo.',
-          errori:'Non oscillare il busto per aiutarsi, non far "cadere" il peso in fase di discesa.'
+          esecuzione:'Seduto o in piedi con l\'arto appoggiato al cuscino inclinato della panca Scott, gomito bloccato in posizione. Fletti portando il peso verso la spalla, poi scendi con controllo senza estendere di scatto.',
+          errori:'Il cuscino impedisce di aiutarsi con lo slancio del busto: se senti il bisogno di "spingere" con la schiena, il peso è troppo alto.'
         }
       },
       {
-        nome:'Tricep pushdown (cavo)', serieTarget:2, ripTarget:'10-12', recupero:60,
-        note:'Nuovo',
-        alternativa:'—',
-        video:'https://www.youtube.com/watch?v=8NMnKwaOtB8',
+        nome:'Tricep pushdown (cavo, con la corda)', serieTarget:2, ripTarget:'10-12', recupero:60,
+        note:'Nuovo: la corda permette di ruotare i polsi a fine movimento, meglio della barra dritta',
+        alternativa:'Tricep pushdown con barra dritta',
+        video:'https://www.youtube.com/watch?v=d-ySLTHUgQA',
         immagine:'',
         guida:{
           muscoli:'Tricipite brachiale.',
-          esecuzione:'In piedi davanti al cavo alto, gomiti fissi vicino al busto, impugna la maniglia/corda. Spingi verso il basso estendendo il gomito, poi torna con controllo senza bloccare l\'articolazione a fine corsa.',
+          esecuzione:'In piedi davanti al cavo alto, gomiti fissi vicino al busto, impugna la corda con presa neutra. Spingi verso il basso estendendo il gomito e ruotando leggermente i polsi verso l\'esterno a fine corsa, poi torna con controllo senza bloccare l\'articolazione.',
           errori:'Non muovere i gomiti in avanti/indietro durante il movimento, non usare il peso del corpo per spingere.'
+        }
+      },
+      {
+        nome:'Crunch machine', serieTarget:3, ripTarget:'15', recupero:60,
+        note:'Nuovo: lavoro diretto sull\'addome, a complemento del plank',
+        alternativa:'Crunch a corpo libero',
+        video:'https://www.youtube.com/watch?v=0kLWho-pEdQ',
+        immagine:'',
+        guida:{
+          muscoli:'Retto dell\'addome.',
+          esecuzione:'Seduto alla macchina con busto contro il pad superiore, afferra le maniglie. Flettiti in avanti contraendo l\'addome, poi torna con controllo senza far ricadere il peso.',
+          errori:'Il movimento parte dalla contrazione addominale, non dalle braccia: non tirare con le maniglie per aiutarsi.'
         }
       },
       {
@@ -1565,6 +1577,18 @@ const SCHEDE_DEFAULT = [
           muscoli:'Polpacci (gastrocnemio e soleo).',
           esecuzione:'In piedi, punte dei piedi su un rialzo o alla macchina dedicata. Sali sulle punte il più possibile, poi scendi lasciando allungare bene il polpaccio.',
           errori:'Non rimbalzare a fine corsa: cerca l\'escursione completa, salita piena e discesa fino ad allungare il polpaccio.'
+        }
+      },
+      {
+        nome:'Hyperextension (a corpo libero)', serieTarget:3, ripTarget:'15', recupero:60,
+        note:'Nuovo, senza peso: stessa catena muscolare degli stacchi rumeni, va in fondo alla seduta per non affaticare la schiena bassa prima del RDL',
+        alternativa:'Superman a terra',
+        video:'https://www.youtube.com/watch?v=fe6mAfwLlK0',
+        immagine:'',
+        guida:{
+          muscoli:'Lombari, glutei, femorali (catena posteriore).',
+          esecuzione:'Sulla panca hyperextension con bacino sul cuscino e caviglie bloccate (o a terra prona se non disponibile), busto piegato in avanti. Solleva il busto fino ad allineare schiena e gambe, senza inarcare oltre, poi scendi con controllo.',
+          errori:'Movimento senza peso: niente slancio, salita fino all\'allineamento e basta, mai iperestendere oltre la linea retta.'
         }
       },
       {
@@ -1837,7 +1861,7 @@ async function scegliAvatarFoto(input){
 }
 
 /* ============ AUTH + FIRESTORE ============ */
-const cache = { sessioni: [], misure: [], dietaLog: [], alimentiPersonalizzati: [], cardioSessioni: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, giornoAllenamento:null } };
+const cache = { sessioni: [], misure: [], dietaLog: [], alimentiPersonalizzati: [], ricettePersonalizzate: [], cardioSessioni: [], dietaLogOggi: { pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, giornoAllenamento:null } };
 let currentUid = null;
 let profiloUtente = null;
 // Promessa di loadData() già avviata da boot() in parallelo con le altre
@@ -2114,16 +2138,18 @@ function allenamentoFattoOggi(){
 }
 
 async function loadData(){
-  const [sessioniSnap, misureSnap, dietaLogSnap, alimentiCustomSnap, cardioSnap] = await Promise.all([
+  const [sessioniSnap, misureSnap, dietaLogSnap, alimentiCustomSnap, ricetteSnap, cardioSnap] = await Promise.all([
     userCollection('sessioni').orderBy('data','asc').get(),
     userCollection('misure').orderBy('data','asc').get(),
     userCollection('dietaLog').get().catch(()=>({docs:[]})),
     userCollection('alimentiPersonalizzati').get().catch(()=>({docs:[]})),
+    userCollection('ricettePersonalizzate').get().catch(()=>({docs:[]})),
     userCollection('cardioSessioni').orderBy('data','asc').get().catch(()=>({docs:[]}))
   ]);
   cache.sessioni = sessioniSnap.docs.map(d => ({ id:d.id, ...d.data() }));
   cache.misure = misureSnap.docs.map(d => ({ id:d.id, ...d.data() }));
   cache.alimentiPersonalizzati = alimentiCustomSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+  cache.ricettePersonalizzate = ricetteSnap.docs.map(d => ({ id:d.id, ...d.data() }));
   cache.cardioSessioni = cardioSnap.docs.map(d => ({ id:d.id, ...d.data() }));
   cache.dietaLog = dietaLogSnap.docs
     .map(d => ({ id:d.id, ...d.data() }))
@@ -2747,17 +2773,40 @@ function promemoriaCostanza(){
   const blocchiAttivi = schedeAssegnateUtente().filter(s=> blocchiIniziati[s.id] && !schedaScaduta(s));
   if(!blocchiAttivi.length) return '';
   let peggiore = null;
+  const gruppiVisti = new Set();
   blocchiAttivi.forEach(s=>{
-    const sessioniScheda = cache.sessioni.filter(sess=>sess.schedaId===s.id);
-    const ultima = sessioniScheda.length
-      ? new Date(Math.max(...sessioniScheda.map(x=> new Date(x.data).getTime())))
-      : new Date(blocchiIniziati[s.id]);
+    let ultima, nome, freq;
+    if(s.gruppo){
+      // Le schede con lo stesso `gruppo` (es. Blocco 2 Upper/Lower, alternate
+      // A/B) sono un unico blocco: l'ultima seduta va guardata su ENTRAMBE
+      // insieme, non sulla singola sotto-scheda — altrimenti un allenamento
+      // fatto ieri su "Giorno A" non impedisce un falso allarme su "Giorno B"
+      // anche se il blocco nel complesso è aggiornato (stessa logica già
+      // usata in renderAderenzaCard per la card "Costanza").
+      if(gruppiVisti.has(s.gruppo)) return;
+      gruppiVisti.add(s.gruppo);
+      const membri = membriGruppo(s.gruppo);
+      const sessioniGr = sessioniGruppo(s.gruppo);
+      ultima = sessioniGr.length
+        ? new Date(sessioniGr[sessioniGr.length-1].data)
+        : new Date(Math.min(...membri.map(m=>blocchiIniziati[m.id]).filter(Boolean).map(d=>new Date(d).getTime())));
+      const tag = m => { const mm = m.nome.match(/\(([^)]+)\)/); return mm ? mm[1] : m.nome; };
+      const base = membri[0].nome.split('—')[0].trim();
+      nome = membri.length>1 ? `${base} (${membri.map(tag).join('/')})` : membri[0].nome;
+      freq = membri[0].frequenzaSettimanale || null;
+    } else {
+      const sessioniScheda = cache.sessioni.filter(sess=>sess.schedaId===s.id);
+      ultima = sessioniScheda.length
+        ? new Date(Math.max(...sessioniScheda.map(x=> new Date(x.data).getTime())))
+        : new Date(blocchiIniziati[s.id]);
+      nome = s.nome;
+      const freqMatch = s.periodo && s.periodo.match(/(\d+)x\/settimana/);
+      freq = freqMatch ? Number(freqMatch[1]) : 3;
+    }
     const giorni = Math.floor((new Date() - ultima) / 86400000);
-    const freqMatch = s.periodo && s.periodo.match(/(\d+)x\/settimana/);
-    const freq = freqMatch ? Number(freqMatch[1]) : 3;
-    const soglia = Math.max(4, Math.ceil((7/freq) * 1.8));
+    const soglia = Math.max(4, Math.ceil((7/(freq||3)) * 1.8));
     if(giorni >= soglia && (!peggiore || giorni > peggiore.giorni)){
-      peggiore = { nome: s.nome, giorni };
+      peggiore = { nome, giorni };
     }
   });
   if(!peggiore) return '';
@@ -5477,11 +5526,11 @@ function renderAlimentazione(){
     const vociHtml = voci.length ? `<div class="extra-food-list" style="margin-top:8px;">${voci.map(a=>`
         <div class="extra-food-item">
           <div class="efi-info">
-            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
-            <div class="efi-m">${a.grammi}g · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
+            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}${a.isRicetta?' <span class="efi-brand">· 🍲 ricetta</span>':''}</div>
+            <div class="efi-m">${a.isRicetta?'1 porzione':`${a.grammi}g`} · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
           </div>
           <div class="efi-actions">
-            <button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}')" aria-label="Modifica quantità">✏️</button>
+            ${a.isRicetta?'':`<button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}')" aria-label="Modifica quantità">✏️</button>`}
             <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
           </div>
         </div>`).join('')}</div>` : '';
@@ -5504,11 +5553,11 @@ function renderAlimentazione(){
       <div class="extra-food-list">${extraSenzaPasto.map(a=>`
         <div class="extra-food-item">
           <div class="efi-info">
-            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
-            <div class="efi-m">${a.grammi}g · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
+            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}${a.isRicetta?' <span class="efi-brand">· 🍲 ricetta</span>':''}</div>
+            <div class="efi-m">${a.isRicetta?'1 porzione':`${a.grammi}g`} · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
           </div>
           <div class="efi-actions">
-            <button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}')" aria-label="Modifica quantità">✏️</button>
+            ${a.isRicetta?'':`<button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}')" aria-label="Modifica quantità">✏️</button>`}
             <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
           </div>
         </div>`).join('')}</div>
@@ -6027,7 +6076,7 @@ function renderDiario(){
         .filter(s=> integratoriFatti[s.nome])
         .map(s=>`<div class="micro-row"><span>${s.icona} ${s.nome}</span><b>✅</b></div>`).join('');
 
-      const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.grammi}g)<span class="diario-item-actions"><button class="diario-mini-btn" onclick="event.stopPropagation();modificaQuantitaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Modifica quantità">✏️</button><button class="diario-mini-btn" onclick="event.stopPropagation();confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${fmt1(a.kcal)} kcal</b></div>`).join('');
+      const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.isRicetta?'1 porzione':`${a.grammi}g`})<span class="diario-item-actions">${a.isRicetta?'':`<button class="diario-mini-btn" onclick="event.stopPropagation();modificaQuantitaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Modifica quantità">✏️</button>`}<button class="diario-mini-btn" onclick="event.stopPropagation();confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${fmt1(a.kcal)} kcal</b></div>`).join('');
 
       corpoHtml = `${pastiRighe || '<p style="margin:0 0 8px;color:var(--text-dim);font-size:12.5px;">Nessun pasto segnato.</p>'}
         ${integrRighe}
@@ -6073,6 +6122,40 @@ function renderCercaAlimento(){
 
   if(s.selezionato){
     const p = s.selezionato;
+    const pastoChipsHtml = DIETA_PIANO.pasti.map((pp,pi)=>
+      `<div class="chip${pi===s.pastoIdx?' active':''}" onclick="sceglieCategoriaPastoExtra(${pi})">${pp.icona} ${pp.nome}</div>`
+    ).join('');
+    const fonteChipsHtml = FONTE_OPZIONI.map(fo=>
+      `<div class="chip${fo.key===s.fonte?' active':''}" onclick="sceglieFonteExtra('${fo.key}')">${fo.icona} ${fo.label}</div>`
+    ).join('');
+
+    // Una ricetta ha macro TOTALI fissi: niente grammi da inserire, niente
+    // ricalcolo per fattore, si aggiunge sempre con lo stesso valore salvato.
+    if(p.isRicetta){
+      view.innerHTML = `
+        <div class="card">
+          <h3 style="margin-top:0;">🍲 ${p.nome}</h3>
+          <p class="field-hint" style="margin-top:0;">Ricetta a porzione fissa: macro sempre uguali, nessun peso da inserire.</p>
+          <div class="field">
+            <label>In quale pasto lo aggiungi?</label>
+            <div class="chip-select">${pastoChipsHtml}</div>
+          </div>
+          <div class="field">
+            <label>Fonte principale</label>
+            <div class="chip-select">${fonteChipsHtml}</div>
+          </div>
+          <div class="meal-macro-mini" style="margin-bottom:16px;">
+            <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b>${fmt1(p.prot)}g</b></span>
+            <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b>${fmt1(p.carb)}g</b></span>
+            <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b>${fmt1(p.grassi)}g</b></span>
+          </div>
+          <p style="font-size:13px;color:var(--text-dim);font-weight:700;margin:0 0 16px;">${fmt1(p.kcal)} kcal totali</p>
+          <button class="btn" style="margin-top:16px;" onclick="confermaAggiungiAlimento()">+ Aggiungi e cerca un altro</button>
+          <button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="ricercaAlimentoState.selezionato=null;renderCercaAlimento()">← Torna alla ricerca senza aggiungere</button>
+        </div>`;
+      return;
+    }
+
     const g = s.grammi || 0;
     const fattore = g/100;
     const prot = fmt1(p.prot100*fattore);
@@ -6081,12 +6164,6 @@ function renderCercaAlimento(){
     // dall'alimento: coerente col totale del giorno, che ora fa lo stesso.
     const kcal = fmt1(kcalDaMacro(p.prot100*fattore, p.carb100*fattore, p.grassi100*fattore));
     const grassi = fmt1(p.grassi100*fattore);
-    const pastoChipsHtml = DIETA_PIANO.pasti.map((pp,pi)=>
-      `<div class="chip${pi===s.pastoIdx?' active':''}" onclick="sceglieCategoriaPastoExtra(${pi})">${pp.icona} ${pp.nome}</div>`
-    ).join('');
-    const fonteChipsHtml = FONTE_OPZIONI.map(fo=>
-      `<div class="chip${fo.key===s.fonte?' active':''}" onclick="sceglieFonteExtra('${fo.key}')">${fo.icona} ${fo.label}</div>`
-    ).join('');
     view.innerHTML = `
       <div class="card">
         <h3 style="margin-top:0;">${p.nome}</h3>
@@ -6178,6 +6255,23 @@ function renderCercaAlimento(){
       ${quickAddGruppiHtml}
     </div>` : '';
 
+  // Ricette/piatti fissi: mostrate a parte dagli alimenti perché non si
+  // pesano — un tocco le apre già pronte con i loro macro, senza chiedere
+  // grammi (vedi selezionaRicettaPersonalizzata).
+  const ricette = (!s.query) ? (cache.ricettePersonalizzate || []) : [];
+  const ricetteHtml = ricette.length ? `<div class="diet-info-card">
+      <div class="dic-t">🍲 Le mie ricette</div>
+      <div class="dic-b" style="margin-bottom:10px;">Piatti a porzione fissa: tocca per aggiungerli col loro totale di macro, senza inserire un peso.</div>
+      ${ricette.map((r,i)=>`<div class="food-search-item">
+        <div class="fsi-info" onclick="selezionaRicettaPersonalizzata(${i})" style="cursor:pointer;">
+          <div class="fsi-n">${r.nome}</div>
+          <div class="fsi-brand">P ${fmt1(r.prot)}g · C ${fmt1(r.carb)}g · G ${fmt1(r.grassi)}g</div>
+        </div>
+        <div class="fsi-kcal" onclick="selezionaRicettaPersonalizzata(${i})" style="cursor:pointer;">${fmt1(r.kcal)} kcal<br><span style="color:var(--text-dim);font-weight:600;">totali</span></div>
+        <button class="photo-slot-remove" style="position:static;margin-left:8px;flex-shrink:0;" onclick="event.stopPropagation();eliminaRicettaPersonalizzata('${r.id}')" aria-label="Elimina ricetta">✕</button>
+      </div>`).join('')}
+    </div>` : '';
+
   // Alimenti già aggiunti in questa visita alla ricerca: permette di
   // aggiungerne più di uno allo stesso pasto (o a pasti diversi) senza
   // uscire e rientrare in "Cerca alimento" ogni volta — confermaAggiungiAlimento
@@ -6188,11 +6282,11 @@ function renderCercaAlimento(){
       <div class="extra-food-list">${sessionAggiunti.map(a=>`
         <div class="extra-food-item">
           <div class="efi-info">
-            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}</div>
-            <div class="efi-m">${a.grammi}g · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g · ${DIETA_PIANO.pasti[a.pasto] ? DIETA_PIANO.pasti[a.pasto].nome : ''}</div>
+            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}${a.isRicetta?' <span class="efi-brand">· 🍲 ricetta</span>':''}</div>
+            <div class="efi-m">${a.isRicetta?'1 porzione':`${a.grammi}g`} · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g · ${DIETA_PIANO.pasti[a.pasto] ? DIETA_PIANO.pasti[a.pasto].nome : ''}</div>
           </div>
           <div class="efi-actions">
-            <button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}', renderCercaAlimento)" aria-label="Modifica quantità">✏️</button>
+            ${a.isRicetta?'':`<button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}', renderCercaAlimento)" aria-label="Modifica quantità">✏️</button>`}
             <button class="efi-remove" onclick="rimuoviAlimentoDaSessioneRicerca('${a.id}')" aria-label="Rimuovi">✕</button>
           </div>
         </div>`).join('')}</div>
@@ -6210,6 +6304,7 @@ function renderCercaAlimento(){
     <p class="field-hint" style="margin:0 0 18px;">I dati arrivano da Open Food Facts (aperto, forte sui prodotti confezionati) e USDA FoodData Central (database ufficiale USA, ottimo per alimenti generici come frutta, verdura e carne — nomi in inglese).</p>
     ${risultatiHtml}
     <button class="btn secondary" style="width:100%;margin-bottom:14px;" onclick="setRoute({name:'crea-alimento-custom'})">➕ Crea alimento o ricetta personalizzata</button>
+    ${ricetteHtml}
     ${quickAddHtml}
     ${sessionAggiuntiHtml}
     <button class="btn" style="width:100%;margin-top:4px;" onclick="terminaRicercaAlimento()">✓ Fatto, torna alla Dieta${sessionAggiunti.length?` (${sessionAggiunti.length} aggiunti)`:''}</button>
@@ -6445,26 +6540,43 @@ async function eliminaAlimentoPersonalizzato(id){
 }
 
 /* ============ CREA ALIMENTO/RICETTA PERSONALIZZATA ============
-   Utile per piatti fatti in casa o alimenti non su Open Food Facts. Si può
-   inserire per 100g (come il resto del piano) oppure per l'intera porzione
-   (più comodo per una ricetta di cui conosci il totale, non il per-100g):
-   in quel caso viene fatta la conversione internamente al salvataggio. */
+   Due tipi, con collezioni Firestore separate:
+   - "Alimento" (alimentiPersonalizzati): un ingrediente che pesi ogni volta
+     che lo usi — per 100g, o per porzione intera (convertita internamente
+     al per-100g). Funziona come gli alimenti trovati in ricerca: chiede
+     sempre i grammi al momento di aggiungerlo.
+   - "Ricetta" (ricettePersonalizzate) — su richiesta esplicita: un piatto
+     già pronto con macro TOTALI fissi (non per-100g), per cui non ha senso
+     chiedere un peso ogni volta ("Pasta al pomodoro" non si ripesa uguale
+     ogni sera). Aggiungerla al diario è un tocco solo: nessun campo grammi,
+     usa sempre gli stessi macro salvati. */
+let creaAlimentoTipo = 'alimento'; // 'alimento' | 'ricetta'
 let creaAlimentoModalita = 'porzione';
 let creaAlimentoFonte = null;
 
 function renderCreaAlimentoCustom(){
   pageTitle.textContent = 'Nuovo alimento';
+  creaAlimentoTipo = 'alimento';
   creaAlimentoModalita = 'porzione';
   creaAlimentoFonte = null;
   const fonteChipsHtml = FONTE_OPZIONI.map(fo=>`<div class="chip" data-f="${fo.key}">${fo.icona} ${fo.label}</div>`).join('');
   view.innerHTML = `<div class="card">
     <h3 style="margin-top:0;font-size:15px;">📝 Alimento o ricetta personalizzata</h3>
-    <p class="field-hint" style="margin-top:0;">Per un piatto fatto in casa spesso è più comodo inserire i valori dell'intera porzione: calcolo io il per-100g per farlo funzionare come gli altri alimenti nel diario.</p>
     <div id="caError"></div>
     <div class="field"><label>Nome</label><input type="text" id="caNome" placeholder="Es. Pasta al pomodoro fatta in casa"></div>
-    <div class="chip-select" id="caModalitaChips">
-      <div class="chip active" data-m="porzione">Per porzione intera</div>
-      <div class="chip" data-m="100g">Per 100g</div>
+    <div class="field">
+      <label>Tipo</label>
+      <div class="chip-select" id="caTipoChips">
+        <div class="chip active" data-t="alimento">Alimento (lo pesi ogni volta)</div>
+        <div class="chip" data-t="ricetta">Ricetta / piatto fisso (macro sempre uguali)</div>
+      </div>
+    </div>
+    <p class="field-hint" id="caTipoHint" style="margin-top:0;"></p>
+    <div id="caModalitaWrap">
+      <div class="chip-select" id="caModalitaChips">
+        <div class="chip active" data-m="porzione">Per porzione intera</div>
+        <div class="chip" data-m="100g">Per 100g</div>
+      </div>
     </div>
     <div id="caCampi"></div>
     <div class="field">
@@ -6475,6 +6587,14 @@ function renderCreaAlimentoCustom(){
   </div>`;
 
   renderCampiAlimentoCustom();
+  document.querySelectorAll('#caTipoChips .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('#caTipoChips .chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      creaAlimentoTipo = chip.dataset.t;
+      renderCampiAlimentoCustom();
+    });
+  });
   document.querySelectorAll('#caModalitaChips .chip').forEach(chip=>{
     chip.addEventListener('click', ()=>{
       document.querySelectorAll('#caModalitaChips .chip').forEach(c=>c.classList.remove('active'));
@@ -6494,10 +6614,29 @@ function renderCreaAlimentoCustom(){
 
 function renderCampiAlimentoCustom(){
   const box = document.getElementById('caCampi');
+  const modalitaWrap = document.getElementById('caModalitaWrap');
+  const hint = document.getElementById('caTipoHint');
+
+  if(creaAlimentoTipo==='ricetta'){
+    modalitaWrap.style.display = 'none';
+    hint.textContent = 'Per un piatto già pronto (una ricetta, un piatto unico) i macro restano sempre gli stessi: niente peso da inserire, un tocco solo per registrarlo quando lo mangi. Le kcal si calcolano da soli dai macro, come nel resto dell\'app.';
+    box.innerHTML = `
+      <div class="grid2">
+        <div class="field"><label>Proteine totali (g)</label><input type="number" min="0" step="0.1" id="caProt"></div>
+        <div class="field"><label>Carboidrati totali (g)</label><input type="number" min="0" step="0.1" id="caCarb"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Grassi totali (g)</label><input type="number" min="0" step="0.1" id="caGrassi"></div>
+        <div class="field"><label>Fibre totali (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caFibre"></div>
+      </div>`;
+    return;
+  }
+
+  modalitaWrap.style.display = '';
+  hint.textContent = 'Per un ingrediente che pesi ogni volta (riso, pollo, yogurt...): per un piatto fatto in casa spesso è più comodo inserire i valori dell\'intera porzione, calcolo io il per-100g.';
   if(creaAlimentoModalita==='porzione'){
     box.innerHTML = `
       <div class="field"><label>Peso totale della porzione (g)</label><input type="number" min="1" id="caPeso"></div>
-      <div class="field"><label>Kcal totali</label><input type="number" min="0" id="caKcal"></div>
       <div class="grid2">
         <div class="field"><label>Proteine totali (g)</label><input type="number" min="0" step="0.1" id="caProt"></div>
         <div class="field"><label>Carboidrati totali (g)</label><input type="number" min="0" step="0.1" id="caCarb"></div>
@@ -6508,7 +6647,6 @@ function renderCampiAlimentoCustom(){
       </div>`;
   } else {
     box.innerHTML = `
-      <div class="field"><label>Kcal per 100g</label><input type="number" min="0" id="caKcal"></div>
       <div class="grid2">
         <div class="field"><label>Proteine per 100g</label><input type="number" min="0" step="0.1" id="caProt"></div>
         <div class="field"><label>Carboidrati per 100g</label><input type="number" min="0" step="0.1" id="caCarb"></div>
@@ -6526,7 +6664,6 @@ async function salvaAlimentoCustom(){
   const btn = document.getElementById('salvaAlimentoCustomBtn');
   errBox.innerHTML = '';
 
-  const kcal = Number(document.getElementById('caKcal').value);
   const prot = Number(document.getElementById('caProt').value);
   const carb = Number(document.getElementById('caCarb').value);
   const grassi = Number(document.getElementById('caGrassi').value);
@@ -6534,7 +6671,7 @@ async function salvaAlimentoCustom(){
   const fibre = fibreRaw ? Number(fibreRaw) : null;
 
   if(!nome){ errBox.innerHTML = '<div class="error-banner">Dai un nome all\'alimento.</div>'; return; }
-  if([kcal,prot,carb,grassi].some(v=> isNaN(v) || v<0)){
+  if([prot,carb,grassi].some(v=> isNaN(v) || v<0)){
     errBox.innerHTML = '<div class="error-banner">Controlla i valori numerici inseriti.</div>';
     return;
   }
@@ -6543,24 +6680,46 @@ async function salvaAlimentoCustom(){
     return;
   }
 
+  btn.disabled = true; btn.textContent = 'Salvataggio...';
+
+  if(creaAlimentoTipo==='ricetta'){
+    try{
+      const payload = {
+        nome,
+        // Kcal ricalcolate dai macro (kcalDaMacro), coerenti col resto
+        // dell'app: non si chiede un valore kcal separato da inserire.
+        kcal: kcalDaMacro(prot, carb, grassi),
+        prot, carb, grassi, fibre,
+        fonte: creaAlimentoFonte, creato: new Date().toISOString()
+      };
+      const ref = await userCollection('ricettePersonalizzate').add(payload);
+      cache.ricettePersonalizzate.push({ id: ref.id, ...payload });
+      setRoute({name:'cerca-alimento'});
+    }catch(e){
+      errBox.innerHTML = `<div class="error-banner">${e.message}</div>`;
+      btn.disabled = false; btn.textContent = 'Salva';
+    }
+    return;
+  }
+
   let kcal100, prot100, carb100, grassi100, fibre100;
   if(creaAlimentoModalita==='porzione'){
     const peso = Number(document.getElementById('caPeso').value);
     if(isNaN(peso) || peso<=0){
       errBox.innerHTML = '<div class="error-banner">Inserisci il peso totale della porzione (in grammi).</div>';
+      btn.disabled = false; btn.textContent = 'Salva';
       return;
     }
     const fattore = 100/peso;
-    kcal100 = Math.round(kcal*fattore);
     prot100 = Math.round(prot*fattore*10)/10;
     carb100 = Math.round(carb*fattore*10)/10;
     grassi100 = Math.round(grassi*fattore*10)/10;
     fibre100 = fibre!=null ? Math.round(fibre*fattore*10)/10 : null;
   } else {
-    kcal100 = kcal; prot100 = prot; carb100 = carb; grassi100 = grassi; fibre100 = fibre;
+    prot100 = prot; carb100 = carb; grassi100 = grassi; fibre100 = fibre;
   }
+  kcal100 = kcalDaMacro(prot100, carb100, grassi100);
 
-  btn.disabled = true; btn.textContent = 'Salvataggio...';
   try{
     const payload = { nome, kcal100, prot100, carb100, grassi100, fibre100, fonte: creaAlimentoFonte, creato: new Date().toISOString() };
     const ref = await userCollection('alimentiPersonalizzati').add(payload);
@@ -6570,6 +6729,29 @@ async function salvaAlimentoCustom(){
     errBox.innerHTML = `<div class="error-banner">${e.message}</div>`;
     btn.disabled = false; btn.textContent = 'Salva';
   }
+}
+
+async function eliminaRicettaPersonalizzata(id){
+  if(!(await mostraConferma('Eliminare questa ricetta?'))) return;
+  try{
+    await userCollection('ricettePersonalizzate').doc(id).delete();
+    cache.ricettePersonalizzate = cache.ricettePersonalizzate.filter(r=>r.id!==id);
+    renderCercaAlimento();
+  }catch(e){ alert('Errore: '+e.message); }
+}
+
+function selezionaRicettaPersonalizzata(i){
+  const r = cache.ricettePersonalizzate[i];
+  ricercaAlimentoState.selezionato = {
+    nome: r.nome, marca: '', isRicetta: true,
+    kcal: r.kcal, prot: r.prot, carb: r.carb, grassi: r.grassi,
+    micro100: {}, acqua100: null,
+    fonte: r.fonte
+  };
+  ricercaAlimentoState.grammi = null;
+  if(ricercaAlimentoState.pastoIdx==null) ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
+  ricercaAlimentoState.fonte = r.fonte || suggerisciFonte(r);
+  renderCercaAlimento();
 }
 
 function aggiornaAnteprimaGrammi(){
@@ -6602,32 +6784,53 @@ function toggleMicroSearch(){
 // Ritorna la voce salvata: confermaAggiungiAlimento la usa per tenere
 // l'elenco di ciò che è stato aggiunto in questa visita alla ricerca.
 function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
-  const fattore = g/100;
   const fonteFinale = fonte || p.fonte || suggerisciFonte(p);
-  const protV = round1(p.prot100*fattore);
-  const carbV = round1(p.carb100*fattore);
-  const grassiV = round1(p.grassi100*fattore);
-  const voce = {
-    id: 'extra-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
-    nome: p.nome,
-    marca: p.marca,
-    grammi: g,
-    // Kcal ricalcolate dai macro (kcalDaMacro), non dalla kcal dichiarata
-    // dall'alimento: così ogni voce, sommata, torna sempre esatta col totale
-    // del giorno (vedi calcolaTotaliGiorno).
-    kcal: kcalDaMacro(protV, carbV, grassiV),
-    prot: protV,
-    carb: carbV,
-    grassi: grassiV,
-    // Valori per 100g dell'alimento originale: permettono di ricalcolare con
-    // precisione i macro se in seguito si modifica la quantità (vedi
-    // ricalcolaVoceExtraPerGrammi), senza perdere precisione a ogni modifica.
-    prot100: p.prot100,
-    carb100: p.carb100,
-    grassi100: p.grassi100,
-    pasto: pastoIdx,
-    fonte: fonteFinale
-  };
+  let voce;
+  if(p.isRicetta){
+    // Ricetta a porzione fissa: macro totali già pronti, nessun peso da
+    // moltiplicare. Non ha un "per 100g" da conservare per ricalcoli futuri
+    // (vedi ricalcolaVoceExtraPerGrammi: senza prot100/carb100/grassi100
+    // resta comunque proporzionale ai macro salvati).
+    voce = {
+      id: 'extra-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
+      nome: p.nome,
+      marca: '',
+      grammi: null,
+      isRicetta: true,
+      kcal: p.kcal,
+      prot: p.prot,
+      carb: p.carb,
+      grassi: p.grassi,
+      pasto: pastoIdx,
+      fonte: fonteFinale
+    };
+  } else {
+    const fattore = g/100;
+    const protV = round1(p.prot100*fattore);
+    const carbV = round1(p.carb100*fattore);
+    const grassiV = round1(p.grassi100*fattore);
+    voce = {
+      id: 'extra-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
+      nome: p.nome,
+      marca: p.marca,
+      grammi: g,
+      // Kcal ricalcolate dai macro (kcalDaMacro), non dalla kcal dichiarata
+      // dall'alimento: così ogni voce, sommata, torna sempre esatta col totale
+      // del giorno (vedi calcolaTotaliGiorno).
+      kcal: kcalDaMacro(protV, carbV, grassiV),
+      prot: protV,
+      carb: carbV,
+      grassi: grassiV,
+      // Valori per 100g dell'alimento originale: permettono di ricalcolare con
+      // precisione i macro se in seguito si modifica la quantità (vedi
+      // ricalcolaVoceExtraPerGrammi), senza perdere precisione a ogni modifica.
+      prot100: p.prot100,
+      carb100: p.carb100,
+      grassi100: p.grassi100,
+      pasto: pastoIdx,
+      fonte: fonteFinale
+    };
+  }
   aggiungiAlimentoExtra(voce);
   // Aggiungere un alimento extra a un pasto conta come "aver fatto" quel
   // pasto: se non era già segnato lo spuntiamo qui, con lo stesso snapshot
@@ -6635,7 +6838,10 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
   // manuale — coerente col diario storico. Se il pasto era già segnato non
   // tocchiamo lo snapshot esistente.
   segnaPastoFattoDaExtra(pastoIdx);
-  registraAlimentoRecente(p, fonteFinale);
+  // Le ricette hanno già la loro lista dedicata ("Le mie ricette"): non
+  // entrano anche nel tracciamento frequenza di "Aggiungi di nuovo", che è
+  // pensato per gli alimenti pesati singolarmente.
+  if(!p.isRicetta) registraAlimentoRecente(p, fonteFinale);
   return voce;
 }
 
