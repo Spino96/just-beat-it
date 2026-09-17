@@ -1870,6 +1870,12 @@ let profiloUtente = null;
 // tutte insieme invece che in fila una dopo l'altra (vedi boot()/avviaApp()).
 let loadDataInVolo = null;
 let blocchiIniziati = {};
+/* Alternative "salvate": una volta che scegli il nome di un esercizio
+   alternativo (es. l'attrezzo era occupato), lo ricordiamo per quell'
+   esercizio — mappa {nomeEsercizioOriginale: nomeAlternativaScelta} salvata
+   sul profilo utente. Così le prossime volte basta un tap su "Usa
+   alternativa" per riattivarla, senza doverla ridigitare ogni sessione. */
+let alternativeSalvate = {};
 
 function schedaScaduta(s){
   const inizio = blocchiIniziati[s.id];
@@ -1966,6 +1972,14 @@ async function checkProfilo(){
   const snap = await db.collection('users').doc(currentUid).get();
   const data = snap.exists ? snap.data() : {};
   blocchiIniziati = data.blocchiIniziati || {};
+  // Normalizza il formato: versioni precedenti salvavano una singola stringa
+  // per esercizio, ora è un array (più alternative possibili tra cui scegliere).
+  const raw = data.alternativeSalvate || {};
+  alternativeSalvate = {};
+  Object.keys(raw).forEach(k=>{
+    const v = raw[k];
+    alternativeSalvate[k] = Array.isArray(v) ? v : (v ? [v] : []);
+  });
   if(data.nome && data.cognome && data.eta){
     profiloUtente = {
       nome:data.nome, cognome:data.cognome, eta:data.eta,
@@ -2114,6 +2128,7 @@ async function registrati(){
     await db.collection('users').doc(currentUid).set(nuovoProfilo);
     profiloUtente = { ...nuovoProfilo, isTrainer:false, avatar:null };
     blocchiIniziati = {};
+    alternativeSalvate = {};
     document.getElementById('registerScreen').style.display = 'none';
     await avviaApp();
   }catch(e){
@@ -3342,35 +3357,138 @@ function avviaSessione(schedaId){
   setRoute({name:'sessione'});
 }
 
-/* Disattiva l'alternativa in corso e torna all'esercizio originale della
-   scheda. Per attivarla/rinominarla si usa modificaAlternativa(), che lascia
-   scegliere liberamente il nome invece di forzare quello predefinito. */
-function toggleAlternativa(ei){
-  const draft = sessionDraft.esercizi[ei];
-  draft.usaAlternativa = false;
-  draft.nome = null;
-  renderSessionePreservandoScroll();
+/* Lista di tutte le alternative note per un esercizio: quelle create e
+   salvate dall'utente nel tempo, più quella predefinita dalla scheda (se
+   presente e non già duplicata). Possono essere più di una — l'utente può
+   continuare a crearne di nuove quando gli serve (es. attrezzi diversi
+   occupati in momenti diversi) e sceglie ogni volta quale usare. */
+function candidatiAlternativa(e){
+  const salvate = alternativeSalvate[e.nome] || [];
+  const predefinita = (e.alternativa && e.alternativa!=='—') ? e.alternativa : null;
+  const lista = [...salvate];
+  if(predefinita && !lista.includes(predefinita)) lista.unshift(predefinita);
+  return lista;
 }
 
-/* Apre l'overlay per impostare (o rinominare) l'esercizio alternativo da
-   fare al posto di quello originale, tipicamente perché l'attrezzo non è
-   libero in sala pesi. Il nome è scelto liberamente dall'utente — se la
-   scheda ha già un'alternativa suggerita viene proposta come punto di
-   partenza precompilato, ma può essere cambiata con qualunque esercizio.
-   Il nome scelto diventa il nome "vero" salvato in sessionDraft, quindi
-   finisce nelle statistiche/progressi come un esercizio a sé stante. */
-async function modificaAlternativa(ei){
+/* Foglio a comparsa per scegliere/creare/eliminare le alternative di un
+   esercizio della sessione in corso. Vive fuori da #view (appeso a
+   document.body, come gli altri fogli dell'app) e si aggiorna in-place
+   senza richiudersi ogni volta che si aggiunge o elimina una voce. */
+let alternativaSheetEi = null;
+
+function apriAlternativeSheet(ei){
+  alternativaSheetEi = ei;
+  hapticaLieve();
+  mostraAlternativeSheetOverlay();
+}
+
+function mostraAlternativeSheetOverlay(){
+  let overlay = document.getElementById('altSheetOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'altSheetOverlay';
+    overlay.className = 'sheet-overlay';
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudiAlternativeSheet(); });
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `<div class="sheet-box" id="altSheetBox"><div class="sheet-handle"></div>${renderAlternativeSheetBody()}</div>`;
+  attachSwipeDownToDismiss(overlay.querySelector('#altSheetBox'), chiudiAlternativeSheet);
+}
+
+function escapeAttr(s){
+  // Il nome finisce sia dentro un attributo onclick="...('qui')" sia dentro
+  // markup HTML: oltre a proteggere l'apice per JS, va anche neutralizzato
+  // l'eventuale doppio apice, che altrimenti chiuderebbe in anticipo
+  // l'attributo onclick="..." (racchiuso tra doppi apici) e romperebbe il pulsante.
+  return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+
+function renderAlternativeSheetBody(){
+  const ei = alternativaSheetEi;
   const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
   const e = scheda.esercizi[ei];
   const draft = sessionDraft.esercizi[ei];
-  const valoreIniziale = draft.usaAlternativa
-    ? draft.nome
-    : (e.alternativa && e.alternativa!=='—' ? e.alternativa : '');
-  const testo = await mostraModificaAlternativaOverlay(e.nome, valoreIniziale);
-  if(testo===null) return;
+  const salvate = alternativeSalvate[e.nome] || [];
+  const lista = candidatiAlternativa(e);
+
+  const righeHtml = lista.map(nome=>{
+    const attiva = draft.usaAlternativa && draft.nome===nome;
+    const isCustom = salvate.includes(nome);
+    return `
+    <div class="opt-card${attiva?' active':''}">
+      <div class="opt-card-top" onclick="scegliAlternativaSheet('${escapeAttr(nome)}')">
+        <div class="opt-card-main">
+          <div class="opt-card-title">${nome}${attiva?' <span class="opt-card-badge">In uso</span>':''}</div>
+        </div>
+      </div>
+      ${isCustom ? `<button class="btn small secondary" style="margin-top:8px;width:100%;" onclick="event.stopPropagation();eliminaAlternativaSalvata('${escapeAttr(nome)}')">✕ Rimuovi questa alternativa</button>` : ''}
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="sheet-header">
+      <div class="sheet-title">Alternative a ${e.nome}</div>
+      <button class="sheet-close" onclick="chiudiAlternativeSheet()">✕</button>
+    </div>
+    ${draft.usaAlternativa ? `<button class="btn small secondary" style="width:100%;margin:6px 0 14px;" onclick="tornaAOriginaleSheet()">↺ Torna a ${e.nome}</button>` : ''}
+    <div class="opt-card-list">${righeHtml || '<p class="field-hint" style="margin:0 0 14px;">Nessuna alternativa ancora creata per questo esercizio.</p>'}</div>
+    <button class="btn small secondary" style="width:100%;margin-top:14px;" onclick="aggiungiNuovaAlternativa()">+ Crea una nuova alternativa</button>
+  `;
+}
+
+function scegliAlternativaSheet(nome){
+  const ei = alternativaSheetEi;
+  const draft = sessionDraft.esercizi[ei];
   draft.usaAlternativa = true;
-  draft.nome = testo;
+  draft.nome = nome;
+  hapticaMedia();
+  chiudiAlternativeSheet();
   renderSessionePreservandoScroll();
+}
+
+function tornaAOriginaleSheet(){
+  const ei = alternativaSheetEi;
+  const draft = sessionDraft.esercizi[ei];
+  draft.usaAlternativa = false;
+  draft.nome = null;
+  hapticaLieve();
+  chiudiAlternativeSheet();
+  renderSessionePreservandoScroll();
+}
+
+async function aggiungiNuovaAlternativa(){
+  const ei = alternativaSheetEi;
+  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const e = scheda.esercizi[ei];
+  const testo = await mostraModificaAlternativaOverlay(e.nome, '');
+  if(testo===null) return;
+  if(!alternativeSalvate[e.nome]) alternativeSalvate[e.nome] = [];
+  if(!alternativeSalvate[e.nome].includes(testo)) alternativeSalvate[e.nome].push(testo);
+  db.collection('users').doc(currentUid).set({ alternativeSalvate }, { merge:true }).catch(()=>{});
+  mostraAlternativeSheetOverlay();
+}
+
+function eliminaAlternativaSalvata(nome){
+  const ei = alternativaSheetEi;
+  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const e = scheda.esercizi[ei];
+  const draft = sessionDraft.esercizi[ei];
+  if(alternativeSalvate[e.nome]){
+    alternativeSalvate[e.nome] = alternativeSalvate[e.nome].filter(n=>n!==nome);
+  }
+  db.collection('users').doc(currentUid).set({ alternativeSalvate }, { merge:true }).catch(()=>{});
+  if(draft.usaAlternativa && draft.nome===nome){
+    draft.usaAlternativa = false;
+    draft.nome = null;
+    renderSessionePreservandoScroll();
+  }
+  mostraAlternativeSheetOverlay();
+}
+
+function chiudiAlternativeSheet(){
+  const overlay = document.getElementById('altSheetOverlay');
+  if(overlay) overlay.remove();
+  alternativaSheetEi = null;
 }
 
 function aggiungiSet(ei){
@@ -3582,12 +3700,10 @@ function renderSessione(){
     html += `<button type="button" class="btn small secondary add-set-btn" style="margin-top:10px;" onclick="aggiungiSet(${ei})">+ Aggiungi serie</button>`;
     html += `<div class="note-box">${usaAlt ? `Stai facendo l'alternativa al posto di <b>${e.nome}</b>. ${e.note}` : e.note}</div>`;
     if(usaAlt){
-      html += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-        <button class="btn small secondary" onclick="toggleAlternativa(${ei})">↺ Torna a ${e.nome}</button>
-        <button class="btn small secondary" onclick="modificaAlternativa(${ei})">✏️ Rinomina alternativa</button>
-      </div>`;
+      html += `<button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="apriAlternativeSheet(${ei})">🔁 ${draft.nome} <span style="opacity:.7;">· cambia</span></button>`;
     } else {
-      html += `<button class="btn small secondary" style="margin-top:10px;" onclick="modificaAlternativa(${ei})">🔁 ${e.alternativa && e.alternativa!=='—' ? 'Usa alternativa: '+e.alternativa : "Usa un'alternativa"}</button>`;
+      const numAlt = candidatiAlternativa(e).length;
+      html += `<button class="btn small secondary" style="margin-top:10px;" onclick="apriAlternativeSheet(${ei})">🔁 ${numAlt ? 'Usa alternativa'+(numAlt>1?` (${numAlt})`:'') : "Usa un'alternativa"}</button>`;
     }
     html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio (sensazioni, dolori, aggiustamenti...)" oninput="updateNotaEsercizio(${ei}, this.value)">${draft.noteUtente||''}</textarea>`;
     if(suggerimento){
