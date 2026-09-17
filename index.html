@@ -3014,17 +3014,31 @@ function renderOggiPanel(){
 
 function renderHome(){
   pageTitle.textContent = 'Beat Yourself';
-  const saluto = profiloUtente ? `<p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0 0 4px;">Ciao, ${profiloUtente.nome} 👋</p>` : '';
+  // Data di oggi accanto al saluto: dà subito un'aria "dashboard aggiornata
+  // in tempo reale" invece di un semplice saluto statico, ed è un'ancora
+  // visiva utile quando si torna nell'app dopo giorni di pausa.
+  const oggiLbl = new Date().toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'});
+  const saluto = profiloUtente ? `
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 14px;">
+      <p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0;">Ciao, ${profiloUtente.nome} 👋</p>
+      <p style="font-size:12px;color:var(--text-dim);font-weight:700;text-transform:capitalize;margin:0;white-space:nowrap;">${oggiLbl}</p>
+    </div>` : '';
   const links = '';
   const haPianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
   const dietaSub = haPianoPersonale ? 'Piano nutrizionale e pasti' : 'In attesa del tuo piano personale';
   const promemoria = promemoriaCostanza();
   const oggiPanel = renderOggiPanel();
+  // Due piccole etichette di sezione ("Le tue sezioni" / "Monitoraggio")
+  // separano visivamente le azioni principali (allenati/mangia) da quelle
+  // di consultazione (storico/misure): stesso trattamento già usato per
+  // "Gruppo muscolare" in Statistiche, così la Home non è più un'unica
+  // colonna ininterrotta di card tutte uguali.
   view.innerHTML = `
     ${saluto}
     ${oggiPanel}
     ${promemoria}
     ${links}
+    <p class="section-label">Le tue sezioni</p>
     <div class="home-cat c-allenamento" onclick="setRoute({name:'allenamento-list'})">
       <div class="icon">🏋️</div>
       <div><div class="label">Allenamento</div><div class="sub">Scegli una scheda e inizia la seduta</div></div>
@@ -3037,6 +3051,7 @@ function renderHome(){
       <div class="icon">📈</div>
       <div><div class="label">Statistiche</div><div class="sub">Carichi esercizi e misure corporee</div></div>
     </div>
+    <p class="section-label">Monitoraggio</p>
     <div class="home-squares">
       <div class="home-square" onclick="setRoute({name:'storico'})">
         <div class="icon">🗂️</div>
