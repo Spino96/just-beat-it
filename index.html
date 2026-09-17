@@ -2532,6 +2532,45 @@ function mostraModificaGrammiOverlay(alimento){
   });
 }
 
+/* Overlay per impostare/rinominare l'esercizio alternativo da usare al posto
+   di quello originale (tipicamente perché l'attrezzo non è libero in sala
+   pesi). Il nome è scelto liberamente dall'utente: non è vincolato a una
+   lista fissa, e viene salvato tale e quale nelle statistiche/progressi,
+   come se fosse un esercizio a sé stante. Risolve con il testo inserito
+   (stringa non vuota) oppure null se l'utente annulla. */
+function mostraModificaAlternativaOverlay(nomeOriginale, valoreIniziale){
+  return new Promise(resolve=>{
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <p class="confirm-msg">Alternativa a<br><span style="font-weight:600;color:var(--text-dim);font-size:12.5px;">${nomeOriginale}</span></p>
+        <div class="field" style="margin-bottom:6px;">
+          <label>Nome esercizio alternativo</label>
+          <input type="text" id="modAltInput" placeholder="es. Chest press con manubri" value="${valoreIniziale ? String(valoreIniziale).replace(/"/g,'&quot;') : ''}" maxlength="60">
+        </div>
+        <p class="field-hint" style="margin:-2px 0 14px;">Usalo quando l'attrezzo dell'esercizio originale non è libero: da questo momento verrà registrato nelle statistiche con il nome che scegli qui.</p>
+        <div class="confirm-actions">
+          <button class="btn secondary" id="modAltCancelBtn">Annulla</button>
+          <button class="btn" id="modAltOkBtn">Conferma</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const input = overlay.querySelector('#modAltInput');
+    const chiudi = esito => { overlay.remove(); resolve(esito); };
+    overlay.querySelector('#modAltCancelBtn').onclick = ()=>chiudi(null);
+    overlay.querySelector('#modAltOkBtn').onclick = ()=>{
+      const v = input.value.trim();
+      if(!v){ input.focus(); return; }
+      hapticaLieve();
+      chiudi(v);
+    };
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudi(null); });
+    attachSwipeDownToDismiss(overlay.querySelector('.confirm-box'), ()=>chiudi(null));
+    setTimeout(()=>{ input.focus(); input.select(); }, 50);
+  });
+}
+
 /* Chiede se oggi è un giorno di allenamento: determina il target kcal/macro
    del giorno (DIETA_PIANO.target.riposo/allenamento) e se mostrare l'extra
    "giorni di allenamento" su colazione e pranzo. A differenza di mostraConferma
@@ -3303,13 +3342,34 @@ function avviaSessione(schedaId){
   setRoute({name:'sessione'});
 }
 
+/* Disattiva l'alternativa in corso e torna all'esercizio originale della
+   scheda. Per attivarla/rinominarla si usa modificaAlternativa(), che lascia
+   scegliere liberamente il nome invece di forzare quello predefinito. */
 function toggleAlternativa(ei){
+  const draft = sessionDraft.esercizi[ei];
+  draft.usaAlternativa = false;
+  draft.nome = null;
+  renderSessionePreservandoScroll();
+}
+
+/* Apre l'overlay per impostare (o rinominare) l'esercizio alternativo da
+   fare al posto di quello originale, tipicamente perché l'attrezzo non è
+   libero in sala pesi. Il nome è scelto liberamente dall'utente — se la
+   scheda ha già un'alternativa suggerita viene proposta come punto di
+   partenza precompilato, ma può essere cambiata con qualunque esercizio.
+   Il nome scelto diventa il nome "vero" salvato in sessionDraft, quindi
+   finisce nelle statistiche/progressi come un esercizio a sé stante. */
+async function modificaAlternativa(ei){
   const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
   const e = scheda.esercizi[ei];
   const draft = sessionDraft.esercizi[ei];
-  if(!e.alternativa || e.alternativa==='—') return;
-  draft.usaAlternativa = !draft.usaAlternativa;
-  draft.nome = draft.usaAlternativa ? e.alternativa : e.nome;
+  const valoreIniziale = draft.usaAlternativa
+    ? draft.nome
+    : (e.alternativa && e.alternativa!=='—' ? e.alternativa : '');
+  const testo = await mostraModificaAlternativaOverlay(e.nome, valoreIniziale);
+  if(testo===null) return;
+  draft.usaAlternativa = true;
+  draft.nome = testo;
   renderSessionePreservandoScroll();
 }
 
@@ -3521,8 +3581,13 @@ function renderSessione(){
     });
     html += `<button type="button" class="btn small secondary add-set-btn" style="margin-top:10px;" onclick="aggiungiSet(${ei})">+ Aggiungi serie</button>`;
     html += `<div class="note-box">${usaAlt ? `Stai facendo l'alternativa al posto di <b>${e.nome}</b>. ${e.note}` : e.note}</div>`;
-    if(e.alternativa && e.alternativa!=='—'){
-      html += `<button class="btn small secondary" style="margin-top:10px;" onclick="toggleAlternativa(${ei})">${usaAlt ? '↺ Torna a '+e.nome : '🔁 Usa alternativa: '+e.alternativa}</button>`;
+    if(usaAlt){
+      html += `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <button class="btn small secondary" onclick="toggleAlternativa(${ei})">↺ Torna a ${e.nome}</button>
+        <button class="btn small secondary" onclick="modificaAlternativa(${ei})">✏️ Rinomina alternativa</button>
+      </div>`;
+    } else {
+      html += `<button class="btn small secondary" style="margin-top:10px;" onclick="modificaAlternativa(${ei})">🔁 ${e.alternativa && e.alternativa!=='—' ? 'Usa alternativa: '+e.alternativa : "Usa un'alternativa"}</button>`;
     }
     html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio (sensazioni, dolori, aggiustamenti...)" oninput="updateNotaEsercizio(${ei}, this.value)">${draft.noteUtente||''}</textarea>`;
     if(suggerimento){
