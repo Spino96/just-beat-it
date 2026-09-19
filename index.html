@@ -1378,9 +1378,9 @@ const SCHEDE_DEFAULT = [
     ],
     esercizi: [
       {
-        nome:'Chest Press (macchina)', serieTarget:3, ripTarget:'10', recupero:90,
+        nome:'Chest Press (carico libero/dischi)', serieTarget:3, ripTarget:'10', recupero:90,
         note:'Sali a 47-50 kg. Scapole leggermente indietro, il gomito non si blocca in fondo alla spinta',
-        alternativa:'Push-up sulle ginocchia',
+        alternativa:'Chest Press a pacco pesi',
         video:'https://www.youtube.com/watch?v=6mWAqa41eKI',
         immagine:'https://wger.de/media/exercise-images/129/b263c968-e067-4750-916a-d8758a7df23e.webp',
         guida:{
@@ -1390,15 +1390,15 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Pec Fly (macchina)', serieTarget:2, ripTarget:'12', recupero:60,
-        note:'Preferita ai manubri: meno stress sulla spalla sinistra',
+        nome:'Pec Fly (macchina dedicata)', serieTarget:2, ripTarget:'12', recupero:60,
+        note:'Macchina dedicata, non condivisa con le alzate laterali',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=ybi3NPUK47M',
         immagine:'',
         guida:{
           muscoli:'Pettorali (fascio principale), spalle anteriori in stabilizzazione.',
           esecuzione:'Seduto con schiena aderente allo schienale, braccia leggermente piegate sui pad. Porta le braccia in avanti fino quasi a toccarsi davanti al petto, poi torna con controllo lasciando aprire il petto.',
-          errori:'Non estendere troppo indietro le braccia in apertura, non usare slancio: mantieni i gomiti leggermente piegati per tutto il movimento.'
+          errori:'Non estendere troppo indietro le braccia in apertura, non usare slancio: mantieni i gomiti leggermente piegati per tutto il movimento. Preferita ai manubri per la spalla sinistra: meno stress articolare.'
         }
       },
       {
@@ -1416,7 +1416,7 @@ const SCHEDE_DEFAULT = [
       {
         nome:'Row Machine (tirata dritta)', serieTarget:3, ripTarget:'10-12', recupero:90,
         note:'Nuovo: rinforza la schiena alta, utile per la postura da banco. Preferita alla Low Row perché tirata dritta, meno ridondante con la lat machine (tirata diagonale). Presa neutra',
-        alternativa:'Low Row',
+        alternativa:'Low Row (tirata diagonale) o Pulley',
         video:'https://www.youtube.com/watch?v=FTdVAoceD-c',
         immagine:'',
         guida:{
@@ -1427,7 +1427,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Rear Delt (reverse fly)', serieTarget:2, ripTarget:'12-15', recupero:60,
-        note:'Nuovo: lavora la spalla in direzione opposta a quella a rischio',
+        note:'Manubri leggeri o macchina dedicata (quello disponibile). Nuovo: lavora la spalla in direzione opposta a quella a rischio',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=phNhRhn7EOI',
         immagine:'',
@@ -1438,27 +1438,27 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Alzate laterali (manubri leggeri)', serieTarget:2, ripTarget:'12-15', recupero:60,
-        note:'Reintroduzione spalla: parti da 2-3 kg, fermati subito se senti fastidio',
+        nome:'Alzate laterali (macchina Panatta a pacco pesi)', serieTarget:2, ripTarget:'12-15', recupero:60,
+        note:'NON manubri liberi: macchina Panatta a pacco pesi. Cap di sicurezza per la spalla sinistra — non aumentare peso o serie senza conferma del personal trainer',
         alternativa:'—',
-        video:'https://www.youtube.com/watch?v=gCNQ5fQiwNs',
+        video:'https://www.youtube.com/watch?v=jTRbSoPm9uQ',
         immagine:'',
         guida:{
           muscoli:'Deltoide laterale (spalla).',
-          esecuzione:'In piedi, un manubrio leggero per mano, gomiti leggermente piegati. Solleva le braccia lateralmente fino all\'altezza delle spalle, poi scendi con controllo.',
-          errori:'Carichi molto leggeri per la spalla sinistra: non salire oltre l\'altezza delle spalle e non usare slancio. Fermati al primo fastidio.'
+          esecuzione:'Seduto alla macchina con schiena aderente allo schienale, gomiti appoggiati ai pad imbottiti. Solleva le braccia lateralmente fino all\'altezza delle spalle spingendo con i gomiti, poi scendi con controllo senza far ricadere il peso.',
+          errori:'Non superare l\'altezza delle spalle, non usare slancio del busto. Carico ridotto per la spalla sinistra: fermati al primo fastidio e non aumentare peso o serie senza conferma del personal trainer.'
         }
       },
       {
-        nome:'Bicep curl (panca Scott)', serieTarget:2, ripTarget:'10-12', recupero:60,
-        note:'Nuovo: il cuscino blocca il gomito e impedisce lo slancio, più isolato del curl in piedi',
-        alternativa:'Bicep curl in piedi (manubri)',
-        video:'https://www.youtube.com/watch?v=to3m8zws1n8',
+        nome:'Bicep curl (panca inclinata 30°)', serieTarget:2, ripTarget:'10-12', recupero:60,
+        note:'Nuovo: la panca inclinata a 30° mantiene il braccio dietro la linea del busto per tutto il movimento, aumenta lo stretch del bicipite ed evita lo slancio della schiena',
+        alternativa:'panca Scott/preacher curl',
+        video:'https://www.youtube.com/watch?v=DCe8f6vMe9A',
         immagine:'',
         guida:{
           muscoli:'Bicipite brachiale, avambraccio.',
-          esecuzione:'Seduto o in piedi con l\'arto appoggiato al cuscino inclinato della panca Scott, gomito bloccato in posizione. Fletti portando il peso verso la spalla, poi scendi con controllo senza estendere di scatto.',
-          errori:'Il cuscino impedisce di aiutarsi con lo slancio del busto: se senti il bisogno di "spingere" con la schiena, il peso è troppo alto.'
+          esecuzione:'Sdraiato sulla schiena su una panca inclinata a circa 30°, un manubrio per mano con le braccia che pendono verso il basso. Fletti portando il peso verso la spalla mantenendo il gomito fermo dietro la linea del busto, poi scendi con controllo fino a distendere completamente il braccio.',
+          errori:'La schiena resta aderente allo schienale: non staccarla né spingere in avanti con il busto per aiutarsi. Scendi fino all\'estensione completa per sfruttare lo stretch, senza far "cadere" il peso.'
         }
       },
       {
@@ -1603,7 +1603,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Plank', serieTarget:2, ripTarget:'45-60"', recupero:60,
-        note:'—',
+        note:'Durata in secondi, non ripetizioni',
         alternativa:'Plank sulle ginocchia',
         video:'https://www.youtube.com/watch?v=TDQQ93WtkJM',
         immagine:'https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png',
