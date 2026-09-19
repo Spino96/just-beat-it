@@ -10,6 +10,17 @@
 <link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
 <link rel="apple-touch-icon" sizes="167x167" href="icon-167.png">
 <meta name="theme-color" content="#0b0d11">
+<!-- Tag "Aggiungi a Home" per iOS: senza questi, il collegamento creato da
+     Safari può aprirsi come una scheda normale invece che come app standalone
+     — e una scheda normale è soggetta ai limiti di Safari sulla durata dei
+     dati salvati (login incluso), motivo per cui l'accesso non veniva
+     ricordato in modo affidabile. Con questi tag + manifest.json
+     (display:standalone, già presente) l'icona in Home apre l'app come
+     standalone vera, che mantiene il login tra un'apertura e l'altra. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Beat Yourself">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1241,6 +1252,16 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// LOCAL è già il default per il SDK web di Firebase Auth (login ricordato tra
+// una riapertura e l'altra, non solo per la sessione corrente), ma lo
+// impostiamo qui in modo esplicito invece di affidarci solo al default:
+// così, se in futuro cambia qualcosa nella pagina prima del primo login, il
+// comportamento resta garantito. Va impostato prima di qualunque signIn.
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{
+  // Se il browser non supporta la persistenza richiesta (raro, es. modalità
+  // privata estrema) il login resta comunque valido per la sessione in corso.
+});
 
 /* Persistenza offline: le letture vengono servite dalla cache locale (IndexedDB)
    quando manca rete, e le scritture (es. segnare una serie o un pasto in palestra
