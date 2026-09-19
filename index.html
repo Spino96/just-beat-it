@@ -947,11 +947,75 @@
     display:flex;align-items:center;justify-content:center;padding:0;
   }
   .qa-remove:active{background:var(--border);}
-  .barcode-reader{
-    width:100%;min-height:260px;border-radius:16px;overflow:hidden;background:#000;
+  .qa-row{border-radius:10px;transition:background-color .15s ease;}
+  .qa-row:active{background:#ff9d4d14;}
+  /* ============ CERCA ALIMENTO — hero di ricerca ============
+     Card in evidenza con badge circolare "a glow" (stesso linguaggio delle
+     icone di Home/Cardio) e campo di ricerca in stile pillola con icona
+     incorporata: rende la schermata più invitante e riconoscibile come
+     sezione Dieta (arancione, --accent-2) al primo sguardo, invece del
+     semplice field generico usato per i form. */
+  .food-hero{
+    position:relative;padding:20px 18px 18px;margin:2px 0 16px;
+    border-radius:var(--radius);border:1px solid var(--border);
+    background:
+      radial-gradient(ellipse 280px 150px at 12% -10%, #ff9d4d29, transparent 65%),
+      var(--panel);
+    box-shadow:var(--shadow-card);overflow:hidden;
   }
-  .barcode-reader video{width:100%;display:block;border-radius:16px;}
-  .barcode-reader img{display:none;}
+  .food-hero-top{display:flex;align-items:center;gap:13px;margin-bottom:15px;}
+  .food-hero-icon{
+    width:46px;height:46px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:21px;
+    background:var(--panel-2);border:1.5px solid var(--accent-2);
+    box-shadow:0 0 16px -5px #ff9d4daa;
+  }
+  .food-hero-title{font-size:15.5px;font-weight:800;letter-spacing:-.1px;}
+  .food-hero-sub{font-size:11.5px;color:var(--text-dim);font-weight:600;margin-top:2px;}
+  .food-hero-searchbar{position:relative;}
+  .food-hero-searchbar input{
+    width:100%;background:var(--panel-2);border:1.5px solid var(--border);color:var(--text);
+    border-radius:16px;padding:14px 16px 14px 42px;font-size:15px;font-weight:600;
+    transition:border-color .18s ease, box-shadow .18s ease;
+  }
+  .food-hero-searchbar input:focus{
+    outline:none;border-color:var(--accent-2);
+    box-shadow:0 0 0 3px #ff9d4d2e, 0 0 20px -4px #ff9d4d66;
+  }
+  .food-hero-searchbar .fhs-icon{
+    position:absolute;left:15px;top:50%;transform:translateY(-50%);
+    font-size:15px;opacity:.5;pointer-events:none;
+  }
+  .food-hero-cta{
+    background:linear-gradient(135deg,var(--accent-2),#e0722a);color:#2a1204;border:none;border-radius:16px;
+    padding:14px 18px;font-size:14.5px;font-weight:800;cursor:pointer;width:100%;margin-top:10px;
+    box-shadow:0 8px 22px -8px #ff9d4d88;transition:transform .1s ease;
+  }
+  .food-hero-cta:active{transform:scale(.98);}
+  /* Badge circolare accanto ai titoli delle card "Già segnato da te" /
+     "Le mie ricette": stesso stile a glow delle icone di Home, così le due
+     scorciatoie si riconoscono subito come parte della stessa famiglia
+     visiva invece di semplice testo con emoji. */
+  .dic-t-badge{
+    display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+    width:24px;height:24px;border-radius:50%;font-size:12px;
+    background:var(--panel-2);border:1px solid var(--accent-2);
+    box-shadow:0 0 10px -3px #ff9d4d99;
+  }
+  /* Ingresso "a scalare" dei risultati/righe: ogni riga sale leggermente
+     con un fade mentre appare, con un piccolo ritardo crescente applicato
+     via style inline (vedi renderCercaAlimento) — dà un effetto vivo alla
+     lista appena arriva una ricerca, senza animare nulla in loop. */
+  @keyframes riseIn{
+    from{ opacity:0; transform:translateY(9px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .food-result-anim{ animation:riseIn .36s cubic-bezier(.22,.9,.32,1) both; }
+  .food-search-item{position:relative;}
+  .food-search-item::before{
+    content:'';position:absolute;top:10px;bottom:10px;left:0;width:3px;border-radius:3px;
+    background:linear-gradient(180deg,var(--accent-2),var(--accent-3));
+  }
   .tab-bar{
     display:flex;gap:6px;background:var(--panel-2);border:1px solid var(--border);
     padding:5px;border-radius:16px;margin-bottom:16px;
@@ -1351,15 +1415,15 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Hip Thrust (multipower)', serieTarget:3, ripTarget:'12', recupero:90,
-        note:'Utile anche per chi sta tante ore in piedi: rinforza glutei e bacino',
+        nome:'Hip Thrust (macchina Panatta)', serieTarget:3, ripTarget:'12', recupero:90,
+        note:'NON multipower: macchina Panatta dedicata, con schienale basculante e rullo di spinta sulle anche. Utile anche per chi sta tante ore in piedi: rinforza glutei e bacino',
         alternativa:'Ponte glutei a corpo libero',
-        video:'https://www.youtube.com/watch?v=bxQCTxv8dhA',
+        video:'https://www.youtube.com/watch?v=nME5wVVCfc4',
         immagine:'https://wger.de/media/exercise-images/1642/a81ad922-caf5-47f8-99b4-640cb0717436.webp',
         guida:{
           muscoli:'Glutei principalmente, femorali e core di supporto.',
-          esecuzione:'Scapole appoggiate al bordo di una panca, ginocchia piegate. Bilanciere sopra le anche (con cuscinetto). Spingi le anche in alto fino ad allineare ginocchia-bacino-spalle, scendi con controllo.',
-          errori:'Non iperestendere la schiena in cima: fermati quando bacino e spalle sono allineati.'
+          esecuzione:'Seduto sulla macchina con la schiena appoggiata allo schienale basculante e i piedi sulla pedana, rullo imbottito posizionato sopra le anche. Seleziona il carico col pin. Spingi le anche in alto estendendole contro il rullo fino ad allineare ginocchia-bacino-spalle, poi torna giù con controllo.',
+          errori:'Non iperestendere la schiena in cima: fermati quando bacino e spalle sono allineati. Regola bene l\'altezza della pedana prima di partire, per non ritrovarti con un\'ampiezza di movimento scomoda.'
         }
       },
       {
@@ -1582,15 +1646,15 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Hip Thrust (multipower)', serieTarget:3, ripTarget:'10', recupero:90,
-        note:'Sali a ~25 kg. Utile anche per chi sta tante ore in piedi: rinforza glutei e bacino',
+        nome:'Hip Thrust (macchina Panatta)', serieTarget:3, ripTarget:'10', recupero:90,
+        note:'NON multipower: macchina Panatta dedicata, con schienale basculante e rullo di spinta sulle anche. Sali a ~25 kg. Utile anche per chi sta tante ore in piedi: rinforza glutei e bacino',
         alternativa:'Ponte glutei a corpo libero',
-        video:'https://www.youtube.com/watch?v=bxQCTxv8dhA',
+        video:'https://www.youtube.com/watch?v=nME5wVVCfc4',
         immagine:'https://wger.de/media/exercise-images/1642/a81ad922-caf5-47f8-99b4-640cb0717436.webp',
         guida:{
           muscoli:'Glutei principalmente, femorali e core di supporto.',
-          esecuzione:'Scapole appoggiate al bordo di una panca, ginocchia piegate. Bilanciere sopra le anche (con cuscinetto). Spingi le anche in alto fino ad allineare ginocchia-bacino-spalle, scendi con controllo.',
-          errori:'Non iperestendere la schiena in cima: fermati quando bacino e spalle sono allineati.'
+          esecuzione:'Seduto sulla macchina con la schiena appoggiata allo schienale basculante e i piedi sulla pedana, rullo imbottito posizionato sopra le anche. Seleziona il carico col pin. Spingi le anche in alto estendendole contro il rullo fino ad allineare ginocchia-bacino-spalle, poi torna giù con controllo.',
+          errori:'Non iperestendere la schiena in cima: fermati quando bacino e spalle sono allineati. Regola bene l\'altezza della pedana prima di partire, per non ritrovarti con un\'ampiezza di movimento scomoda.'
         }
       },
       {
@@ -2423,7 +2487,7 @@ const headerEl = document.querySelector('header');
    Statistiche, Misure, Profilo...) resta sul verde di base. */
 function sectionAccentColor(routeName){
   const allenamento = ['allenamento-list','sessione','sessione-modifica','sessione-cardio'];
-  const dieta = ['alimentazione','diario','menu-alimentare','cerca-alimento','crea-alimento-custom','scansiona-barcode'];
+  const dieta = ['alimentazione','diario','menu-alimentare','cerca-alimento','crea-alimento-custom'];
   if(allenamento.includes(routeName)) return 'var(--accent-3)';
   if(dieta.includes(routeName)) return 'var(--accent-2)';
   return 'var(--accent)';
@@ -2434,7 +2498,6 @@ const BACK_MAP = {
   'sessione-cardio':'allenamento-list',
   'alimentazione':'home',
   'cerca-alimento':'alimentazione',
-  'scansiona-barcode':'cerca-alimento',
   'crea-alimento-custom':'cerca-alimento',
   'diario':'alimentazione',
   'menu-alimentare':'alimentazione',
@@ -2821,15 +2884,11 @@ function render(){
     headerEl.classList.remove('hidden-bar'); // ogni nuova schermata parte con la barra visibile
     ultimoScrollYHeader = window.scrollY;
   }
-  // Se stiamo lasciando la pagina dello scanner, spegni sempre la fotocamera:
-  // niente stream attivo in background, né per batteria né per privacy.
-  if(route.name!=='scansiona-barcode' && typeof fermaScannerBarcode==='function') fermaScannerBarcode();
   backBtn.style.visibility = route.name==='home' ? 'hidden':'visible';
   if(route.name==='home') renderHome();
   else if(route.name==='allenamento-list') renderAllenamentoList();
   else if(route.name==='cerca-alimento') renderCercaAlimento();
   else if(route.name==='crea-alimento-custom') renderCreaAlimentoCustom();
-  else if(route.name==='scansiona-barcode') renderScansionaBarcode();
   else if(route.name==='diario') renderDiario();
   else if(route.name==='menu-alimentare') renderMenuAlimentare();
   else if(route.name==='sessione') renderSessione();
@@ -4328,10 +4387,22 @@ const METRICHE_ESERCIZIO = [
 const GRUPPI_MUSCOLARI_PATTERN = [
   {gruppo:'Glutei', re:/hip thrust|glute/i},
   {gruppo:'Core', re:/plank|addom|crunch|\bcore\b/i},
-  {gruppo:'Gambe', re:/leg press|leg curl|leg extension|squat|affond|quadricap|polpacc|calf|gamba/i},
-  {gruppo:'Petto', re:/chest|petto|panca|croci/i},
-  {gruppo:'Dorso', re:/lat machine|pulldown|rematore|\brow\b|trazioni|dorso|schiena/i},
-  {gruppo:'Spalle', re:/spalla|shoulder|military|alzate|arnold/i},
+  // Stacchi rumeni (RDL): femorali come muscolo principale (vedi guida.muscoli
+  // "Femorali, glutei, bassa schiena in stabilizzazione") — stessa famiglia
+  // di Leg Curl, quindi Gambe e non Glutei (riservato a hip thrust/glute
+  // dove il gluteo è il motore primario).
+  {gruppo:'Gambe', re:/leg press|leg curl|leg extension|squat|affond|quadricap|polpacc|calf|gamba|stacch|\brdl\b/i},
+  // Pec Fly: fly/croci per pettorali. Push-up (anche sulle ginocchia): stessa
+  // catena della Chest Press di cui è l'alternativa (guida.muscoli "Pettorali,
+  // spalle anteriori e tricipiti").
+  {gruppo:'Petto', re:/chest|petto|panca|croci|pec fly|push-?up/i},
+  // Pulley: alternativa alla Row Machine, stesso lavoro dorsale (dorsali,
+  // romboidi, trapezio). Hyperextension: lombari come muscolo principale
+  // (guida.muscoli "Lombari, glutei, femorali") — è la bassa schiena, non le gambe.
+  {gruppo:'Dorso', re:/lat machine|pulldown|rematore|\brow\b|trazioni|dorso|schiena|pulley|hyperextens|iperestensione/i},
+  // Rear Delt (reverse fly): deltoide posteriore — una spalla, non un
+  // pettorale, anche se il nome contiene "fly".
+  {gruppo:'Spalle', re:/spalla|shoulder|military|alzate|arnold|rear delt/i},
   {gruppo:'Braccia', re:/curl|bicip|tricip|push.?down|french|braccio/i}
 ];
 function gruppoMuscolareEsercizio(nome){
@@ -4456,20 +4527,11 @@ function renderRiepilogoSettimanale(){
 
   let aderenzaTiles = '';
   if(pianoPersonale){
-    // I giorni con macro inseriti a mano (manualMacros) non seguono il piano
-    // pasto per pasto: li teniamo fuori da "aderenza pasti/integratori" (non
-    // misurabile per loro) ma li contiamo comunque nelle kcal medie qui sotto.
+    // Non mostriamo più le percentuali di "aderenza pasti/integratori" qui
+    // (rimosse su richiesta): restano solo le kcal medie della settimana,
+    // calcolate su tutti i giorni tracciati (inclusi quelli con macro
+    // inseriti a mano tramite manualMacros).
     const tuttiGiorniSettimana = cache.dietaLog.filter(d=> new Date(d.id) >= seiGiorniFa);
-    const giorniLog = tuttiGiorniSettimana.filter(d=> !d.manualMacros);
-    const numPasti = DIETA_PIANO.pasti.length;
-    const numIntegratori = INTEGRAZIONE_PIANO.integratori.length;
-    if(giorniLog.length){
-      const pastiPctTot = giorniLog.reduce((sum,g)=> sum + (Object.values(g.pastiFatti||{}).filter(Boolean).length/numPasti)*100, 0);
-      const integrPctTot = giorniLog.reduce((sum,g)=> sum + (Object.values(g.integratoriFatti||{}).filter(Boolean).length/numIntegratori)*100, 0);
-      aderenzaTiles += `
-        <div class="oggi-stat"><div class="v">${Math.round(pastiPctTot/giorniLog.length)}%</div><div class="l">Aderenza<br>pasti</div></div>
-        <div class="oggi-stat"><div class="v">${Math.round(integrPctTot/giorniLog.length)}%</div><div class="l">Aderenza<br>integratori</div></div>`;
-    }
     const kcalGiorni = tuttiGiorniSettimana.map(g=> calcolaTotaliGiorno(g).kcalTot).filter(v=>v>0);
     if(kcalGiorni.length){
       const kcalMedia = Math.round(kcalGiorni.reduce((a,b)=>a+b,0)/kcalGiorni.length);
@@ -4508,10 +4570,8 @@ function renderStatistiche(){
   pageTitle.textContent = 'Statistiche';
   const haveSessioni = cache.sessioni.length>0;
   const haveMisureStats = cache.misure.length>0;
-  const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
-  const haveAderenza = pianoPersonale && cache.dietaLog.length>0;
 
-  if(!haveSessioni && !haveMisureStats && !haveAderenza){
+  if(!haveSessioni && !haveMisureStats){
     view.innerHTML = `<p class="empty"><span class="empty-icon">📈</span>Non ci sono ancora dati sufficienti.<br>Completa un allenamento o registra una misura per vedere le statistiche qui.</p>`;
     return;
   }
@@ -4536,11 +4596,6 @@ function renderStatistiche(){
     html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">📏 Misure corporee</h3>
       <div class="chip-select" id="misureChips"></div>
       <canvas class="chart-canvas" id="misureChart" height="180"></canvas>
-    </div>`;
-  }
-  if(haveAderenza){
-    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">🍎 Aderenza nutrizione</h3>
-      <canvas class="chart-canvas" id="aderenzaChart" height="180"></canvas>
     </div>`;
   }
   view.innerHTML = html;
@@ -4737,31 +4792,6 @@ function renderStatistiche(){
       });
     });
     if(selected2) drawMisuraChart(selected2);
-  }
-
-  if(haveAderenza){
-    const numPasti = DIETA_PIANO.pasti.length;
-    const numIntegratori = INTEGRAZIONE_PIANO.integratori.length;
-    const punti = cache.dietaLog.filter(g=>!g.manualMacros).slice(-30).map(g=>({
-      data: new Date(g.id).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}),
-      pasti: Math.round((Object.values(g.pastiFatti||{}).filter(Boolean).length/numPasti)*100),
-      integr: Math.round((Object.values(g.integratoriFatti||{}).filter(Boolean).length/numIntegratori)*100)
-    }));
-    const ctx = document.getElementById('aderenzaChart');
-    if(window._aderenzaChart) window._aderenzaChart.destroy();
-    if(ctx && punti.length){
-      window._aderenzaChart = new Chart(ctx, {
-        type:'line',
-        data:{ labels: punti.map(p=>p.data), datasets:[
-          { label:'Pasti seguiti %', data: punti.map(p=>p.pasti), borderColor:'#39ff94', backgroundColor:'#39ff9433', tension:.3, fill:true, pointRadius:3 },
-          { label:'Integratori presi %', data: punti.map(p=>p.integr), borderColor:'#2ac7ff', backgroundColor:'#2ac7ff33', tension:.3, fill:true, pointRadius:3 }
-        ]},
-        options:{ plugins:{legend:{labels:{color:'#eef0f3'}}}, scales:{
-          x:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}},
-          y:{ticks:{color:'#9aa1ad'}, grid:{color:'#33384333'}, min:0, max:100}
-        }}
-      });
-    }
   }
 }
 
@@ -5894,8 +5924,6 @@ function renderAlimentazione(){
 
     ${extraSenzaPastoHtml}
 
-    <button class="btn secondary" style="width:100%;margin-bottom:16px;" onclick="setRoute({name:'cerca-alimento'})">🔍 Cerca un alimento nuovo</button>
-
     <div class="diet-info-card">
       <div class="dic-t">📝 Note pratiche</div>
       <div class="dic-b">Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 150-200g corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Alcol in eliminazione (circa 1 birra media a settimana, ~130 kcal) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
@@ -6527,8 +6555,9 @@ function renderCercaAlimento(){
   } else if(s.risultati.length){
     risultatiHtml = s.risultati.map((p,i)=>{
       const sottotitolo = p.marca ? p.marca : (p.fonte==='usda' ? 'USDA · nome in inglese' : '');
+      const delay = Math.min(i*0.045, 0.34).toFixed(3);
       return `
-      <div class="food-search-item" onclick="selezionaAlimentoRicerca(${i})">
+      <div class="food-search-item food-result-anim" style="animation-delay:${delay}s" onclick="selezionaAlimentoRicerca(${i})">
         <div class="fsi-info">
           <div class="fsi-n">${p.nome}</div>
           ${sottotitolo?`<div class="fsi-brand">${sottotitolo}</div>`:''}
@@ -6543,24 +6572,33 @@ function renderCercaAlimento(){
   // Alimenti salvati per riuso rapido: personalizzati + più usati di recente,
   // in un'unica lista (non più raggruppata per macro-categoria — sapere se
   // un alimento è "carboidrato" o "proteina" non è come si pensa a un cibo
-  // già mangiato, e costringeva a cercare nel gruppo sbagliato; la ricerca
-  // sopra resta il modo per trovare qualcosa di specifico). Personalizzati
+  // già mangiato, e costringeva a cercare nel gruppo sbagliato). Personalizzati
   // prima perché più intenzionali, poi i recenti. Questa schermata si apre
   // proprio "mentre aggiungo" un alimento a un pasto specifico (da
   // "+ Aggiungi a [pasto]"), quindi qui è dove ha senso la scorciatoia.
+  //
+  // Non più una lista fissa sempre visibile (era un muro di testo appena
+  // apri la ricerca): gli alimenti già salvati restano "in memoria" — si
+  // aggiungono da soli quando li usi (registraAlimentoRecente) — ma si
+  // vedono solo quando li cerchi per nome/marca/iniziali (vedi
+  // alimentoCorrispondeRicerca), non prima. A riposo (query vuota) questa
+  // sezione non compare affatto.
   const recenti = (profiloUtente && profiloUtente.alimentiRecenti) || [];
   const personalizzati = cache.alimentiPersonalizzati || [];
-  const quickAddItems = (!s.query) ? [
+  const tuttiSalvati = [
     ...personalizzati.map((p,i)=> ({ p, tipo:'personalizzato', idx:i })),
     ...recenti.map((p,i)=> ({ p, tipo:'recente', idx:i })),
-  ] : [];
+  ];
+  const quickAddItems = s.query
+    ? tuttiSalvati.filter(it => alimentoCorrispondeRicerca(it.p, s.query))
+    : [];
   const quickAddRowsHtml = quickAddItems.map(it=>{
     const p = it.p, i = it.idx;
     const usiLabel = it.tipo==='recente' && p.usoCount>1 ? ` · usato ${p.usoCount}×` : '';
     const sottotitolo = it.tipo==='personalizzato' ? 'Personalizzato' : ((p.marca||'')+usiLabel);
     const clickFn = it.tipo==='personalizzato' ? `selezionaAlimentoPersonalizzato(${i})` : `selezionaAlimentoRecente(${i})`;
     const removeFn = it.tipo==='personalizzato' ? `eliminaAlimentoPersonalizzato('${p.id}')` : `rimuoviAlimentoRecente(${i})`;
-    return `<div class="qa-row">
+    return `<div class="qa-row food-result-anim">
       <div class="qa-info" onclick="${clickFn}">
         <div class="qa-name">${p.nome}</div>
         ${sottotitolo?`<div class="qa-sub">${sottotitolo}</div>`:''}
@@ -6569,18 +6607,24 @@ function renderCercaAlimento(){
       <button class="qa-remove" onclick="event.stopPropagation();${removeFn}" aria-label="Rimuovi dagli alimenti più usati">✕</button>
     </div>`;
   }).join('');
-  const quickAddHtml = quickAddItems.length ? `<div class="diet-info-card">
-      <div class="dic-t">⚡ I tuoi alimenti</div>
-      <div class="dic-b" style="margin-bottom:4px;">Tocca per aggiungerne uno a questo pasto, ✕ per toglierlo da qui.</div>
+  const quickAddHtml = quickAddItems.length ? `<div class="diet-info-card food-result-anim">
+      <div class="dic-t"><span class="dic-t-badge">📌</span> Già segnato da te</div>
+      <div class="dic-b" style="margin-bottom:4px;">Corrisponde a "${s.query}" tra i tuoi alimenti salvati: macro già pronti, senza ripescarli online.</div>
       ${quickAddRowsHtml}
     </div>` : '';
 
   // Ricette/piatti fissi: mostrate a parte dagli alimenti perché non si
   // pesano — un tocco le apre già pronte con i loro macro, senza chiedere
-  // grammi (vedi selezionaRicettaPersonalizzata).
-  const ricette = (!s.query) ? (cache.ricettePersonalizzate || []) : [];
-  const ricetteHtml = ricette.length ? `<div class="diet-info-card">
-      <div class="dic-t">🍲 Le mie ricette</div>
+  // grammi (vedi selezionaRicettaPersonalizzata). A differenza degli
+  // alimenti sopra, questa lista resta visibile anche a riposo (sono poche
+  // per natura — piatti fissi che ti sei creato apposta — non un muro di
+  // testo): quando si cerca qualcosa si filtra sul testo digitato, altrimenti
+  // le mostra tutte.
+  const ricette = s.query
+    ? (cache.ricettePersonalizzate || []).filter(r => alimentoCorrispondeRicerca(r, s.query))
+    : (cache.ricettePersonalizzate || []);
+  const ricetteHtml = ricette.length ? `<div class="diet-info-card food-result-anim">
+      <div class="dic-t"><span class="dic-t-badge">🍲</span> Le mie ricette</div>
       <div class="dic-b" style="margin-bottom:4px;">Piatti a porzione fissa: tocca per aggiungerli col loro totale di macro, senza inserire un peso.</div>
       ${ricette.map((r,i)=>`<div class="qa-row">
         <div class="qa-info" onclick="selezionaRicettaPersonalizzata(${i})">
@@ -6613,18 +6657,23 @@ function renderCercaAlimento(){
     </div>` : '';
 
   view.innerHTML = `
-    <div class="field">
-      <label>Cerca un alimento</label>
-      <input type="text" id="foodSearchInput" placeholder="Es. yogurt greco, pasta, mela..." value="${s.query}" oninput="onFoodSearchInputChange(this.value)" onkeydown="if(event.key==='Enter')eseguiRicercaAlimento()">
+    <div class="food-hero">
+      <div class="food-hero-top">
+        <div class="food-hero-icon">🔍</div>
+        <div>
+          <div class="food-hero-title">Cerca un alimento</div>
+          <div class="food-hero-sub">Digita un nome per iniziare</div>
+        </div>
+      </div>
+      <div class="food-hero-searchbar">
+        <span class="fhs-icon">🔎</span>
+        <input type="text" id="foodSearchInput" aria-label="Cerca un alimento" placeholder="Es. yogurt greco, pasta, mela..." value="${s.query}" oninput="onFoodSearchInputChange(this.value)" onkeydown="if(event.key==='Enter')eseguiRicercaAlimento()">
+      </div>
+      <button class="food-hero-cta" onclick="eseguiRicercaAlimento()">Cerca</button>
     </div>
-    <div style="display:flex;gap:10px;margin-bottom:6px;">
-      <button class="btn" style="flex:1;" onclick="eseguiRicercaAlimento()">Cerca</button>
-      <button class="btn secondary" style="flex:1;" onclick="setRoute({name:'scansiona-barcode'})">📷 Barcode</button>
-    </div>
-    <p class="field-hint" style="margin:0 0 18px;">I dati arrivano da Open Food Facts (aperto, forte sui prodotti confezionati) e USDA FoodData Central (database ufficiale USA, ottimo per alimenti generici come frutta, verdura e carne — nomi in inglese).</p>
-    ${risultatiHtml}
     ${quickAddHtml}
     ${ricetteHtml}
+    ${risultatiHtml}
     ${sessionAggiuntiHtml}
     <button class="btn secondary" style="width:100%;margin-bottom:14px;" onclick="setRoute({name:'crea-alimento-custom'})">➕ Crea alimento o ricetta personalizzata</button>
     <button class="btn" style="width:100%;margin-top:4px;" onclick="terminaRicercaAlimento()">✓ Fatto, torna alla Dieta${sessionAggiunti.length?` (${sessionAggiunti.length} aggiunti)`:''}</button>
@@ -6750,6 +6799,22 @@ function dedupRisultatiAlimenti(lista){
     visti.add(chiave);
     return true;
   });
+}
+
+// Un alimento già salvato (personalizzato, recente o ricetta) "corrisponde"
+// alla ricerca se il testo digitato compare nel nome o nella marca, oppure
+// se combacia con le iniziali delle parole del nome (es. "ppr" trova "Pane
+// Pugliese Rustico") — così cercando qualcosa che hai già segnato lo trovi
+// anche solo con un pezzo di nome o una sigla, non serve ricordare l'esatta
+// dicitura.
+function alimentoCorrispondeRicerca(item, query){
+  const q = (query||'').toLowerCase().trim();
+  if(!q) return false;
+  const nome = (item.nome||'').toLowerCase();
+  const marca = (item.marca||'').toLowerCase();
+  if((nome+' '+marca).includes(q)) return true;
+  const iniziali = nome.split(/\s+/).filter(Boolean).map(w=>w[0]).join('');
+  return iniziali.includes(q);
 }
 
 // Se il campo viene svuotato del tutto (es. selezioni tutto e cancelli),
@@ -7369,107 +7434,6 @@ function apriRicercaPerPasto(pi){
   setRoute({name:'cerca-alimento'});
 }
 
-/* ============ SCANNER CODICE A BARRE ============
-   Libreria "html5-qrcode" caricata solo quando serve (non appesantisce il
-   caricamento iniziale dell'app), usa la fotocamera per leggere il codice
-   e poi cerca il prodotto per barcode su Open Food Facts. Funziona sia su
-   Android che su iOS/Safari (a differenza della BarcodeDetector nativa, non
-   supportata da Safari). */
-let barcodeScanner = null;
-let barcodeLibCaricata = false;
-
-function caricaLibreriaBarcode(){
-  return new Promise((resolve, reject)=>{
-    if(barcodeLibCaricata && window.Html5Qrcode){ resolve(); return; }
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
-    script.onload = ()=>{ barcodeLibCaricata = true; resolve(); };
-    script.onerror = ()=> reject(new Error('lib non caricata'));
-    document.head.appendChild(script);
-  });
-}
-
-function renderScansionaBarcode(){
-  pageTitle.textContent = 'Scansiona codice a barre';
-  view.innerHTML = `
-    <div class="card" style="text-align:center;">
-      <p class="field-hint" style="margin:0 0 14px;">Inquadra il codice a barre del prodotto, tienilo fermo e ben illuminato.</p>
-      <div id="barcodeReader" class="barcode-reader"></div>
-      <p id="barcodeStatus" class="field-hint" style="margin-top:14px;min-height:18px;"></p>
-      <button class="btn secondary" style="width:100%;margin-top:6px;" onclick="setRoute({name:'cerca-alimento'})">Annulla</button>
-    </div>`;
-  avviaScannerBarcode();
-}
-
-async function avviaScannerBarcode(){
-  const stato = document.getElementById('barcodeStatus');
-  try{
-    if(stato) stato.innerHTML = '<span class="spinner-inline"></span>Avvio fotocamera...';
-    await caricaLibreriaBarcode();
-    if(route.name!=='scansiona-barcode') return; // l'utente ha già cambiato pagina
-    barcodeScanner = new Html5Qrcode('barcodeReader', {
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E,
-        Html5QrcodeSupportedFormats.CODE_128
-      ],
-      verbose:false
-    });
-    await barcodeScanner.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 260, height: 150 } },
-      onBarcodeRilevato,
-      ()=>{} // "errore" per singolo frame non decodificato: normale mentre cerca il codice, si ignora
-    );
-    const stato2 = document.getElementById('barcodeStatus');
-    if(stato2) stato2.textContent = '';
-  }catch(e){
-    const stato3 = document.getElementById('barcodeStatus');
-    if(stato3) stato3.textContent = 'Non riesco ad accedere alla fotocamera: controlla di aver dato il permesso al browser, oppure usa la ricerca per nome.';
-  }
-}
-
-function fermaScannerBarcode(){
-  if(barcodeScanner){
-    const s = barcodeScanner;
-    barcodeScanner = null;
-    s.stop().then(()=> s.clear()).catch(()=>{});
-  }
-}
-
-async function onBarcodeRilevato(codice){
-  if(!barcodeScanner) return; // già gestito o pagina cambiata, evita doppio trigger
-  fermaScannerBarcode();
-  const stato = document.getElementById('barcodeStatus');
-  if(stato) stato.innerHTML = `<span class="spinner-inline"></span>Codice ${codice} trovato: cerco il prodotto...`;
-  try{
-    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${codice}.json`);
-    const data = await res.json();
-    const nutr = data.product && data.product.nutriments;
-    if(data.status !== 1 || !nutr || nutr['energy-kcal_100g']==null){
-      if(stato) stato.textContent = `Nessun dato nutrizionale trovato per il codice ${codice}. Prova con la ricerca per nome.`;
-      return;
-    }
-    const p = data.product;
-    const { micro100, acqua100 } = estraiMicroOFF(nutr);
-    ricercaAlimentoState.selezionato = {
-      nome: p.product_name || 'Prodotto senza nome',
-      marca: p.brands ? p.brands.split(',')[0].trim() : '',
-      kcal100: Math.round(nutr['energy-kcal_100g']||0),
-      prot100: Math.round((nutr['proteins_100g']||0)*10)/10,
-      carb100: Math.round((nutr['carbohydrates_100g']||0)*10)/10,
-      grassi100: Math.round((nutr['fat_100g']||0)*10)/10,
-      micro100, acqua100
-    };
-    ricercaAlimentoState.grammi = 100;
-    if(ricercaAlimentoState.pastoIdx==null) ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
-    ricercaAlimentoState.fonte = suggerisciFonte(ricercaAlimentoState.selezionato);
-    setRoute({name:'cerca-alimento'});
-  }catch(e){
-    if(stato) stato.textContent = 'Errore nella ricerca del prodotto. Riprova o usa la ricerca per nome.';
-  }
-}
-
 /* ============ MISURE ============ */
 const MISURE_METRICHE = [
   {key:'peso', label:'Peso', unit:'kg', color:'#ff8a5c'},
@@ -7481,7 +7445,6 @@ const MISURE_METRICHE = [
   {key:'cosciaDx', label:'Coscia Dx', unit:'cm', color:'#ff5470'},
   {key:'cosciaSx', label:'Coscia Sx', unit:'cm', color:'#c92548'},
   {key:'collo', label:'Collo', unit:'cm', color:'#2ac7ff'},
-  {key:'sonno', label:'Ore di sonno', unit:'h', color:'#8b6bff'},
   {key:'bfStimata', label:'Massa grassa stimata', unit:'%', color:'#ff9d4d', calcolata:true}
 ];
 
@@ -7551,7 +7514,7 @@ function renderMisure(){
     </div>
     <button class="btn" id="saveMisuraBtnRapido" onclick="salvaMisura()">⚡ Salva solo il peso</button>
 
-    <button class="toggle-guide" style="margin-top:18px;" onclick="toggleMisuraCompleta()">Misurazione completa (circonferenze, sonno, foto) ▾</button>
+    <button class="toggle-guide" style="margin-top:18px;" onclick="toggleMisuraCompleta()">Misurazione completa (circonferenze, foto) ▾</button>
     <div class="guide-body" id="misura-completa-box">
       <p class="field-hint" style="margin-top:8px;">Consigliata ogni 2-3 settimane, non a ogni pesata: dà un quadro più completo di come sta cambiando il corpo oltre al numero sulla bilancia.</p>
       <div class="grid2">
@@ -7593,10 +7556,6 @@ function renderMisure(){
           <label>Coscia Sx (cm)</label><input type="number" step="0.5" id="mCosciaSx">
           <p class="field-hint">Stesso punto della coscia destra, per un confronto corretto.</p>
         </div>
-      </div>
-      <div class="field">
-        <label>Ore di sonno la notte scorsa (facoltativo)</label><input type="number" step="0.5" id="mSonno">
-        <p class="field-hint">Anche solo una stima. Utile da incrociare con l'RPE nelle sedute, dato il sonno frammentato.</p>
       </div>
       <div class="field">
         <label>Foto progressi (facoltative, fino a 4)</label>
@@ -7702,7 +7661,6 @@ async function salvaMisura(){
   const braccioSx = document.getElementById('mBraccioSx').value;
   const cosciaDx = document.getElementById('mCosciaDx').value;
   const cosciaSx = document.getElementById('mCosciaSx').value;
-  const sonno = document.getElementById('mSonno').value;
   // Ci sono due pulsanti di salvataggio (peso rapido in cima e misurazione
   // completa in fondo alla sezione a comparsa): li gestiamo entrambi qui,
   // qualunque sia stato quello cliccato, cosi' l'utente vede lo stato di
@@ -7715,8 +7673,7 @@ async function salvaMisura(){
     'Peso':[peso,20,400], 'Vita':[vita,40,200], 'Petto':[petto,40,200], 'Fianchi':[fianchi,40,200],
     'Collo':[collo,20,60],
     'Braccio Dx':[braccioDx,10,80], 'Braccio Sx':[braccioSx,10,80],
-    'Coscia Dx':[cosciaDx,20,100], 'Coscia Sx':[cosciaSx,20,100],
-    'Ore di sonno':[sonno,0,16]
+    'Coscia Dx':[cosciaDx,20,100], 'Coscia Sx':[cosciaSx,20,100]
   };
   for(const label in RANGE_PLAUSIBILI){
     const [valore, min, max] = RANGE_PLAUSIBILI[label];
@@ -7756,7 +7713,6 @@ async function salvaMisura(){
       braccioSx: braccioSx ? Number(braccioSx) : null,
       cosciaDx: cosciaDx ? Number(cosciaDx) : null,
       cosciaSx: cosciaSx ? Number(cosciaSx) : null,
-      sonno: sonno ? Number(sonno) : null,
       fotoThumb
     };
     const ref = await userCollection('misure').add(payload);
@@ -7796,8 +7752,7 @@ const MISURA_DETTAGLIO_CAMPI = [
   {key:'braccioSx', label:'Braccio Sx', unit:'cm'},
   {key:'cosciaDx', label:'Coscia Dx', unit:'cm'},
   {key:'cosciaSx', label:'Coscia Sx', unit:'cm'},
-  {key:'collo', label:'Collo', unit:'cm'},
-  {key:'sonno', label:'Ore di sonno', unit:'h'}
+  {key:'collo', label:'Collo', unit:'cm'}
 ];
 
 function renderMisuraDetail(){
@@ -7913,7 +7868,6 @@ function renderMisuraModifica(){
       <div class="field"><label>Coscia Dx (cm)</label><input type="number" step="0.5" id="mmCosciaDx" value="${m.cosciaDx??''}"></div>
       <div class="field"><label>Coscia Sx (cm)</label><input type="number" step="0.5" id="mmCosciaSx" value="${m.cosciaSx??''}"></div>
     </div>
-    <div class="field"><label>Ore di sonno (facoltativo)</label><input type="number" step="0.5" id="mmSonno" value="${m.sonno??''}"></div>
     <div class="field">
       <label>Foto progressi (fino a 4)</label>
       <p class="field-hint" style="margin-top:-2px;">Tocca una foto per sostituirla, la ✕ per rimuoverla, oppure aggiungi quelle mancanti.</p>
@@ -8002,7 +7956,6 @@ async function salvaModificaMisura(id){
   const braccioSx = document.getElementById('mmBraccioSx').value;
   const cosciaDx = document.getElementById('mmCosciaDx').value;
   const cosciaSx = document.getElementById('mmCosciaSx').value;
-  const sonno = document.getElementById('mmSonno').value;
   const btn = document.getElementById('saveMisuraModBtn');
   const errBox = document.getElementById('misuraModError');
   errBox.innerHTML = '';
@@ -8011,8 +7964,7 @@ async function salvaModificaMisura(id){
     'Peso':[peso,20,400], 'Vita':[vita,40,200], 'Petto':[petto,40,200], 'Fianchi':[fianchi,40,200],
     'Collo':[collo,20,60],
     'Braccio Dx':[braccioDx,10,80], 'Braccio Sx':[braccioSx,10,80],
-    'Coscia Dx':[cosciaDx,20,100], 'Coscia Sx':[cosciaSx,20,100],
-    'Ore di sonno':[sonno,0,16]
+    'Coscia Dx':[cosciaDx,20,100], 'Coscia Sx':[cosciaSx,20,100]
   };
   for(const label in RANGE_PLAUSIBILI){
     const [valore, min, max] = RANGE_PLAUSIBILI[label];
@@ -8064,7 +8016,6 @@ async function salvaModificaMisura(id){
       braccioSx: braccioSx ? Number(braccioSx) : null,
       cosciaDx: cosciaDx ? Number(cosciaDx) : null,
       cosciaSx: cosciaSx ? Number(cosciaSx) : null,
-      sonno: sonno ? Number(sonno) : null,
       fotoThumb
     };
     if(clearLegacyFoto) payload.foto = firebase.firestore.FieldValue.delete();
