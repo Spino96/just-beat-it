@@ -931,17 +931,11 @@
   .fsi-n{font-size:14px;font-weight:700;color:var(--text);}
   .fsi-brand{font-size:11.5px;color:var(--text-dim);font-weight:600;margin-top:2px;}
   .fsi-kcal{font-size:12.5px;color:var(--accent);font-weight:800;white-space:nowrap;}
-  /* Lista compatta "Aggiungi di nuovo" (alimenti recenti/personalizzati per
-     categoria): righe con separatore sottile invece di una card con bordo e
-     ombra per ogni alimento, per restare leggibile anche con liste lunghe. */
-  .qa-group{margin-bottom:2px;}
-  .qa-group-label{
-    font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;font-weight:800;
-    color:var(--text-dim);margin:16px 2px 2px;display:flex;align-items:center;gap:5px;
-  }
-  .qa-group:first-child .qa-group-label{margin-top:0;}
+  /* Lista compatta di alimenti/ricette salvati per riuso rapido: righe con
+     separatore sottile invece di una card con bordo e ombra per ogni
+     alimento, per restare leggibile anche con liste lunghe. */
   .qa-row{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--border);}
-  .qa-group .qa-row:last-child{border-bottom:none;}
+  .qa-row:last-child{border-bottom:none;}
   .qa-info{flex:1;min-width:0;cursor:pointer;padding:2px 0;}
   .qa-name{font-size:13.5px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .qa-sub{font-size:11px;color:var(--text-dim);font-weight:600;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -6546,46 +6540,39 @@ function renderCercaAlimento(){
     risultatiHtml = `<p class="empty"><span class="empty-icon">🔍</span>Nessun risultato per "${s.query}". Prova con un nome più semplice o generico.</p>`;
   }
 
-  // "Aggiungi di nuovo" (i più usati, non i più recenti — vedi
-  // registraAlimentoRecente) e "I miei alimenti" raggruppati per fonte
-  // (Carboidrati/Proteine/Grassi) invece che per provenienza: questa
-  // schermata si apre proprio "mentre aggiungo" un alimento a un pasto
-  // specifico (da "+ Aggiungi a [pasto]"), quindi qui — e non più come
-  // blocco fisso sempre visibile nella schermata principale di Segna
-  // pasto — è dove ha senso mostrare la scorciatoia sugli alimenti già usati.
+  // Alimenti salvati per riuso rapido: personalizzati + più usati di recente,
+  // in un'unica lista (non più raggruppata per macro-categoria — sapere se
+  // un alimento è "carboidrato" o "proteina" non è come si pensa a un cibo
+  // già mangiato, e costringeva a cercare nel gruppo sbagliato; la ricerca
+  // sopra resta il modo per trovare qualcosa di specifico). Personalizzati
+  // prima perché più intenzionali, poi i recenti. Questa schermata si apre
+  // proprio "mentre aggiungo" un alimento a un pasto specifico (da
+  // "+ Aggiungi a [pasto]"), quindi qui è dove ha senso la scorciatoia.
   const recenti = (profiloUtente && profiloUtente.alimentiRecenti) || [];
   const personalizzati = cache.alimentiPersonalizzati || [];
   const quickAddItems = (!s.query) ? [
     ...personalizzati.map((p,i)=> ({ p, tipo:'personalizzato', idx:i })),
     ...recenti.map((p,i)=> ({ p, tipo:'recente', idx:i })),
   ] : [];
-  const quickAddGruppi = FONTE_OPZIONI
-    .map(fo => ({ ...fo, items: quickAddItems.filter(it => (it.p.fonte || suggerisciFonte(it.p)) === fo.key) }))
-    .filter(g => g.items.length);
-  const quickAddGruppiHtml = quickAddGruppi.map(g=> `
-    <div class="qa-group">
-      <p class="qa-group-label">${g.icona} ${g.label}</p>
-      ${g.items.map(it=>{
-        const p = it.p, i = it.idx;
-        const usiLabel = it.tipo==='recente' && p.usoCount>1 ? ` · usato ${p.usoCount}×` : '';
-        const sottotitolo = it.tipo==='personalizzato' ? 'Personalizzato' : ((p.marca||'')+usiLabel);
-        const clickFn = it.tipo==='personalizzato' ? `selezionaAlimentoPersonalizzato(${i})` : `selezionaAlimentoRecente(${i})`;
-        const removeFn = it.tipo==='personalizzato' ? `eliminaAlimentoPersonalizzato('${p.id}')` : `rimuoviAlimentoRecente(${i})`;
-        return `<div class="qa-row">
-          <div class="qa-info" onclick="${clickFn}">
-            <div class="qa-name">${p.nome}</div>
-            ${sottotitolo?`<div class="qa-sub">${sottotitolo}</div>`:''}
-          </div>
-          <div class="qa-kcal" onclick="${clickFn}">${p.kcal100}<span class="u"> kcal/100g</span></div>
-          <button class="qa-remove" onclick="event.stopPropagation();${removeFn}" aria-label="Rimuovi dagli alimenti più usati">✕</button>
-        </div>`;
-      }).join('')}
-    </div>
-  `).join('');
-  const quickAddHtml = quickAddGruppi.length ? `<div class="diet-info-card">
-      <div class="dic-t">⚡ Aggiungi di nuovo</div>
-      <div class="dic-b" style="margin-bottom:10px;">I tuoi alimenti più usati: tocca per aggiungerne uno di nuovo a questo pasto, oppure ✕ per toglierlo da questa lista.</div>
-      ${quickAddGruppiHtml}
+  const quickAddRowsHtml = quickAddItems.map(it=>{
+    const p = it.p, i = it.idx;
+    const usiLabel = it.tipo==='recente' && p.usoCount>1 ? ` · usato ${p.usoCount}×` : '';
+    const sottotitolo = it.tipo==='personalizzato' ? 'Personalizzato' : ((p.marca||'')+usiLabel);
+    const clickFn = it.tipo==='personalizzato' ? `selezionaAlimentoPersonalizzato(${i})` : `selezionaAlimentoRecente(${i})`;
+    const removeFn = it.tipo==='personalizzato' ? `eliminaAlimentoPersonalizzato('${p.id}')` : `rimuoviAlimentoRecente(${i})`;
+    return `<div class="qa-row">
+      <div class="qa-info" onclick="${clickFn}">
+        <div class="qa-name">${p.nome}</div>
+        ${sottotitolo?`<div class="qa-sub">${sottotitolo}</div>`:''}
+      </div>
+      <div class="qa-kcal" onclick="${clickFn}">${p.kcal100}<span class="u"> kcal/100g</span></div>
+      <button class="qa-remove" onclick="event.stopPropagation();${removeFn}" aria-label="Rimuovi dagli alimenti più usati">✕</button>
+    </div>`;
+  }).join('');
+  const quickAddHtml = quickAddItems.length ? `<div class="diet-info-card">
+      <div class="dic-t">⚡ I tuoi alimenti</div>
+      <div class="dic-b" style="margin-bottom:4px;">Tocca per aggiungerne uno a questo pasto, ✕ per toglierlo da qui.</div>
+      ${quickAddRowsHtml}
     </div>` : '';
 
   // Ricette/piatti fissi: mostrate a parte dagli alimenti perché non si
@@ -6594,14 +6581,14 @@ function renderCercaAlimento(){
   const ricette = (!s.query) ? (cache.ricettePersonalizzate || []) : [];
   const ricetteHtml = ricette.length ? `<div class="diet-info-card">
       <div class="dic-t">🍲 Le mie ricette</div>
-      <div class="dic-b" style="margin-bottom:10px;">Piatti a porzione fissa: tocca per aggiungerli col loro totale di macro, senza inserire un peso.</div>
-      ${ricette.map((r,i)=>`<div class="food-search-item">
-        <div class="fsi-info" onclick="selezionaRicettaPersonalizzata(${i})" style="cursor:pointer;">
-          <div class="fsi-n">${r.nome}</div>
-          <div class="fsi-brand">P ${fmt1(r.prot)}g · C ${fmt1(r.carb)}g · G ${fmt1(r.grassi)}g</div>
+      <div class="dic-b" style="margin-bottom:4px;">Piatti a porzione fissa: tocca per aggiungerli col loro totale di macro, senza inserire un peso.</div>
+      ${ricette.map((r,i)=>`<div class="qa-row">
+        <div class="qa-info" onclick="selezionaRicettaPersonalizzata(${i})">
+          <div class="qa-name">${r.nome}</div>
+          <div class="qa-sub">P ${fmt1(r.prot)}g · C ${fmt1(r.carb)}g · G ${fmt1(r.grassi)}g</div>
         </div>
-        <div class="fsi-kcal" onclick="selezionaRicettaPersonalizzata(${i})" style="cursor:pointer;">${fmt1(r.kcal)} kcal<br><span style="color:var(--text-dim);font-weight:600;">totali</span></div>
-        <button class="photo-slot-remove" style="position:static;margin-left:8px;flex-shrink:0;" onclick="event.stopPropagation();eliminaRicettaPersonalizzata('${r.id}')" aria-label="Elimina ricetta">✕</button>
+        <div class="qa-kcal" onclick="selezionaRicettaPersonalizzata(${i})">${fmt1(r.kcal)}<span class="u"> kcal totali</span></div>
+        <button class="qa-remove" onclick="event.stopPropagation();eliminaRicettaPersonalizzata('${r.id}')" aria-label="Elimina ricetta">✕</button>
       </div>`).join('')}
     </div>` : '';
 
@@ -6636,10 +6623,10 @@ function renderCercaAlimento(){
     </div>
     <p class="field-hint" style="margin:0 0 18px;">I dati arrivano da Open Food Facts (aperto, forte sui prodotti confezionati) e USDA FoodData Central (database ufficiale USA, ottimo per alimenti generici come frutta, verdura e carne — nomi in inglese).</p>
     ${risultatiHtml}
-    <button class="btn secondary" style="width:100%;margin-bottom:14px;" onclick="setRoute({name:'crea-alimento-custom'})">➕ Crea alimento o ricetta personalizzata</button>
-    ${ricetteHtml}
     ${quickAddHtml}
+    ${ricetteHtml}
     ${sessionAggiuntiHtml}
+    <button class="btn secondary" style="width:100%;margin-bottom:14px;" onclick="setRoute({name:'crea-alimento-custom'})">➕ Crea alimento o ricetta personalizzata</button>
     <button class="btn" style="width:100%;margin-top:4px;" onclick="terminaRicercaAlimento()">✓ Fatto, torna alla Dieta${sessionAggiunti.length?` (${sessionAggiunti.length} aggiunti)`:''}</button>
   `;
   const input = document.getElementById('foodSearchInput');
