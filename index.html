@@ -591,6 +591,16 @@
   .misura-delta{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:20px;background:var(--panel-2);}
   .misura-delta.up{color:var(--accent-2);}
   .misura-delta.down{color:var(--accent-3);}
+  /* Riquadro "in evidenza" sopra il grafico carichi esercizio: mostra subito
+     l'ultimo valore registrato e il trend, senza dover leggere il grafico. */
+  .stat-highlight{
+    display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+    padding:16px 18px;margin-bottom:14px;border-radius:var(--radius-sm);
+    background:linear-gradient(135deg,var(--panel-2),var(--panel));border:1px solid var(--border);
+  }
+  .stat-highlight-value{font-size:32px;font-weight:900;color:var(--accent);line-height:1;}
+  .stat-highlight-value .stat-highlight-unit{font-size:15px;font-weight:800;color:var(--text-dim);margin-left:4px;}
+  .stat-highlight-label{font-size:12.5px;color:var(--text-dim);font-weight:700;}
   .misura-chevron{color:var(--text-dim);font-size:19px;flex-shrink:0;}
   /* ===== Storico allenamento: card seduta modernizzate ===== */
   .sessione-card{display:flex;align-items:center;gap:14px;}
@@ -921,6 +931,28 @@
   .fsi-n{font-size:14px;font-weight:700;color:var(--text);}
   .fsi-brand{font-size:11.5px;color:var(--text-dim);font-weight:600;margin-top:2px;}
   .fsi-kcal{font-size:12.5px;color:var(--accent);font-weight:800;white-space:nowrap;}
+  /* Lista compatta "Aggiungi di nuovo" (alimenti recenti/personalizzati per
+     categoria): righe con separatore sottile invece di una card con bordo e
+     ombra per ogni alimento, per restare leggibile anche con liste lunghe. */
+  .qa-group{margin-bottom:2px;}
+  .qa-group-label{
+    font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;font-weight:800;
+    color:var(--text-dim);margin:16px 2px 2px;display:flex;align-items:center;gap:5px;
+  }
+  .qa-group:first-child .qa-group-label{margin-top:0;}
+  .qa-row{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--border);}
+  .qa-group .qa-row:last-child{border-bottom:none;}
+  .qa-info{flex:1;min-width:0;cursor:pointer;padding:2px 0;}
+  .qa-name{font-size:13.5px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .qa-sub{font-size:11px;color:var(--text-dim);font-weight:600;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .qa-kcal{font-size:12.5px;color:var(--accent);font-weight:800;white-space:nowrap;flex-shrink:0;cursor:pointer;}
+  .qa-kcal .u{color:var(--text-dim);font-weight:600;font-size:10.5px;}
+  .qa-remove{
+    flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);
+    background:var(--panel-2);color:var(--text-dim);font-size:12px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0;
+  }
+  .qa-remove:active{background:var(--border);}
   .barcode-reader{
     width:100%;min-height:260px;border-radius:16px;overflow:hidden;background:#000;
   }
@@ -1368,9 +1400,9 @@ const SCHEDE_DEFAULT = [
     ],
     esercizi: [
       {
-        nome:'Chest Press (macchina)', serieTarget:3, ripTarget:'10', recupero:90,
+        nome:'Chest Press (carico libero/dischi)', serieTarget:3, ripTarget:'10', recupero:90,
         note:'Sali a 47-50 kg. Scapole leggermente indietro, il gomito non si blocca in fondo alla spinta',
-        alternativa:'Push-up sulle ginocchia',
+        alternativa:'Chest Press a pacco pesi',
         video:'https://www.youtube.com/watch?v=6mWAqa41eKI',
         immagine:'https://wger.de/media/exercise-images/129/b263c968-e067-4750-916a-d8758a7df23e.webp',
         guida:{
@@ -1380,15 +1412,15 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Pec Fly (macchina)', serieTarget:2, ripTarget:'12', recupero:60,
-        note:'Preferita ai manubri: meno stress sulla spalla sinistra',
+        nome:'Pec Fly (macchina dedicata)', serieTarget:2, ripTarget:'12', recupero:60,
+        note:'Macchina dedicata, non condivisa con le alzate laterali',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=ybi3NPUK47M',
         immagine:'',
         guida:{
           muscoli:'Pettorali (fascio principale), spalle anteriori in stabilizzazione.',
           esecuzione:'Seduto con schiena aderente allo schienale, braccia leggermente piegate sui pad. Porta le braccia in avanti fino quasi a toccarsi davanti al petto, poi torna con controllo lasciando aprire il petto.',
-          errori:'Non estendere troppo indietro le braccia in apertura, non usare slancio: mantieni i gomiti leggermente piegati per tutto il movimento.'
+          errori:'Non estendere troppo indietro le braccia in apertura, non usare slancio: mantieni i gomiti leggermente piegati per tutto il movimento. Preferita ai manubri per la spalla sinistra: meno stress articolare.'
         }
       },
       {
@@ -1406,7 +1438,7 @@ const SCHEDE_DEFAULT = [
       {
         nome:'Row Machine (tirata dritta)', serieTarget:3, ripTarget:'10-12', recupero:90,
         note:'Nuovo: rinforza la schiena alta, utile per la postura da banco. Preferita alla Low Row perché tirata dritta, meno ridondante con la lat machine (tirata diagonale). Presa neutra',
-        alternativa:'Low Row',
+        alternativa:'Low Row (tirata diagonale) o Pulley',
         video:'https://www.youtube.com/watch?v=FTdVAoceD-c',
         immagine:'',
         guida:{
@@ -1417,7 +1449,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Rear Delt (reverse fly)', serieTarget:2, ripTarget:'12-15', recupero:60,
-        note:'Nuovo: lavora la spalla in direzione opposta a quella a rischio',
+        note:'Manubri leggeri o macchina dedicata (quello disponibile). Nuovo: lavora la spalla in direzione opposta a quella a rischio',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=phNhRhn7EOI',
         immagine:'',
@@ -1428,27 +1460,27 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Alzate laterali (manubri leggeri)', serieTarget:2, ripTarget:'12-15', recupero:60,
-        note:'Reintroduzione spalla: parti da 2-3 kg, fermati subito se senti fastidio',
+        nome:'Alzate laterali (macchina Panatta a pacco pesi)', serieTarget:2, ripTarget:'12-15', recupero:60,
+        note:'NON manubri liberi: macchina Panatta a pacco pesi. Cap di sicurezza per la spalla sinistra — non aumentare peso o serie senza conferma del personal trainer',
         alternativa:'—',
-        video:'https://www.youtube.com/watch?v=gCNQ5fQiwNs',
+        video:'https://www.youtube.com/watch?v=jTRbSoPm9uQ',
         immagine:'',
         guida:{
           muscoli:'Deltoide laterale (spalla).',
-          esecuzione:'In piedi, un manubrio leggero per mano, gomiti leggermente piegati. Solleva le braccia lateralmente fino all\'altezza delle spalle, poi scendi con controllo.',
-          errori:'Carichi molto leggeri per la spalla sinistra: non salire oltre l\'altezza delle spalle e non usare slancio. Fermati al primo fastidio.'
+          esecuzione:'Seduto alla macchina con schiena aderente allo schienale, gomiti appoggiati ai pad imbottiti. Solleva le braccia lateralmente fino all\'altezza delle spalle spingendo con i gomiti, poi scendi con controllo senza far ricadere il peso.',
+          errori:'Non superare l\'altezza delle spalle, non usare slancio del busto. Carico ridotto per la spalla sinistra: fermati al primo fastidio e non aumentare peso o serie senza conferma del personal trainer.'
         }
       },
       {
-        nome:'Bicep curl (panca Scott)', serieTarget:2, ripTarget:'10-12', recupero:60,
-        note:'Nuovo: il cuscino blocca il gomito e impedisce lo slancio, più isolato del curl in piedi',
-        alternativa:'Bicep curl in piedi (manubri)',
-        video:'https://www.youtube.com/watch?v=to3m8zws1n8',
+        nome:'Bicep curl (panca inclinata 30°)', serieTarget:2, ripTarget:'10-12', recupero:60,
+        note:'Nuovo: la panca inclinata a 30° mantiene il braccio dietro la linea del busto per tutto il movimento, aumenta lo stretch del bicipite ed evita lo slancio della schiena',
+        alternativa:'panca Scott/preacher curl',
+        video:'https://www.youtube.com/watch?v=DCe8f6vMe9A',
         immagine:'',
         guida:{
           muscoli:'Bicipite brachiale, avambraccio.',
-          esecuzione:'Seduto o in piedi con l\'arto appoggiato al cuscino inclinato della panca Scott, gomito bloccato in posizione. Fletti portando il peso verso la spalla, poi scendi con controllo senza estendere di scatto.',
-          errori:'Il cuscino impedisce di aiutarsi con lo slancio del busto: se senti il bisogno di "spingere" con la schiena, il peso è troppo alto.'
+          esecuzione:'Sdraiato sulla schiena su una panca inclinata a circa 30°, un manubrio per mano con le braccia che pendono verso il basso. Fletti portando il peso verso la spalla mantenendo il gomito fermo dietro la linea del busto, poi scendi con controllo fino a distendere completamente il braccio.',
+          errori:'La schiena resta aderente allo schienale: non staccarla né spingere in avanti con il busto per aiutarsi. Scendi fino all\'estensione completa per sfruttare lo stretch, senza far "cadere" il peso.'
         }
       },
       {
@@ -1593,7 +1625,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Plank', serieTarget:2, ripTarget:'45-60"', recupero:60,
-        note:'—',
+        note:'Durata in secondi, non ripetizioni',
         alternativa:'Plank sulle ginocchia',
         video:'https://www.youtube.com/watch?v=TDQQ93WtkJM',
         immagine:'https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png',
@@ -1870,6 +1902,12 @@ let profiloUtente = null;
 // tutte insieme invece che in fila una dopo l'altra (vedi boot()/avviaApp()).
 let loadDataInVolo = null;
 let blocchiIniziati = {};
+/* Alternative "salvate": una volta che scegli il nome di un esercizio
+   alternativo (es. l'attrezzo era occupato), lo ricordiamo per quell'
+   esercizio — mappa {nomeEsercizioOriginale: nomeAlternativaScelta} salvata
+   sul profilo utente. Così le prossime volte basta un tap su "Usa
+   alternativa" per riattivarla, senza doverla ridigitare ogni sessione. */
+let alternativeSalvate = {};
 
 function schedaScaduta(s){
   const inizio = blocchiIniziati[s.id];
@@ -1966,6 +2004,14 @@ async function checkProfilo(){
   const snap = await db.collection('users').doc(currentUid).get();
   const data = snap.exists ? snap.data() : {};
   blocchiIniziati = data.blocchiIniziati || {};
+  // Normalizza il formato: versioni precedenti salvavano una singola stringa
+  // per esercizio, ora è un array (più alternative possibili tra cui scegliere).
+  const raw = data.alternativeSalvate || {};
+  alternativeSalvate = {};
+  Object.keys(raw).forEach(k=>{
+    const v = raw[k];
+    alternativeSalvate[k] = Array.isArray(v) ? v : (v ? [v] : []);
+  });
   if(data.nome && data.cognome && data.eta){
     profiloUtente = {
       nome:data.nome, cognome:data.cognome, eta:data.eta,
@@ -2114,6 +2160,7 @@ async function registrati(){
     await db.collection('users').doc(currentUid).set(nuovoProfilo);
     profiloUtente = { ...nuovoProfilo, isTrainer:false, avatar:null };
     blocchiIniziati = {};
+    alternativeSalvate = {};
     document.getElementById('registerScreen').style.display = 'none';
     await avviaApp();
   }catch(e){
@@ -2523,6 +2570,45 @@ function mostraModificaGrammiOverlay(alimento){
     overlay.querySelector('#modGrammiOkBtn').onclick = ()=>{
       const v = Math.round(Number(input.value));
       if(!v || v<=0){ input.focus(); return; }
+      hapticaLieve();
+      chiudi(v);
+    };
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudi(null); });
+    attachSwipeDownToDismiss(overlay.querySelector('.confirm-box'), ()=>chiudi(null));
+    setTimeout(()=>{ input.focus(); input.select(); }, 50);
+  });
+}
+
+/* Overlay per impostare/rinominare l'esercizio alternativo da usare al posto
+   di quello originale (tipicamente perché l'attrezzo non è libero in sala
+   pesi). Il nome è scelto liberamente dall'utente: non è vincolato a una
+   lista fissa, e viene salvato tale e quale nelle statistiche/progressi,
+   come se fosse un esercizio a sé stante. Risolve con il testo inserito
+   (stringa non vuota) oppure null se l'utente annulla. */
+function mostraModificaAlternativaOverlay(nomeOriginale, valoreIniziale){
+  return new Promise(resolve=>{
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <p class="confirm-msg">Alternativa a<br><span style="font-weight:600;color:var(--text-dim);font-size:12.5px;">${nomeOriginale}</span></p>
+        <div class="field" style="margin-bottom:6px;">
+          <label>Nome esercizio alternativo</label>
+          <input type="text" id="modAltInput" placeholder="es. Chest press con manubri" value="${valoreIniziale ? String(valoreIniziale).replace(/"/g,'&quot;') : ''}" maxlength="60">
+        </div>
+        <p class="field-hint" style="margin:-2px 0 14px;">Usalo quando l'attrezzo dell'esercizio originale non è libero: da questo momento verrà registrato nelle statistiche con il nome che scegli qui.</p>
+        <div class="confirm-actions">
+          <button class="btn secondary" id="modAltCancelBtn">Annulla</button>
+          <button class="btn" id="modAltOkBtn">Conferma</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const input = overlay.querySelector('#modAltInput');
+    const chiudi = esito => { overlay.remove(); resolve(esito); };
+    overlay.querySelector('#modAltCancelBtn').onclick = ()=>chiudi(null);
+    overlay.querySelector('#modAltOkBtn').onclick = ()=>{
+      const v = input.value.trim();
+      if(!v){ input.focus(); return; }
       hapticaLieve();
       chiudi(v);
     };
@@ -2950,17 +3036,31 @@ function renderOggiPanel(){
 
 function renderHome(){
   pageTitle.textContent = 'Beat Yourself';
-  const saluto = profiloUtente ? `<p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0 0 4px;">Ciao, ${profiloUtente.nome} 👋</p>` : '';
+  // Data di oggi accanto al saluto: dà subito un'aria "dashboard aggiornata
+  // in tempo reale" invece di un semplice saluto statico, ed è un'ancora
+  // visiva utile quando si torna nell'app dopo giorni di pausa.
+  const oggiLbl = new Date().toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'});
+  const saluto = profiloUtente ? `
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 14px;">
+      <p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0;">Ciao, ${profiloUtente.nome} 👋</p>
+      <p style="font-size:12px;color:var(--text-dim);font-weight:700;text-transform:capitalize;margin:0;white-space:nowrap;">${oggiLbl}</p>
+    </div>` : '';
   const links = '';
   const haPianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
   const dietaSub = haPianoPersonale ? 'Piano nutrizionale e pasti' : 'In attesa del tuo piano personale';
   const promemoria = promemoriaCostanza();
   const oggiPanel = renderOggiPanel();
+  // Due piccole etichette di sezione ("Le tue sezioni" / "Monitoraggio")
+  // separano visivamente le azioni principali (allenati/mangia) da quelle
+  // di consultazione (storico/misure): stesso trattamento già usato per
+  // "Gruppo muscolare" in Statistiche, così la Home non è più un'unica
+  // colonna ininterrotta di card tutte uguali.
   view.innerHTML = `
     ${saluto}
     ${oggiPanel}
     ${promemoria}
     ${links}
+    <p class="section-label">Le tue sezioni</p>
     <div class="home-cat c-allenamento" onclick="setRoute({name:'allenamento-list'})">
       <div class="icon">🏋️</div>
       <div><div class="label">Allenamento</div><div class="sub">Scegli una scheda e inizia la seduta</div></div>
@@ -2973,6 +3073,7 @@ function renderHome(){
       <div class="icon">📈</div>
       <div><div class="label">Statistiche</div><div class="sub">Carichi esercizi e misure corporee</div></div>
     </div>
+    <p class="section-label">Monitoraggio</p>
     <div class="home-squares">
       <div class="home-square" onclick="setRoute({name:'storico'})">
         <div class="icon">🗂️</div>
@@ -3022,6 +3123,7 @@ function renderAllenamentoList(){
       </div>`;
     }
   });
+  if(attive.length) html += `<p class="section-label" style="margin-top:0;">Le tue schede</p>`;
   const gruppiMostrati = new Set();
   html += attive.map(s=>{
     let progressoHtml = '';
@@ -3056,7 +3158,7 @@ function renderAllenamentoList(){
   if(gruppiMostrati.has(CARDIO_INFO.gruppo)){
     const righeHtml = CARDIO_INFO.righe.map(r=>`<div class="cardio-row"><b>${r.label}</b><span>${r.testo}</span></div>`).join('');
     const fatteSettimana = cardioSessioniUltimi7Giorni();
-    html += `<div class="cardio-card">
+    html += `<p class="section-label">Cardio</p><div class="cardio-card">
       <div class="cardio-head">
         <span class="cardio-icon">🫁</span>
         <div>
@@ -3303,14 +3405,138 @@ function avviaSessione(schedaId){
   setRoute({name:'sessione'});
 }
 
-function toggleAlternativa(ei){
+/* Lista di tutte le alternative note per un esercizio: quelle create e
+   salvate dall'utente nel tempo, più quella predefinita dalla scheda (se
+   presente e non già duplicata). Possono essere più di una — l'utente può
+   continuare a crearne di nuove quando gli serve (es. attrezzi diversi
+   occupati in momenti diversi) e sceglie ogni volta quale usare. */
+function candidatiAlternativa(e){
+  const salvate = alternativeSalvate[e.nome] || [];
+  const predefinita = (e.alternativa && e.alternativa!=='—') ? e.alternativa : null;
+  const lista = [...salvate];
+  if(predefinita && !lista.includes(predefinita)) lista.unshift(predefinita);
+  return lista;
+}
+
+/* Foglio a comparsa per scegliere/creare/eliminare le alternative di un
+   esercizio della sessione in corso. Vive fuori da #view (appeso a
+   document.body, come gli altri fogli dell'app) e si aggiorna in-place
+   senza richiudersi ogni volta che si aggiunge o elimina una voce. */
+let alternativaSheetEi = null;
+
+function apriAlternativeSheet(ei){
+  alternativaSheetEi = ei;
+  hapticaLieve();
+  mostraAlternativeSheetOverlay();
+}
+
+function mostraAlternativeSheetOverlay(){
+  let overlay = document.getElementById('altSheetOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'altSheetOverlay';
+    overlay.className = 'sheet-overlay';
+    overlay.addEventListener('click', e=>{ if(e.target===overlay) chiudiAlternativeSheet(); });
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `<div class="sheet-box" id="altSheetBox"><div class="sheet-handle"></div>${renderAlternativeSheetBody()}</div>`;
+  attachSwipeDownToDismiss(overlay.querySelector('#altSheetBox'), chiudiAlternativeSheet);
+}
+
+function escapeAttr(s){
+  // Il nome finisce sia dentro un attributo onclick="...('qui')" sia dentro
+  // markup HTML: oltre a proteggere l'apice per JS, va anche neutralizzato
+  // l'eventuale doppio apice, che altrimenti chiuderebbe in anticipo
+  // l'attributo onclick="..." (racchiuso tra doppi apici) e romperebbe il pulsante.
+  return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+
+function renderAlternativeSheetBody(){
+  const ei = alternativaSheetEi;
   const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
   const e = scheda.esercizi[ei];
   const draft = sessionDraft.esercizi[ei];
-  if(!e.alternativa || e.alternativa==='—') return;
-  draft.usaAlternativa = !draft.usaAlternativa;
-  draft.nome = draft.usaAlternativa ? e.alternativa : e.nome;
+  const salvate = alternativeSalvate[e.nome] || [];
+  const lista = candidatiAlternativa(e);
+
+  const righeHtml = lista.map(nome=>{
+    const attiva = draft.usaAlternativa && draft.nome===nome;
+    const isCustom = salvate.includes(nome);
+    return `
+    <div class="opt-card${attiva?' active':''}">
+      <div class="opt-card-top" onclick="scegliAlternativaSheet('${escapeAttr(nome)}')">
+        <div class="opt-card-main">
+          <div class="opt-card-title">${nome}${attiva?' <span class="opt-card-badge">In uso</span>':''}</div>
+        </div>
+      </div>
+      ${isCustom ? `<button class="btn small secondary" style="margin-top:8px;width:100%;" onclick="event.stopPropagation();eliminaAlternativaSalvata('${escapeAttr(nome)}')">✕ Rimuovi questa alternativa</button>` : ''}
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="sheet-header">
+      <div class="sheet-title">Alternative a ${e.nome}</div>
+      <button class="sheet-close" onclick="chiudiAlternativeSheet()">✕</button>
+    </div>
+    ${draft.usaAlternativa ? `<button class="btn small secondary" style="width:100%;margin:6px 0 14px;" onclick="tornaAOriginaleSheet()">↺ Torna a ${e.nome}</button>` : ''}
+    <div class="opt-card-list">${righeHtml || '<p class="field-hint" style="margin:0 0 14px;">Nessuna alternativa ancora creata per questo esercizio.</p>'}</div>
+    <button class="btn small secondary" style="width:100%;margin-top:14px;" onclick="aggiungiNuovaAlternativa()">+ Crea una nuova alternativa</button>
+  `;
+}
+
+function scegliAlternativaSheet(nome){
+  const ei = alternativaSheetEi;
+  const draft = sessionDraft.esercizi[ei];
+  draft.usaAlternativa = true;
+  draft.nome = nome;
+  hapticaMedia();
+  chiudiAlternativeSheet();
   renderSessionePreservandoScroll();
+}
+
+function tornaAOriginaleSheet(){
+  const ei = alternativaSheetEi;
+  const draft = sessionDraft.esercizi[ei];
+  draft.usaAlternativa = false;
+  draft.nome = null;
+  hapticaLieve();
+  chiudiAlternativeSheet();
+  renderSessionePreservandoScroll();
+}
+
+async function aggiungiNuovaAlternativa(){
+  const ei = alternativaSheetEi;
+  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const e = scheda.esercizi[ei];
+  const testo = await mostraModificaAlternativaOverlay(e.nome, '');
+  if(testo===null) return;
+  if(!alternativeSalvate[e.nome]) alternativeSalvate[e.nome] = [];
+  if(!alternativeSalvate[e.nome].includes(testo)) alternativeSalvate[e.nome].push(testo);
+  db.collection('users').doc(currentUid).set({ alternativeSalvate }, { merge:true }).catch(()=>{});
+  mostraAlternativeSheetOverlay();
+}
+
+function eliminaAlternativaSalvata(nome){
+  const ei = alternativaSheetEi;
+  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const e = scheda.esercizi[ei];
+  const draft = sessionDraft.esercizi[ei];
+  if(alternativeSalvate[e.nome]){
+    alternativeSalvate[e.nome] = alternativeSalvate[e.nome].filter(n=>n!==nome);
+  }
+  db.collection('users').doc(currentUid).set({ alternativeSalvate }, { merge:true }).catch(()=>{});
+  if(draft.usaAlternativa && draft.nome===nome){
+    draft.usaAlternativa = false;
+    draft.nome = null;
+    renderSessionePreservandoScroll();
+  }
+  mostraAlternativeSheetOverlay();
+}
+
+function chiudiAlternativeSheet(){
+  const overlay = document.getElementById('altSheetOverlay');
+  if(overlay) overlay.remove();
+  alternativaSheetEi = null;
 }
 
 function aggiungiSet(ei){
@@ -3521,8 +3747,11 @@ function renderSessione(){
     });
     html += `<button type="button" class="btn small secondary add-set-btn" style="margin-top:10px;" onclick="aggiungiSet(${ei})">+ Aggiungi serie</button>`;
     html += `<div class="note-box">${usaAlt ? `Stai facendo l'alternativa al posto di <b>${e.nome}</b>. ${e.note}` : e.note}</div>`;
-    if(e.alternativa && e.alternativa!=='—'){
-      html += `<button class="btn small secondary" style="margin-top:10px;" onclick="toggleAlternativa(${ei})">${usaAlt ? '↺ Torna a '+e.nome : '🔁 Usa alternativa: '+e.alternativa}</button>`;
+    if(usaAlt){
+      html += `<button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="apriAlternativeSheet(${ei})">🔁 ${draft.nome} <span style="opacity:.7;">· cambia</span></button>`;
+    } else {
+      const numAlt = candidatiAlternativa(e).length;
+      html += `<button class="btn small secondary" style="margin-top:10px;" onclick="apriAlternativeSheet(${ei})">🔁 ${numAlt ? 'Usa alternativa'+(numAlt>1?` (${numAlt})`:'') : "Usa un'alternativa"}</button>`;
     }
     html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio (sensazioni, dolori, aggiustamenti...)" oninput="updateNotaEsercizio(${ei}, this.value)">${draft.noteUtente||''}</textarea>`;
     if(suggerimento){
@@ -4299,9 +4528,12 @@ function renderStatistiche(){
   if(haveSessioni) html += renderVolumeGruppiCard();
   if(haveSessioni){
     html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">📊 Carichi esercizi</h3>
+      <div class="stat-highlight" id="statHighlight"></div>
       <div class="chip-select" id="metricaChips">
         ${METRICHE_ESERCIZIO.map((m,i)=>`<div class="chip ${i===0?'active':''}" data-m="${m.key}">${m.label}</div>`).join('')}
       </div>
+      <p class="field-hint" id="gruppoChipsLabel" style="margin:-4px 0 6px;">Gruppo muscolare</p>
+      <div class="chip-select" id="gruppoChips"></div>
       <div class="chip-select" id="exChips"></div>
       <canvas class="chart-canvas" id="progChart" height="180"></canvas>
     </div>`;
@@ -4320,16 +4552,79 @@ function renderStatistiche(){
   view.innerHTML = html;
 
   if(haveSessioni){
-    const exNames = [...new Set(cache.sessioni.flatMap(s=>s.esercizi.map(e=>e.nome)))];
+    // Ultima volta in cui ogni esercizio è stato svolto: serve sia per
+    // ordinare le chip (i più recenti/rilevanti prima, non l'ordine casuale
+    // di inserimento) sia per scegliere una selezione iniziale sensata
+    // invece del primo nome trovato scorrendo le sessioni.
+    const ultimaVoltaPerNome = {};
+    cache.sessioni.forEach(s=>{
+      const t = new Date(s.data).getTime();
+      (s.esercizi||[]).forEach(e=>{
+        if(!ultimaVoltaPerNome[e.nome] || t > ultimaVoltaPerNome[e.nome]) ultimaVoltaPerNome[e.nome] = t;
+      });
+    });
+    const exNames = Object.keys(ultimaVoltaPerNome).sort((a,b)=> ultimaVoltaPerNome[b]-ultimaVoltaPerNome[a]);
+
+    // Raggruppa per gruppo muscolare (stesso classificatore già usato nella
+    // card "Volume settimanale"), in un ordine anatomico fisso: molto più
+    // rapido da scandire di un'unica sfilza piatta di 15-20 esercizi.
+    const ORDINE_GRUPPI = ['Petto','Dorso','Spalle','Gambe','Glutei','Braccia','Core','Altro'];
+    const exPerGruppo = {};
+    exNames.forEach(n=>{
+      const g = gruppoMuscolareEsercizio(n);
+      (exPerGruppo[g] = exPerGruppo[g] || []).push(n);
+    });
+    const gruppiDisponibili = ORDINE_GRUPPI.filter(g=>exPerGruppo[g] && exPerGruppo[g].length);
+
+    const gruppoWrap = document.getElementById('gruppoChips');
+    const gruppoLabel = document.getElementById('gruppoChipsLabel');
     const chipWrap = document.getElementById('exChips');
     const metricaWrap = document.getElementById('metricaChips');
+    const highlightBox = document.getElementById('statHighlight');
+
+    // Selezione iniziale: l'esercizio fatto più di recente e il suo gruppo,
+    // così la pagina si apre già sul dato più rilevante invece che su un
+    // esercizio scelto a caso.
     let selected = exNames[0];
+    let gruppoSel = gruppoMuscolareEsercizio(selected);
     let metricaSel = 'pesoMax';
+
+    const UNITA_METRICA = { pesoMax:'kg', volume:'kg', rm:'kg', rpeMedio:'/10' };
+
+    function aggiornaHighlight(name, metrica, points){
+      if(!highlightBox) return;
+      const metaInfo = METRICHE_ESERCIZIO.find(m=>m.key===metrica);
+      const unita = UNITA_METRICA[metrica] || '';
+      if(!points.length){
+        highlightBox.innerHTML = `<div class="stat-highlight-label">Nessun dato ancora per ${name}</div>`;
+        return;
+      }
+      const ultimo = points[points.length-1].v;
+      const precedente = points.length>1 ? points[points.length-2].v : null;
+      let deltaHtml = '';
+      if(precedente!=null && precedente!==0){
+        const delta = Math.round((ultimo-precedente)*10)/10;
+        if(Math.abs(delta) > 0.05){
+          const dir = delta>0 ? 'up' : 'down';
+          const freccia = delta>0 ? '▲' : '▼';
+          deltaHtml = `<span class="misura-delta ${dir}">${freccia} ${delta>0?'+':''}${fmt1(delta)}${unita} vs sessione precedente</span>`;
+        } else {
+          deltaHtml = `<span class="misura-delta">＝ invariato vs sessione precedente</span>`;
+        }
+      }
+      highlightBox.innerHTML = `
+        <div class="stat-highlight-value">${fmt1(ultimo)}<span class="stat-highlight-unit">${unita}</span></div>
+        <div class="stat-highlight-label">${name} · ${metaInfo.label}</div>
+        ${deltaHtml}`;
+    }
+
     function drawChart(name, metrica){
       const metaInfo = METRICHE_ESERCIZIO.find(m=>m.key===metrica);
       const points = cache.sessioni
+        .slice().sort((a,b)=> new Date(a.data)-new Date(b.data))
         .map(s=>({ data: new Date(s.data).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}), v: calcolaValoreEsercizio(s, name, metrica) }))
         .filter(p=>p.v!==null);
+      aggiornaHighlight(name, metrica, points);
       const ctx = document.getElementById('progChart');
       if(window._chart) window._chart.destroy();
       if(points.length===0){
@@ -4348,15 +4643,42 @@ function renderStatistiche(){
         }}
       });
     }
-    chipWrap.innerHTML = exNames.map(n=>`<div class="chip ${n===selected?'active':''}" data-n="${n}">${n}</div>`).join('');
-    chipWrap.querySelectorAll('.chip').forEach(chip=>{
-      chip.addEventListener('click', ()=>{
-        chipWrap.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-        chip.classList.add('active');
-        selected = chip.dataset.n;
-        drawChart(selected, metricaSel);
+
+    function renderExChips(){
+      const nomi = exPerGruppo[gruppoSel] || [];
+      chipWrap.innerHTML = nomi.map(n=>`<div class="chip ${n===selected?'active':''}" data-n="${n}">${n}</div>`).join('');
+      chipWrap.querySelectorAll('.chip').forEach(chip=>{
+        chip.addEventListener('click', ()=>{
+          chipWrap.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+          chip.classList.add('active');
+          selected = chip.dataset.n;
+          drawChart(selected, metricaSel);
+        });
       });
-    });
+    }
+
+    // Se c'è un solo gruppo disponibile (scheda piccola) non ha senso
+    // mostrare un filtro con una sola scelta: si passa dritti alle chip esercizio.
+    if(gruppiDisponibili.length > 1){
+      gruppoWrap.innerHTML = gruppiDisponibili.map(g=>{
+        const icona = {Petto:'🏋️',Dorso:'🔙',Spalle:'🤸',Gambe:'🦵',Glutei:'🍑',Braccia:'💪',Core:'🧱',Altro:'✳️'}[g] || '✳️';
+        return `<div class="chip ${g===gruppoSel?'active':''}" data-g="${g}">${icona} ${g}</div>`;
+      }).join('');
+      gruppoWrap.querySelectorAll('.chip').forEach(chip=>{
+        chip.addEventListener('click', ()=>{
+          gruppoWrap.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+          chip.classList.add('active');
+          gruppoSel = chip.dataset.g;
+          selected = exPerGruppo[gruppoSel][0];
+          renderExChips();
+          drawChart(selected, metricaSel);
+        });
+      });
+    } else {
+      gruppoWrap.style.display = 'none';
+      if(gruppoLabel) gruppoLabel.style.display = 'none';
+    }
+
     metricaWrap.querySelectorAll('.chip').forEach(chip=>{
       chip.addEventListener('click', ()=>{
         metricaWrap.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
@@ -4365,6 +4687,8 @@ function renderStatistiche(){
         drawChart(selected, metricaSel);
       });
     });
+
+    renderExChips();
     if(selected) drawChart(selected, metricaSel);
   }
 
@@ -4595,7 +4919,11 @@ async function salvaModificaSessione(id){
 function renderProfilo(){
   pageTitle.textContent = 'Profilo';
   const p = profiloUtente || {};
-  view.innerHTML = `<div class="card" style="text-align:center;">
+  // Le stesse etichette di sezione già usate in Home: raggruppano le card
+  // (dati personali / obiettivi / notifiche) invece di lasciarle in fila
+  // indistinte una dopo l'altra.
+  view.innerHTML = `<p class="section-label" style="margin-top:0;">Dati personali</p>
+  <div class="card" style="text-align:center;">
     <div style="margin-bottom:14px;display:flex;justify-content:center;">${avatarHTML(p, 84)}</div>
     <p style="margin:0 0 12px;font-size:12px;color:var(--text-dim);font-weight:700;">Scegli un avatar</p>
     <div class="avatar-grid">
@@ -4626,9 +4954,11 @@ function renderProfilo(){
   </div>
   <p class="empty" style="padding:0 4px 6px;">Le note infortuni vengono mostrate all'inizio di ogni sessione di allenamento.</p>
 
+  <p class="section-label">Obiettivi</p>
   ${p.schedeAssegnate===null ? renderObiettiviCard() : ''}
   ${renderObiettiviCorpoCard()}
 
+  <p class="section-label">Notifiche</p>
   <div class="card">
     <div class="dic-t" style="font-size:13.5px;font-weight:800;margin-bottom:6px;">🔔 Promemoria</div>
     <p class="field-hint" style="margin:0 0 14px;">Ricevi una notifica se dimentichi di segnare un pasto, un integratore serale o se hai bevuto poca acqua durante la giornata.</p>
@@ -4636,7 +4966,7 @@ function renderProfilo(){
     <button class="btn secondary" style="width:100%;" onclick="attivaNotifichePush()">${p.fcmToken ? '🔔 Notifiche attive — riattiva' : 'Attiva notifiche'}</button>
   </div>
 
-  <button class="btn danger" onclick="logout()">Esci</button>`;
+  <button class="btn danger" style="margin-top:20px;" onclick="logout()">Esci</button>`;
 }
 
 function renderObiettiviCard(){
@@ -5565,6 +5895,7 @@ function renderAlimentazione(){
 
   const segnaPastoTabHtml = `
     ${timingHtml}
+    <p class="section-label" style="margin-top:4px;">I tuoi pasti</p>
     ${pastiTargetHtml}
 
     ${extraSenzaPastoHtml}
@@ -6231,23 +6562,25 @@ function renderCercaAlimento(){
   const quickAddGruppi = FONTE_OPZIONI
     .map(fo => ({ ...fo, items: quickAddItems.filter(it => (it.p.fonte || suggerisciFonte(it.p)) === fo.key) }))
     .filter(g => g.items.length);
-  const quickAddGruppiHtml = quickAddGruppi.map((g,gi)=> `
-    <p class="section-label"${gi===0?' style="margin-top:0;"':''}>${g.icona} ${g.label}</p>
-    ${g.items.map(it=>{
-      const p = it.p, i = it.idx;
-      const usiLabel = it.tipo==='recente' && p.usoCount>1 ? ` · usato ${p.usoCount}×` : '';
-      const sottotitolo = it.tipo==='personalizzato' ? 'Personalizzato' : ((p.marca||'')+usiLabel);
-      const clickFn = it.tipo==='personalizzato' ? `selezionaAlimentoPersonalizzato(${i})` : `selezionaAlimentoRecente(${i})`;
-      const removeFn = it.tipo==='personalizzato' ? `eliminaAlimentoPersonalizzato('${p.id}')` : `rimuoviAlimentoRecente(${i})`;
-      return `<div class="food-search-item">
-        <div class="fsi-info" onclick="${clickFn}" style="cursor:pointer;">
-          <div class="fsi-n">${p.nome}</div>
-          ${sottotitolo?`<div class="fsi-brand">${sottotitolo}</div>`:''}
-        </div>
-        <div class="fsi-kcal" onclick="${clickFn}" style="cursor:pointer;">${p.kcal100} kcal<br><span style="color:var(--text-dim);font-weight:600;">/100g</span></div>
-        <button class="photo-slot-remove" style="position:static;margin-left:8px;flex-shrink:0;" onclick="event.stopPropagation();${removeFn}" aria-label="Rimuovi dagli alimenti più usati">✕</button>
-      </div>`;
-    }).join('')}
+  const quickAddGruppiHtml = quickAddGruppi.map(g=> `
+    <div class="qa-group">
+      <p class="qa-group-label">${g.icona} ${g.label}</p>
+      ${g.items.map(it=>{
+        const p = it.p, i = it.idx;
+        const usiLabel = it.tipo==='recente' && p.usoCount>1 ? ` · usato ${p.usoCount}×` : '';
+        const sottotitolo = it.tipo==='personalizzato' ? 'Personalizzato' : ((p.marca||'')+usiLabel);
+        const clickFn = it.tipo==='personalizzato' ? `selezionaAlimentoPersonalizzato(${i})` : `selezionaAlimentoRecente(${i})`;
+        const removeFn = it.tipo==='personalizzato' ? `eliminaAlimentoPersonalizzato('${p.id}')` : `rimuoviAlimentoRecente(${i})`;
+        return `<div class="qa-row">
+          <div class="qa-info" onclick="${clickFn}">
+            <div class="qa-name">${p.nome}</div>
+            ${sottotitolo?`<div class="qa-sub">${sottotitolo}</div>`:''}
+          </div>
+          <div class="qa-kcal" onclick="${clickFn}">${p.kcal100}<span class="u"> kcal/100g</span></div>
+          <button class="qa-remove" onclick="event.stopPropagation();${removeFn}" aria-label="Rimuovi dagli alimenti più usati">✕</button>
+        </div>`;
+      }).join('')}
+    </div>
   `).join('');
   const quickAddHtml = quickAddGruppi.length ? `<div class="diet-info-card">
       <div class="dic-t">⚡ Aggiungi di nuovo</div>
