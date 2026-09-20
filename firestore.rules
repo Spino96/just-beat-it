@@ -14,9 +14,12 @@
 // - Un utente con isTrainer:true puo' leggere tutti i profili e modificare
 //   SOLO il campo "schedeAssegnate" degli altri utenti (per assegnare le schede),
 //   nient'altro.
-// - Il catalogo "schede" è leggibile da chiunque sia loggato; la creazione iniziale
-//   (seed automatico al primissimo avvio dell'app) è permessa a qualunque utente
-//   loggato, ma le modifiche successive sono permesse solo al trainer.
+// - Il catalogo "schede" è leggibile da chiunque sia loggato; creazione, modifica
+//   ed eliminazione sono permesse solo al trainer (il seed iniziale va fatto
+//   una volta sola dall'account trainer: la registrazione è aperta a chiunque,
+//   quindi permettere la creazione a tutti gli utenti loggati significherebbe
+//   che chiunque si registri potrebbe iniettare documenti arbitrari nel
+//   catalogo condiviso, visibile e renderizzato da tutti gli utenti).
 
 rules_version = '2';
 service cloud.firestore {
@@ -50,8 +53,7 @@ service cloud.firestore {
 
     match /schede/{schedaId} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if isTrainer();
+      allow create, update, delete: if isTrainer();
     }
   }
 }

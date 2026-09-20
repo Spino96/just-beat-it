@@ -25,10 +25,16 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Prepare public site files
+        run: |
+          mkdir -p dist
+          cp index.html manifest.json sw.js .nojekyll icon.svg \
+             icon-32.png icon-152.png icon-167.png icon-180.png icon-192.png icon-512.png \
+             dist/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'dist'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

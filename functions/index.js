@@ -56,6 +56,10 @@ function chiaveGiornoOggi(){
   return f.format(new Date()); // formato YYYY-MM-DD, stesso usato da todayKey() nel client
 }
 
+// Ritorna true se l'invio è andato a buon fine, false altrimenti — il
+// chiamante deve marcare un checkpoint come "notificato" SOLO se true,
+// altrimenti un errore transitorio (quota, rete) farebbe saltare per sempre
+// quel promemoria senza che l'utente sia mai stato avvisato davvero.
 async function inviaNotifica(uid, token, titolo, corpo, tag){
   try{
     await admin.messaging().send({
@@ -66,12 +70,16 @@ async function inviaNotifica(uid, token, titolo, corpo, tag){
       // da recuperare lato client in ogni situazione (foreground/background).
       ...(tag ? { data: { tag }, webpush: { notification: { tag } } } : {})
     });
+    return true;
   }catch(e){
     // Token scaduto/non valido: lo rimuoviamo così l'app tornerà a chiedere
     // il permesso invece di ritentare all'infinito su un token morto.
     if(e && (e.code === 'messaging/registration-token-not-registered' || e.code === 'messaging/invalid-registration-token')){
       await db.collection('users').doc(uid).set({ fcmToken: admin.firestore.FieldValue.delete() }, { merge:true }).catch(()=>{});
+    }else{
+      console.error(`Invio notifica fallito per utente ${uid}:`, e);
     }
+    return false;
   }
 }
 
@@ -79,47 +87,60 @@ exports.promemoriaGiornalieri = onSchedule({ schedule: 'every 30 minutes', timeZ
   const ora = oraRomaAdesso();
   const oggi = chiaveGiornoOggi();
 
-  const utentiSnap = await db.collection('users')
-    .where('schedeAssegnate', '==', null) // solo il profilo con piano alimentare personale, stessa logica dell'app
-    .get();
+  // Niente filtro `.where('schedeAssegnate', '==', null)`: in Firestore
+  // quel confronto matcha SOLO i documenti dove il campo è esplicitamente
+  // presente e valorizzato a null, non quelli dove è semplicemente assente
+  // (a differenza di `== null` in JS). Il profilo storico (senza
+  // assegnazione esplicita) non ha mai scritto schedeAssegnate su
+  // Firestore, quindi quella query non lo troverebbe mai: prendiamo tutti
+  // gli utenti e filtriamo qui sotto con un confronto JS, che tratta allo
+  // stesso modo campo assente e campo esplicitamente null.
+  const utentiSnap = await db.collection('users').get();
 
   for(const doc of utentiSnap.docs){
     const utente = doc.data();
+    if(utente.schedeAssegnate != null) continue; // ha un piano assegnato dal trainer: niente promemoria pasti/dieta personale
     const token = utente.fcmToken;
     if(!token) continue;
 
-    const logRef = db.collection('users').doc(doc.id).collection('dietaLog').doc(oggi);
-    const logSnap = await logRef.get();
-    const log = logSnap.exists ? logSnap.data() : {};
-    const pastiFatti = log.pastiFatti || {};
-    const integratoriFatti = log.integratoriFatti || {};
-    const acquaMl = log.acquaMl || 0;
-    const notificheInviate = log.notificheInviate || {};
+    try{
+      const logRef = db.collection('users').doc(doc.id).collection('dietaLog').doc(oggi);
+      const logSnap = await logRef.get();
+      const log = logSnap.exists ? logSnap.data() : {};
+      const pastiFatti = log.pastiFatti || {};
+      const integratoriFatti = log.integratoriFatti || {};
+      const acquaMl = log.acquaMl || 0;
+      const notificheInviate = log.notificheInviate || {};
 
-    // Pasti
-    for(const cp of CHECKPOINT_PASTI){
-      if(ora < cp.oraMin || ora >= cp.oraMax) continue;
-      if(notificheInviate[cp.chiave]) continue;
-      if(pastiFatti[cp.pastoIndex]) continue; // già segnato, nessun bisogno di ricordarlo
-      await inviaNotifica(doc.id, token, cp.titolo, cp.corpo);
-      await logRef.set({ notificheInviate: { [cp.chiave]: true } }, { merge:true });
-    }
-
-    // Idratazione
-    const ci = CHECKPOINT_IDRATAZIONE;
-    if(ora >= ci.oraMin && ora < ci.oraMax && !notificheInviate[ci.chiave] && acquaMl < ci.sogliaMl){
-      await inviaNotifica(doc.id, token, ci.titolo, ci.corpo);
-      await logRef.set({ notificheInviate: { [ci.chiave]: true } }, { merge:true });
-    }
-
-    // Integratori: promemoria unico se ne manca almeno uno, non specifico per singolo integratore
-    const cint = CHECKPOINT_INTEGRATORI;
-    if(ora >= cint.oraMin && ora < cint.oraMax && !notificheInviate[cint.chiave]){
-      const presiCount = Object.values(integratoriFatti).filter(Boolean).length;
-      if(presiCount === 0){
-        await inviaNotifica(doc.id, token, cint.titolo, cint.corpo);
-        await logRef.set({ notificheInviate: { [cint.chiave]: true } }, { merge:true });
+      // Pasti
+      for(const cp of CHECKPOINT_PASTI){
+        if(ora < cp.oraMin || ora >= cp.oraMax) continue;
+        if(notificheInviate[cp.chiave]) continue;
+        if(pastiFatti[cp.pastoIndex]) continue; // già segnato, nessun bisogno di ricordarlo
+        const inviata = await inviaNotifica(doc.id, token, cp.titolo, cp.corpo);
+        if(inviata) await logRef.set({ notificheInviate: { [cp.chiave]: true } }, { merge:true });
       }
+
+      // Idratazione
+      const ci = CHECKPOINT_IDRATAZIONE;
+      if(ora >= ci.oraMin && ora < ci.oraMax && !notificheInviate[ci.chiave] && acquaMl < ci.sogliaMl){
+        const inviata = await inviaNotifica(doc.id, token, ci.titolo, ci.corpo);
+        if(inviata) await logRef.set({ notificheInviate: { [ci.chiave]: true } }, { merge:true });
+      }
+
+      // Integratori: promemoria unico se ne manca almeno uno, non specifico per singolo integratore
+      const cint = CHECKPOINT_INTEGRATORI;
+      if(ora >= cint.oraMin && ora < cint.oraMax && !notificheInviate[cint.chiave]){
+        const presiCount = Object.values(integratoriFatti).filter(Boolean).length;
+        if(presiCount === 0){
+          const inviata = await inviaNotifica(doc.id, token, cint.titolo, cint.corpo);
+          if(inviata) await logRef.set({ notificheInviate: { [cint.chiave]: true } }, { merge:true });
+        }
+      }
+    }catch(e){
+      // Un errore per un singolo utente (es. Firestore transitorio) non deve
+      // impedire l'elaborazione degli altri utenti in questa stessa run.
+      console.error(`Errore promemoria per utente ${doc.id}:`, e);
     }
   }
 });

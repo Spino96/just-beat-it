@@ -2349,7 +2349,8 @@ async function loadData(){
 function salvaDietaLogOggi(){
   if(!currentUid) return;
   const key = todayKey();
-  userCollection('dietaLog').doc(key).set(cache.dietaLogOggi, { merge:true }).catch(()=>{});
+  userCollection('dietaLog').doc(key).set(cache.dietaLogOggi, { merge:true })
+    .catch(e=>console.error('Salvataggio diario alimentare di oggi fallito (la modifica resta solo locale finché non si ritorna online):', e));
   const idx = cache.dietaLog.findIndex(d=>d.id===key);
   const entry = { id:key, ...cache.dietaLogOggi };
   if(idx>=0) cache.dietaLog[idx] = entry; else cache.dietaLog.push(entry);
@@ -2818,13 +2819,19 @@ view.addEventListener('click', function(e){
     e.stopPropagation();
     const r = cat.getBoundingClientRect();
     const origin = { x: r.left + r.width/2, y: r.top + r.height/2 };
-    const onclickAttr = cat.getAttribute('onclick');
+    // cat.onclick è la funzione già compilata dal browser a partire
+    // dall'attributo onclick="..." del markup (sempre statico, mai dati
+    // esterni): usiamo direttamente quel riferimento invece di rileggere
+    // l'attributo come stringa e rieseguirlo con `new Function`, che è
+    // funzionalmente un eval e diventerebbe pericoloso se in futuro un
+    // valore dinamico finisse mai in quell'attributo.
+    const onclickFn = cat.onclick;
     cat.classList.add('tapped');
     setTimeout(()=>{
       cat.classList.remove('tapped');
       pendingOrigin = origin;
       setTimeout(()=>{ if(pendingOrigin === origin) pendingOrigin = null; }, 50);
-      if(onclickAttr){ try{ new Function(onclickAttr)(); }catch(err){} }
+      if(onclickFn){ try{ onclickFn.call(cat); }catch(err){} }
     }, 190);
     return;
   }
@@ -3170,7 +3177,7 @@ function renderHome(){
   const oggiLbl = new Date().toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'});
   const saluto = profiloUtente ? `
     <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 14px;">
-      <p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0;">Ciao, ${profiloUtente.nome} 👋</p>
+      <p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0;">Ciao, ${escapeHtml(profiloUtente.nome)} 👋</p>
       <p style="font-size:12px;color:var(--text-dim);font-weight:700;text-transform:capitalize;margin:0;white-space:nowrap;">${oggiLbl}</p>
     </div>` : '';
   const links = '';
@@ -3516,7 +3523,8 @@ function avviaSessione(schedaId){
   const scheda = SCHEDE.find(s=>s.id===schedaId);
   if(!blocchiIniziati[schedaId]){
     blocchiIniziati[schedaId] = new Date().toISOString();
-    db.collection('users').doc(currentUid).set({ blocchiIniziati }, { merge:true }).catch(()=>{});
+    db.collection('users').doc(currentUid).set({ blocchiIniziati }, { merge:true })
+      .catch(e=>console.error('Salvataggio data di inizio blocco fallito:', e));
   }
   sessionDraft = {
     schedaId,
@@ -3579,6 +3587,19 @@ function escapeAttr(s){
   return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
 }
 
+// Da usare ogni volta che un testo non fidato (dati da API esterne come Open
+// Food Facts/USDA, o testo digitato dall'utente) finisce come CONTENUTO
+// dentro innerHTML: neutralizza i caratteri che aprirebbero tag/attributi
+// HTML, prevenendo XSS persistente.
+function escapeHtml(s){
+  return String(s ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
 function renderAlternativeSheetBody(){
   const ei = alternativaSheetEi;
   const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
@@ -3594,7 +3615,7 @@ function renderAlternativeSheetBody(){
     <div class="opt-card${attiva?' active':''}">
       <div class="opt-card-top" onclick="scegliAlternativaSheet('${escapeAttr(nome)}')">
         <div class="opt-card-main">
-          <div class="opt-card-title">${nome}${attiva?' <span class="opt-card-badge">In uso</span>':''}</div>
+          <div class="opt-card-title">${escapeHtml(nome)}${attiva?' <span class="opt-card-badge">In uso</span>':''}</div>
         </div>
       </div>
       ${isCustom ? `<button class="btn small secondary" style="margin-top:8px;width:100%;" onclick="event.stopPropagation();eliminaAlternativaSalvata('${escapeAttr(nome)}')">✕ Rimuovi questa alternativa</button>` : ''}
@@ -3640,7 +3661,8 @@ async function aggiungiNuovaAlternativa(){
   if(testo===null) return;
   if(!alternativeSalvate[e.nome]) alternativeSalvate[e.nome] = [];
   if(!alternativeSalvate[e.nome].includes(testo)) alternativeSalvate[e.nome].push(testo);
-  db.collection('users').doc(currentUid).set({ alternativeSalvate }, { merge:true }).catch(()=>{});
+  db.collection('users').doc(currentUid).set({ alternativeSalvate }, { merge:true })
+    .catch(err=>console.error('Salvataggio alternativa fallito:', err));
   mostraAlternativeSheetOverlay();
 }
 
@@ -3652,7 +3674,8 @@ function eliminaAlternativaSalvata(nome){
   if(alternativeSalvate[e.nome]){
     alternativeSalvate[e.nome] = alternativeSalvate[e.nome].filter(n=>n!==nome);
   }
-  db.collection('users').doc(currentUid).set({ alternativeSalvate }, { merge:true }).catch(()=>{});
+  db.collection('users').doc(currentUid).set({ alternativeSalvate }, { merge:true })
+    .catch(err=>console.error('Rimozione alternativa fallita:', err));
   if(draft.usaAlternativa && draft.nome===nome){
     draft.usaAlternativa = false;
     draft.nome = null;
@@ -4042,7 +4065,7 @@ function renderSessione(){
   let html = '';
   html += `<div class="session-elapsed"><span class="se-dot"></span>Tempo sessione: <span id="sessionElapsed">${formatElapsed(Date.now() - new Date(sessionDraft.iniziata).getTime())}</span></div>`;
   if(profiloUtente && profiloUtente.attenzioni){
-    html += `<div class="card" style="border-left:3px solid var(--accent-2);"><p style="margin:0;font-size:13px;line-height:1.6;"><b>Attenzione:</b> ${profiloUtente.attenzioni}</p></div>`;
+    html += `<div class="card" style="border-left:3px solid var(--accent-2);"><p style="margin:0;font-size:13px;line-height:1.6;"><b>Attenzione:</b> ${escapeHtml(profiloUtente.attenzioni)}</p></div>`;
   }
   if(scheda.descrizione){
     html += `<div class="card"><p style="margin:0;font-size:13px;line-height:1.6;color:var(--text-dim);">${scheda.descrizione}</p></div>`;
@@ -5223,8 +5246,8 @@ function renderProfilo(){
   </div>
   <div class="card">
     <div id="profiloError"></div>
-    <div class="field"><label>Nome</label><input type="text" id="pNome" value="${p.nome||''}"></div>
-    <div class="field"><label>Cognome</label><input type="text" id="pCognome" value="${p.cognome||''}"></div>
+    <div class="field"><label>Nome</label><input type="text" id="pNome" value="${escapeHtml(p.nome||'')}"></div>
+    <div class="field"><label>Cognome</label><input type="text" id="pCognome" value="${escapeHtml(p.cognome||'')}"></div>
     <div class="field"><label>Età</label><input type="number" id="pEta" min="10" max="100" value="${p.eta||''}"></div>
     <div class="grid2">
       <div class="field"><label>Altezza (cm)</label><input type="number" id="pAltezza" min="100" max="230" value="${p.altezza||''}"></div>
@@ -5238,7 +5261,7 @@ function renderProfilo(){
       </div>
     </div>
     <p class="field-hint" style="margin-top:-8px;">Servono solo per stimare la % di massa grassa nel dettaglio delle misure (formula US Navy). Restano facoltativi.</p>
-    <div class="field"><label>Note infortuni / attenzioni</label><textarea id="pAttenzioni" rows="3" placeholder="Es. spalla sinistra sensibile su spinte sopra la testa">${p.attenzioni||''}</textarea></div>
+    <div class="field"><label>Note infortuni / attenzioni</label><textarea id="pAttenzioni" rows="3" placeholder="Es. spalla sinistra sensibile su spinte sopra la testa">${escapeHtml(p.attenzioni||'')}</textarea></div>
     <button class="btn" id="salvaProfiloBtn" onclick="salvaProfiloModifiche()">Salva modifiche</button>
   </div>
   <p class="empty" style="padding:0 4px 6px;">Le note infortuni vengono mostrate all'inizio di ogni sessione di allenamento.</p>
@@ -6374,7 +6397,8 @@ function toggleDiarioGiorno(id){
 function salvaGiornoDietaLog(giornoId, giorno){
   if(!currentUid) return;
   const { id, ...dati } = giorno;
-  userCollection('dietaLog').doc(giornoId).set(dati, { merge:true }).catch(()=>{});
+  userCollection('dietaLog').doc(giornoId).set(dati, { merge:true })
+    .catch(e=>console.error('Salvataggio giorno diario alimentare fallito:', e));
   if(giornoId === todayKey()){
     cache.dietaLogOggi.pastiFatti = giorno.pastiFatti || {};
     cache.dietaLogOggi.pastiViaExtra = giorno.pastiViaExtra || {};
@@ -6395,7 +6419,8 @@ async function confermaEliminaGiornoIntero(giornoId){
     : 'Eliminare questo giorno dal diario? Pasti, integratori, acqua ed extra registrati verranno cancellati e non potrai recuperarli.';
   if(!(await mostraConferma(msg))) return;
   cache.dietaLog = cache.dietaLog.filter(d=>d.id!==giornoId);
-  if(currentUid) userCollection('dietaLog').doc(giornoId).delete().catch(()=>{});
+  if(currentUid) userCollection('dietaLog').doc(giornoId).delete()
+    .catch(e=>console.error('Eliminazione giorno diario alimentare fallita:', e));
   if(giornoId === todayKey()){
     cache.dietaLogOggi = {
       pastiFatti: {}, acquaMl: 0, integratoriFatti: {}, alimentiExtra: [],
@@ -6938,7 +6963,7 @@ function renderCercaAlimento(){
       </div>
       <div class="food-hero-searchbar">
         <span class="fhs-icon">🔎</span>
-        <input type="text" id="foodSearchInput" aria-label="Cerca un alimento" placeholder="Es. yogurt greco, pasta, mela..." value="${s.query}" oninput="onFoodSearchInputChange(this.value)" onkeydown="if(event.key==='Enter')eseguiRicercaAlimento()">
+        <input type="text" id="foodSearchInput" aria-label="Cerca un alimento" placeholder="Es. yogurt greco, pasta, mela..." value="${escapeHtml(s.query)}" oninput="onFoodSearchInputChange(this.value)" onkeydown="if(event.key==='Enter')eseguiRicercaAlimento()">
       </div>
       <button class="food-hero-cta" onclick="eseguiRicercaAlimento()">Cerca</button>
     </div>
@@ -6985,8 +7010,11 @@ function mappaProdottiOFF(lista){
       const { micro100, acqua100 } = estraiMicroOFF(p.nutriments);
       return {
         fonte:'off',
-        nome: p.product_name,
-        marca: p.brands ? p.brands.split(',')[0].trim() : '',
+        // Open Food Facts è un wiki modificabile da chiunque: il nome/marca
+        // del prodotto è testo arbitrario non fidato, va sempre neutralizzato
+        // prima di finire renderizzato via innerHTML altrove nell'app.
+        nome: escapeHtml(p.product_name),
+        marca: p.brands ? escapeHtml(p.brands.split(',')[0].trim()) : '',
         kcal100: Math.round(p.nutriments['energy-kcal_100g']||0),
         prot100: Math.round((p.nutriments['proteins_100g']||0)*10)/10,
         carb100: Math.round((p.nutriments['carbohydrates_100g']||0)*10)/10,
@@ -7050,8 +7078,8 @@ async function cercaSuUSDA(query){
     Object.keys(USDA_MICRO_MAP).forEach(k=>{ micro100[k] = trovaValore(USDA_MICRO_MAP[k]); });
     return {
       fonte:'usda',
-      nome: titleCaseSeTuttoMaiuscolo(f.description),
-      marca: f.brandOwner || '',
+      nome: escapeHtml(titleCaseSeTuttoMaiuscolo(f.description)),
+      marca: f.brandOwner ? escapeHtml(f.brandOwner) : '',
       kcal100: Math.round(kcal100),
       prot100: Math.round((trovaValore('Protein')||0)*10)/10,
       carb100: Math.round((trovaValore('Carbohydrate, by difference')||0)*10)/10,
@@ -7315,7 +7343,10 @@ function renderCampiAlimentoCustom(){
 }
 
 async function salvaAlimentoCustom(){
-  const nome = document.getElementById('caNome').value.trim();
+  // Escaped subito: questo nome viene poi renderizzato via innerHTML in
+  // molti punti dell'app (ricerca, diario, "aggiunti di recente"...) senza
+  // ulteriore sanificazione a valle.
+  const nome = escapeHtml(document.getElementById('caNome').value.trim());
   const errBox = document.getElementById('caError');
   const btn = document.getElementById('salvaAlimentoCustomBtn');
   errBox.innerHTML = '';
@@ -7669,7 +7700,8 @@ function registraAlimentoRecente(p, fonte){
   lista.sort((a,b)=> (b.usoCount||1)-(a.usoCount||1) || (b.ultimoUso||0)-(a.ultimoUso||0));
   lista = lista.slice(0, MAX_ALIMENTI_RECENTI);
   profiloUtente.alimentiRecenti = lista;
-  db.collection('users').doc(currentUid).set({ alimentiRecenti: lista }, { merge:true }).catch(()=>{});
+  db.collection('users').doc(currentUid).set({ alimentiRecenti: lista }, { merge:true })
+    .catch(e=>console.error('Salvataggio alimenti recenti fallito:', e));
 }
 
 function selezionaAlimentoRecente(i){
@@ -7693,7 +7725,8 @@ async function rimuoviAlimentoRecente(i){
   if(!(await mostraConferma(`Rimuovere "${voce.nome}" dagli alimenti più usati?`))) return;
   lista.splice(i,1);
   profiloUtente.alimentiRecenti = lista;
-  db.collection('users').doc(currentUid).set({ alimentiRecenti: lista }, { merge:true }).catch(()=>{});
+  db.collection('users').doc(currentUid).set({ alimentiRecenti: lista }, { merge:true })
+    .catch(e=>console.error('Salvataggio alimenti recenti fallito:', e));
   renderCercaAlimento();
 }
 
@@ -7968,10 +8001,17 @@ async function salvaMisura(){
       .map((file,i)=> file ? {i, file} : null)
       .filter(Boolean);
 
+    // Ridimensiona TUTTE le foto (miniatura + full-size) prima di scrivere
+    // qualunque cosa su Firestore: se una foto è corrotta/illeggibile,
+    // falliamo qui senza aver già creato la rilevazione, evitando di lasciare
+    // un documento "orfano" che l'utente non sa di avere e ricrea duplicato.
     let fotoThumb = null;
     if(slotOccupati.length){
       fotoThumb = await resizeImage(slotOccupati[0].file, 160, 0.55);
     }
+    const fotoDaCaricare = await Promise.all(
+      slotOccupati.map(async ({i, file}) => ({ i, fotoDataUrl: await resizeImage(file, 900, 0.72) }))
+    );
 
     const payload = {
       data,
@@ -7987,14 +8027,25 @@ async function salvaMisura(){
       fotoThumb
     };
     const ref = await userCollection('misure').add(payload);
-
-    for(const {i, file} of slotOccupati){
-      const fotoDataUrl = await resizeImage(file, 900, 0.72);
-      await userCollection('misureFoto').add({ misuraId: ref.id, ordine: i, foto: fotoDataUrl });
-    }
-
+    // La rilevazione è salvata da qui in poi: qualsiasi errore successivo
+    // (upload foto) NON deve più far credere all'utente che si sia perso
+    // tutto, quindi aggiorniamo subito la cache locale prima di caricare le foto.
     cache.misure.push({ id: ref.id, ...payload });
     cache.misure.sort((a,b)=> new Date(a.data)-new Date(b.data));
+
+    try{
+      // In parallelo invece che una alla volta: nessun motivo di serializzare
+      // upload indipendenti, e riduce la finestra di tempo in cui una foto
+      // caricata con successo e una fallita lascerebbero uno stato incoerente.
+      await Promise.all(fotoDaCaricare.map(({i, fotoDataUrl}) =>
+        userCollection('misureFoto').add({ misuraId: ref.id, ordine: i, foto: fotoDataUrl })
+      ));
+    }catch(eFoto){
+      setRoute({name:'storico-misure', justSaved:true});
+      alert('Rilevazione salvata, ma il caricamento di una o più foto è fallito: '+eFoto.message+'. Riprova ad aggiungerle da questa rilevazione, senza creare una nuova voce.');
+      return;
+    }
+
     setRoute({name:'storico-misure', justSaved:true});
   }catch(e){
     errBox.innerHTML = `<div class="error-banner">${e.message}</div>`;
@@ -8362,7 +8413,16 @@ function initCarosello(idPrefix, count){
   track.addEventListener('pointerup', fine);
   track.addEventListener('pointercancel', fine);
   track.addEventListener('click', e=>{ if(swiped){ e.preventDefault(); e.stopImmediatePropagation(); swiped=false; } }, true);
-  window.addEventListener('resize', ()=>goTo(index));
+  // Il carosello non ha un "unmount" esplicito (la vista viene sostituita con
+  // view.innerHTML altrove): senza questo controllo il listener su window
+  // resterebbe per sempre, accumulandosi ad ogni apertura e continuando a
+  // lavorare su un track ormai staccato dal DOM. Si rimuove da solo al primo
+  // resize successivo alla rimozione dell'elemento dal documento.
+  function onResize(){
+    if(!track.isConnected){ window.removeEventListener('resize', onResize); return; }
+    goTo(index);
+  }
+  window.addEventListener('resize', onResize);
   goTo(0);
 }
 
