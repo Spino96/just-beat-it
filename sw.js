@@ -4,7 +4,11 @@
    una versione vecchia dell'HTML quando la rete c'è (network-first per la
    pagina; stale-while-revalidate solo per gli asset statici come le icone). */
 
-const CACHE_NAME = 'beat-yourself-v4';
+// NB: quando si aggiunge/rimuove un file da APP_SHELL, o si cambia
+// index.html in un modo che l'app deve rivedere offline al prossimo avvio,
+// bisogna alzare questo numero di versione: altrimenti l'activate handler
+// qui sotto non elimina la cache vecchia e non forza un nuovo precache.
+const CACHE_NAME = 'beat-yourself-v5';
 const APP_SHELL = [
   './',
   './index.html',
@@ -15,14 +19,32 @@ const APP_SHELL = [
   './icon-167.png',
   './icon-180.png',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  // SDK esterni da cui l'app dipende per avviarsi: senza queste in cache,
+  // un primo avvio offline (o prima che la stale-while-revalidate le abbia
+  // mai viste) mostrerebbe una pagina bianca invece dell'app shell.
+  // Versioni fissate nell'URL: sicure da precachare, non cambiano mai sotto
+  // lo stesso link (un cambio di versione nell'HTML richiede comunque di
+  // alzare CACHE_NAME qui sopra).
+  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
-      .catch(() => {})
+    caches.open(CACHE_NAME).then(cache =>
+      // cache.addAll() è tutto-o-niente: se anche un solo file fallisce
+      // (404, timeout) l'intera app shell resta non cachata senza nessun
+      // avviso. Mettiamo in cache ogni file singolarmente così un fallimento
+      // isolato non compromette la modalità offline per tutti gli altri.
+      Promise.all(APP_SHELL.map(url =>
+        cache.add(url).catch(e => console.warn('Precache fallito per', url, e))
+      ))
+    )
   );
   self.skipWaiting();
 });
@@ -60,13 +82,19 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Asset statici (icone, manifest): stale-while-revalidate va benissimo,
-  // non serve che siano freschi all'istante.
+  // Asset statici (icone, manifest, gli SDK esterni precachati sopra):
+  // stale-while-revalidate va benissimo, non serve che siano freschi
+  // all'istante. Le richieste cross-origin NON precaricate (es. immagini
+  // degli esercizi da wger.de referenziate dalle schede) vengono servite
+  // dalla rete ma mai scritte in cache: altrimenti la cache crescerebbe
+  // senza limite ad ogni nuova immagine mai vista prima, senza nessuna
+  // policy di eviction.
+  const stessaOrigine = new URL(req.url, self.location.href).origin === self.location.origin;
   event.respondWith(
     caches.match(req).then(cached => {
       const network = fetch(req)
         .then(res => {
-          if (res && res.status === 200) {
+          if (stessaOrigine && res && res.status === 200) {
             const copy = res.clone();
             caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
           }
