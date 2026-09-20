@@ -5893,11 +5893,17 @@ function renderAlimentazione(){
   // la somma dei 5 target torna a coincidere esattamente col totale del
   // giorno, invece di restare fissa sulla media mentre solo il totale in
   // alto (t.kcal) cambiava.
-  const targetPastiOggi = targetPastiCalibrati(!!cache.dietaLogOggi.giornoAllenamento);
+  // Non più il target del pasto (poco utile pasto per pasto, il target che
+  // conta resta quello giornaliero in cima alla Dieta): qui mostriamo invece
+  // il totale effettivo di quello che è stato segnato in quel pasto, così
+  // il numero riflette cosa hai davvero mangiato, non cosa "dovresti".
   const pastiTargetHtml = DIETA_PIANO.pasti.map((p,pi)=>{
-    const tgt = targetPastiOggi[pi];
     const voci = alimentiExtra.filter(a=> a.pasto===pi);
     const subKcal = voci.reduce((s,a)=>s+a.kcal,0);
+    const subProt = voci.reduce((s,a)=>s+a.prot,0);
+    const subCarb = voci.reduce((s,a)=>s+a.carb,0);
+    const subGrassi = voci.reduce((s,a)=>s+a.grassi,0);
+    const assuntoHtml = voci.length ? `<div class="dic-b">Assunto: <b>${fmt1(subKcal)} kcal</b> · P ${fmt1(subProt)}g · C ${fmt1(subCarb)}g · G ${fmt1(subGrassi)}g</div>` : '';
     const vociHtml = voci.length ? `<div class="extra-food-list" style="margin-top:8px;">${voci.map(a=>`
         <div class="extra-food-item">
           <div class="efi-info">
@@ -5911,7 +5917,7 @@ function renderAlimentazione(){
         </div>`).join('')}</div>` : '';
     return `<div class="diet-info-card">
       <div class="dic-t">${p.icona} ${p.nome} <span style="float:right;font-weight:600;color:var(--text-dim);font-size:12px;">${p.orario}</span></div>
-      <div class="dic-b" style="margin-bottom:${voci.length?'0':'10px'};">Target: <b>${fmt1(tgt.kcal)} kcal</b> · P ${fmt1(tgt.prot)}g · C ${fmt1(tgt.carb)}g · G ${fmt1(tgt.grassi)}g${voci.length?` &nbsp;·&nbsp; Oggi: <b>${fmt1(subKcal)} kcal</b>`:''}</div>
+      ${assuntoHtml}
       ${vociHtml}
       <button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="apriRicercaPerPasto(${pi})">+ Aggiungi a ${p.nome}</button>
     </div>`;
