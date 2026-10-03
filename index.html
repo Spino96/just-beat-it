@@ -1764,6 +1764,442 @@ const SCHEDE_DEFAULT = [
         }
       }
     ]
+  },
+  {
+    id: 'blocco3a',
+    gruppo: 'blocco3',
+    frequenzaSettimanale: 4,
+    nome: 'Blocco 3 — Torso Meccanico',
+    periodo: '2 mesi · 4x/settimana (Torso/Arti) · split Forza + Ipertrofia',
+    durataSettimane: 8,
+    descrizione: 'Primo giorno della settimana nello split Torso/Arti del Blocco 3: lavoro "meccanico" sul petto (priorità #1) e sulla schiena, con RIR (ripetizioni in riserva) al posto di un numero fisso di reps — ti fermi quando senti che te ne restano 2 in canna, non quando hai raggiunto un numero preciso.',
+    note: 'RIR = ripetizioni "tenute in riserva": con RIR 2 ti fermi quando sentiresti di poterne fare ancora 2, non prima né dopo — il range di reps indicato è solo una bussola. Cedimento tecnico vietato su isolamento spalla (Rear Delt, Alzate laterali): mai, in nessun momento del blocco. Sui compound guidati collaudati (Chest Press, Lat Machine) un test occasionale a cedimento sull\'ultima serie è ammesso solo dalla 2ª metà del blocco (~settimana 5). Niente scarico a metà percorso: si spinge con progressione fino in fondo, deload completo solo a fine Blocco 3 (settimana 8). Continua da Blocco 2 il riscaldamento specifico Torso.',
+    riscaldamento: [
+      {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi/curvo al bancone', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
+      {nome:'Affondo con rotazione toracica', serie:'5-6 per lato', note:'Apre il torace, utile prima di spinte e tirate', video:'https://www.youtube.com/watch?v=Boi2zLj_4_8'},
+      {nome:'Band pull-apart / rotazioni spalle', serie:'15-20 ripetizioni', note:'Riattiva i muscoli posteriori della spalla — fondamentale prima di alzate laterali e rear delt', video:'https://www.youtube.com/watch?v=hfhQm_FgbkE'},
+      {nome:'Rotazione esterna spalla con elastico', serie:'10-12 per lato', note:'Attiva la cuffia dei rotatori, prepara la spalla sinistra al lavoro di spinta e isolamento', video:'https://www.youtube.com/watch?v=0NqPhpQonXY'},
+      {nome:'Cerchi con le braccia', serie:'10 per verso', note:'Lubrifica l\'articolazione della spalla prima della chest press', video:'https://www.youtube.com/shorts/pdNSBEkdK3M'}
+    ],
+    esercizi: [
+      {
+        nome:'Panca 15° al multipower', serieTarget:4, ripTarget:'5-6', recupero:150,
+        note:'Nuovo: nei primi 10-14 giorni resta un gradino sotto il carico che percepisci come corretto, per imparare il movimento in sicurezza. RIR 2.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Pettorali (fascio alto-medio), spalle anteriori e tricipiti (secondari).',
+          esecuzione:'Panca regolata a circa 15° di inclinazione sotto il multipower. Presa poco più larga delle spalle, scapole retratte contro la panca. Scendi il bilanciere controllato fino a sfiorare la parte alta del petto, poi spingi in alto senza bloccare i gomiti di scatto.',
+          errori:'Nei primi allenamenti resta leggero per fissare la traiettoria: il multipower vincola il percorso, quindi un carico eccessivo subito si scarica sulle spalle invece che sul petto.'
+        }
+      },
+      {
+        nome:'Chest Press piana (carico libero)', serieTarget:4, ripTarget:'6-8', recupero:120,
+        note:'Pacco pesi Panatta come alternativa se il carico libero non è disponibile. RIR 2.',
+        alternativa:'Chest Press a pacco pesi (Panatta)',
+        video:'https://www.youtube.com/watch?v=6mWAqa41eKI',
+        immagine:'https://wger.de/media/exercise-images/129/b263c968-e067-4750-916a-d8758a7df23e.webp',
+        guida:{
+          muscoli:'Pettorali, spalle anteriori e tricipiti (secondari).',
+          esecuzione:'Sedile regolato con maniglie all\'altezza del petto. Scapole leggermente retratte. Spingi in avanti senza bloccare i gomiti, torna con controllo senza far cadere le spalle in avanti.',
+          errori:'Preferita alla panca per la spalla sinistra: più stabile. Evita di far collassare le spalle in avanti e non spingere a scatti.'
+        }
+      },
+      {
+        nome:'Pec Fly (macchina dedicata)', serieTarget:3, ripTarget:'10-12', recupero:75,
+        note:'Gestione dell\'intensità via numero di reps, non aumentando il peso, se l\'RPE percepito resta alto. RIR 2.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=ybi3NPUK47M',
+        immagine:'',
+        guida:{
+          muscoli:'Pettorali (fascio principale), spalle anteriori in stabilizzazione.',
+          esecuzione:'Seduto con schiena aderente allo schienale, braccia leggermente piegate sui pad. Porta le braccia in avanti fino quasi a toccarsi davanti al petto, poi torna con controllo lasciando aprire il petto.',
+          errori:'Non estendere troppo indietro le braccia in apertura, non usare slancio: mantieni i gomiti leggermente piegati per tutto il movimento.'
+        }
+      },
+      {
+        nome:'Lat Machine presa neutra', serieTarget:4, ripTarget:'6-8', recupero:120,
+        note:'Punto fermo collaudato dal Blocco 2. Tira con la schiena, non con le braccia; mai dietro la nuca. RIR 2.',
+        alternativa:'Pulldown con la corda',
+        video:'https://www.youtube.com/watch?v=DTDvohtOxN0',
+        immagine:'https://wger.de/media/exercise-images/1136/5778a8e9-c606-4843-89c8-9d9469eeb6e4.PNG',
+        guida:{
+          muscoli:'Gran dorsale, bicipiti (secondari).',
+          esecuzione:'Cosce bloccate sotto il supporto, presa neutra poco più larga delle spalle. Tira verso l\'alto del petto portando i gomiti in basso/indietro, busto quasi verticale. Torna su con controllo.',
+          errori:'Non tirare dietro la nuca, non usare lo slancio della schiena, non tirare solo con le braccia.'
+        }
+      },
+      {
+        nome:'Rematore (macchina, supporto al petto)', serieTarget:3, ripTarget:'8-10', recupero:90,
+        note:'Low Row (tirata diagonale) come alternativa se la macchina non è libera. RIR 2-3.',
+        alternativa:'Low Row (tirata diagonale)',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Dorsali, romboidi, trapezio medio, bicipiti (secondari).',
+          esecuzione:'Petto appoggiato al supporto imbottito, afferra le maniglie davanti a te. Tira indietro portando le scapole verso il centro e i gomiti vicino al corpo, poi torna con controllo senza staccare il petto dal supporto.',
+          errori:'Il supporto al petto impedisce lo slancio della schiena: se senti il busto staccarsi, il carico è troppo alto. Non alzare le spalle verso le orecchie.'
+        }
+      },
+      {
+        nome:'Rear Delt (reverse fly)', serieTarget:2, ripTarget:'12-15', recupero:60,
+        note:'Mai a cedimento, nessuna tecnica avanzata, in nessun momento del blocco. RIR 3-4 fisso per la sicurezza della spalla sinistra.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=phNhRhn7EOI',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoide posteriore, romboidi, trapezio.',
+          esecuzione:'Busto inclinato in avanti o seduto alla macchina reverse fly, braccia leggermente piegate. Apri le braccia lateralmente portando le scapole verso il centro, poi torna con controllo.',
+          errori:'Non usare pesi troppo pesanti che costringono a slanciare: movimento lento e controllato, specie in discesa.'
+        }
+      },
+      {
+        nome:'Alzate laterali (macchina)', serieTarget:3, ripTarget:'8-10', recupero:60,
+        note:'Mai a cedimento, gestione dell\'intensità via numero di reps. RIR 3-4 fisso — protezione spalla sinistra, non aumentare peso o serie senza conferma del personal trainer.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=jTRbSoPm9uQ',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoide laterale (spalla).',
+          esecuzione:'Seduto alla macchina con schiena aderente allo schienale, gomiti appoggiati ai pad imbottiti. Solleva le braccia lateralmente fino all\'altezza delle spalle spingendo con i gomiti, poi scendi con controllo senza far ricadere il peso.',
+          errori:'Non superare l\'altezza delle spalle, non usare slancio del busto. Carico ridotto per la spalla sinistra: fermati al primo fastidio.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'blocco3b',
+    gruppo: 'blocco3',
+    frequenzaSettimanale: 4,
+    nome: 'Blocco 3 — Arti Meccanico',
+    periodo: '2 mesi · 4x/settimana (Torso/Arti) · split Forza + Ipertrofia',
+    durataSettimane: 8,
+    descrizione: 'Secondo giorno della settimana: lavoro "meccanico" su gambe e glutei (priorità #2 e #3), con gli stacchi rumeni tenuti volutamente conservativi (RIR 3 fisso, mai a cedimento) per proteggere la schiena bassa.',
+    note: 'RIR = ripetizioni "tenute in riserva": fermati quando senti che te ne restano 2-3 in canna secondo l\'indicazione dell\'esercizio. Stacchi rumeni: RIR 3 fisso è un limite assoluto, non uno standard negoziabile — la schiena neutra conta più del carico. Superset ammessi solo su coppie di isolamento ad articolazioni tolleranti (bicipiti/tricipiti): qui bicep curl + tricep pushdown, con recupero pieno solo dopo la coppia, non tra i due esercizi. Continua da Blocco 2 il riscaldamento specifico Arti.',
+    riscaldamento: [
+      {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
+      {nome:'Leg swings', serie:'10 per lato', note:'Sblocca l\'anca prima di leg press e stacchi', video:'https://www.youtube.com/watch?v=difYoBtZi2s'},
+      {nome:'Caviglia contro muro (ginocchio a muro)', serie:'5-6 per lato', note:'Migliora la profondità in leg press/hack squat', video:'https://www.youtube.com/watch?v=-9XqrNwJ6aI'},
+      {nome:'Rotazioni anca (hip circles)', serie:'8-10 per lato', note:'Prepara l\'anca al lavoro di hip thrust e stacchi rumeni', video:'https://www.youtube.com/watch?v=JYqLwajOGjI'},
+      {nome:'Hip hinge a corpo libero (prova tecnica stacchi)', serie:'8-10 ripetizioni', note:'Prova senza peso il movimento: fianchi indietro, schiena dritta — da fare prima di caricare i rumeni', video:'https://www.youtube.com/watch?v=XSJnvZ9d_nA'},
+      {nome:'Ponte glutei a corpo libero', serie:'10-12 ripetizioni', note:'Attiva i glutei prima di hip thrust e stacchi rumeni', video:'https://www.youtube.com/watch?v=6Ee51lGlQFE'}
+    ],
+    esercizi: [
+      {
+        nome:'Hack Squat', serieTarget:4, ripTarget:'6-8', recupero:150,
+        note:'Nuovo: nei primi 10-14 giorni resta un gradino sotto il carico percepito, per imparare l\'appoggio e la traiettoria. RIR 2.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Quadricipiti, glutei, femorali (secondari).',
+          esecuzione:'Schiena e spalle aderenti allo schienale inclinato, piedi sulla pedana all\'altezza delle spalle. Scendi controllato fino a circa 90° senza staccare i talloni, poi spingi senza bloccare le ginocchia a fine corsa.',
+          errori:'Non staccare i talloni dalla pedana, non far collassare le ginocchia verso l\'interno. Carico leggero finché la traiettoria non è solida.'
+        }
+      },
+      {
+        nome:'Stacchi rumeni (RDL)', serieTarget:3, ripTarget:'8-10', recupero:120,
+        note:'Schiena neutra = limite assoluto, confermato pulito a 30kg. RIR 3 fisso — mai cedimento, mai come standard su questo esercizio, in nessun momento del blocco.',
+        alternativa:'Hip hinge a corpo libero',
+        video:'https://www.youtube.com/watch?v=avFCLVJB0xs',
+        immagine:'',
+        guida:{
+          muscoli:'Femorali, glutei, bassa schiena in stabilizzazione.',
+          esecuzione:'In piedi con bilanciere o manubri davanti alle cosce, ginocchia leggermente piegate. Spingi i fianchi indietro mantenendo la schiena dritta, scendi il peso lungo le gambe fino a sentire lo stiramento dei femorali, poi risali spingendo con i fianchi.',
+          errori:'Al primo segnale che la schiena perde la posizione neutra, la serie finisce lì: non è un esercizio su cui cercare il cedimento, mai.'
+        }
+      },
+      {
+        nome:'Hip Thrust (macchina Panatta)', serieTarget:4, ripTarget:'6-8', recupero:120,
+        note:'Punto fermo collaudato dal Blocco 2. NON multipower: macchina Panatta dedicata. RIR 2.',
+        alternativa:'Ponte glutei a corpo libero',
+        video:'https://www.youtube.com/watch?v=nME5wVVCfc4',
+        immagine:'https://wger.de/media/exercise-images/1642/a81ad922-caf5-47f8-99b4-640cb0717436.webp',
+        guida:{
+          muscoli:'Glutei principalmente, femorali e core di supporto.',
+          esecuzione:'Seduto sulla macchina con la schiena appoggiata allo schienale basculante e i piedi sulla pedana, rullo imbottito posizionato sopra le anche. Spingi le anche in alto estendendole contro il rullo fino ad allineare ginocchia-bacino-spalle, poi torna giù con controllo.',
+          errori:'Non iperestendere la schiena in cima: fermati quando bacino e spalle sono allineati.'
+        }
+      },
+      {
+        nome:'Leg Extension', serieTarget:3, ripTarget:'12-15', recupero:75,
+        note:'Separato, non in superset con nient\'altro. RIR 2.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=wRSr98kKUsg',
+        immagine:'',
+        guida:{
+          muscoli:'Quadricipiti.',
+          esecuzione:'Seduto con schiena aderente allo schienale, cuscinetto sopra le caviglie. Estendi le ginocchia sollevando il peso, poi torna con controllo senza far "cadere" il peso.',
+          errori:'Non bloccare le ginocchia di scatto in cima, non sollevare il bacino dal sedile.'
+        }
+      },
+      {
+        nome:'Leg Curl (seduto, fisso)', serieTarget:3, ripTarget:'12-15', recupero:75,
+        note:'Sempre seduto, mai sdraiato: anca flessa per uno stimolo migliore sul femorale e per confrontare i carichi nel tempo. RIR 2.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=1zevKZn_n1E',
+        immagine:'https://wger.de/media/exercise-images/364/b318dde9-f5f2-489f-940a-cd864affb9e3.png',
+        guida:{
+          muscoli:'Femorali (parte posteriore della coscia).',
+          esecuzione:'Seduto, cuscinetto superiore sopra le ginocchia, inferiore dietro le caviglie. Fletti portando il cuscinetto verso i glutei, torna con eccentrica lenta di circa 3 secondi.',
+          errori:'Non inarcare la schiena sollevando il bacino, non lasciare che il ritorno sia incontrollato. Usa sempre la versione seduta, non quella sdraiata.'
+        }
+      },
+      {
+        nome:'Bicep curl (bilanciere EZ, in piedi)', serieTarget:3, ripTarget:'10-12', recupero:5,
+        note:'In superset con Tricep pushdown (esercizio successivo): nessun recupero tra i due, il riposo pieno arriva solo dopo la coppia. Niente appoggio: attenzione a non slanciare con la schiena. RIR 2-3.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Bicipite brachiale, avambraccio.',
+          esecuzione:'In piedi, bilanciere EZ con presa poco più larga delle spalle. Fletti i gomiti portando il bilanciere verso il petto mantenendoli fermi lungo i fianchi, poi scendi con controllo.',
+          errori:'Senza appoggio alla schiena è facile slanciare con il busto per aiutarsi: se succede, il peso è troppo alto.'
+        }
+      },
+      {
+        nome:'Tricep pushdown (sbarra piegata)', serieTarget:3, ripTarget:'10-12', recupero:90,
+        note:'In superset con Bicep curl (esercizio precedente): il recupero di 90" arriva dopo la coppia, non tra i due. Presa fissa, angolo diverso dalla corda usata nel giorno Metabolico. RIR 2-3.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Tricipite brachiale.',
+          esecuzione:'In piedi davanti al cavo alto, gomiti fissi vicino al busto, impugna la sbarra piegata con presa prona. Spingi verso il basso estendendo il gomito, poi torna con controllo senza bloccare l\'articolazione.',
+          errori:'Non muovere i gomiti in avanti/indietro durante il movimento, non usare il peso del corpo per spingere.'
+        }
+      },
+      {
+        nome:'Calf raise in piedi', serieTarget:3, ripTarget:'15-20', recupero:60,
+        note:'Articolazione tollerante: via libera vicino al cedimento. RIR 1-2.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=zfDcdL06LxI',
+        immagine:'',
+        guida:{
+          muscoli:'Polpacci (gastrocnemio e soleo).',
+          esecuzione:'In piedi, punte dei piedi su un rialzo o alla macchina dedicata. Sali sulle punte il più possibile, poi scendi lasciando allungare bene il polpaccio.',
+          errori:'Non rimbalzare a fine corsa: cerca l\'escursione completa, salita piena e discesa fino ad allungare il polpaccio.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'blocco3c',
+    gruppo: 'blocco3',
+    frequenzaSettimanale: 4,
+    nome: 'Blocco 3 — Torso Metabolico',
+    periodo: '2 mesi · 4x/settimana (Torso/Arti) · split Forza + Ipertrofia',
+    durataSettimane: 8,
+    descrizione: 'Terzo giorno della settimana: secondo stimolo per petto e schiena nella settimana, con reps più alte e RIR generalmente più basso (più vicino al cedimento) rispetto al giorno Meccanico, isolamento spalla sempre escluso.',
+    note: 'RIR più basso rispetto al giorno Meccanico, ma non cedimento vero fino a metà blocco sulle tirate guidate (High Row, Pullover). Isolamento spalla (Rear Delt, Alzate laterali) resta mai a cedimento, in nessun momento del blocco. Niente scarico a metà percorso: deload completo solo a fine Blocco 3. Continua da Blocco 2 il riscaldamento specifico Torso.',
+    riscaldamento: [
+      {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi/curvo al bancone', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
+      {nome:'Affondo con rotazione toracica', serie:'5-6 per lato', note:'Apre il torace, utile prima di spinte e tirate', video:'https://www.youtube.com/watch?v=Boi2zLj_4_8'},
+      {nome:'Band pull-apart / rotazioni spalle', serie:'15-20 ripetizioni', note:'Riattiva i muscoli posteriori della spalla — fondamentale prima di alzate laterali e rear delt', video:'https://www.youtube.com/watch?v=hfhQm_FgbkE'},
+      {nome:'Rotazione esterna spalla con elastico', serie:'10-12 per lato', note:'Attiva la cuffia dei rotatori, prepara la spalla sinistra al lavoro di spinta e isolamento', video:'https://www.youtube.com/watch?v=0NqPhpQonXY'},
+      {nome:'Cerchi con le braccia', serie:'10 per verso', note:'Lubrifica l\'articolazione della spalla prima della chest press', video:'https://www.youtube.com/shorts/pdNSBEkdK3M'}
+    ],
+    esercizi: [
+      {
+        nome:'Chest Press Inclinata (macchina guidata)', serieTarget:3, ripTarget:'10-12', recupero:90,
+        note:'Nuovo: stessa cautela del Blocco 3 sul carico iniziale, un gradino sotto il percepito nelle prime sedute. RIR 2-3.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Pettorali (fascio alto), spalle anteriori e tricipiti (secondari).',
+          esecuzione:'Sedile regolato con le maniglie all\'altezza della parte alta del petto, schienale leggermente inclinato. Spingi in avanti e verso l\'alto senza bloccare i gomiti, torna con controllo.',
+          errori:'Non far risalire le spalle verso le orecchie in spinta: il movimento parte dal petto, non dai trapezi.'
+        }
+      },
+      {
+        nome:'Cavi incrociati (carrucola bassa→alta)', serieTarget:2, ripTarget:'12-15', recupero:75,
+        note:'Colpisce i fasci alti del petto, complementare alla Pec Fly dello stesso giorno. RIR 2-3.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Pettorali (fascio alto/clavicolare).',
+          esecuzione:'Carrucole basse, un manubrio/maniglia per mano, busto leggermente inclinato in avanti. Porta le mani in alto e verso il centro davanti al viso, incrociandole leggermente, poi torna con controllo.',
+          errori:'Non usare slancio del busto, mantieni un leggero piegamento del gomito per tutto il movimento.'
+        }
+      },
+      {
+        nome:'Pec Fly (macchina dedicata)', serieTarget:2, ripTarget:'10-12', recupero:75,
+        note:'Chiusura petto a fine sessione. RIR 2.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=ybi3NPUK47M',
+        immagine:'',
+        guida:{
+          muscoli:'Pettorali (fascio principale), spalle anteriori in stabilizzazione.',
+          esecuzione:'Seduto con schiena aderente allo schienale, braccia leggermente piegate sui pad. Porta le braccia in avanti fino quasi a toccarsi davanti al petto, poi torna con controllo lasciando aprire il petto.',
+          errori:'Non estendere troppo indietro le braccia in apertura, non usare slancio.'
+        }
+      },
+      {
+        nome:'High Row bilaterale', serieTarget:3, ripTarget:'10-12', recupero:90,
+        note:'RIR basso ma non cedimento vero fino a metà blocco (~settimana 5). RIR 1-2.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Dorsali, trapezio medio, romboidi, deltoide posteriore (secondario).',
+          esecuzione:'Seduto alla macchina con le maniglie in alto davanti a te, busto eretto. Tira entrambe le maniglie verso il petto portando i gomiti alti e indietro, poi torna con controllo.',
+          errori:'Non usare lo slancio del busto, scapole che si muovono verso il basso e indietro, non verso le orecchie.'
+        }
+      },
+      {
+        nome:'Pullover alla corda', serieTarget:2, ripTarget:'12-15', recupero:75,
+        note:'Non cercare il massimo stiramento overhead in apertura: il movimento resta controllato in tutto l\'arco. RIR 1-2.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Gran dorsale, pettorali (secondari), tricipite lungo in stabilizzazione.',
+          esecuzione:'In piedi davanti al cavo alto, corda afferrata con braccia tese sopra la testa. Porta le braccia in basso verso le cosce mantenendo i gomiti leggermente piegati e fissi, poi torna con controllo senza cercare l\'apertura massima.',
+          errori:'Non flettere i gomiti durante la tirata, non inarcare la schiena per aiutarsi.'
+        }
+      },
+      {
+        nome:'Rear Delt (reverse fly)', serieTarget:2, ripTarget:'12-15', recupero:60,
+        note:'Mai a cedimento, in nessun momento del blocco. RIR 3-4 fisso.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=phNhRhn7EOI',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoide posteriore, romboidi, trapezio.',
+          esecuzione:'Busto inclinato in avanti o seduto alla macchina reverse fly, braccia leggermente piegate. Apri le braccia lateralmente portando le scapole verso il centro, poi torna con controllo.',
+          errori:'Non usare pesi troppo pesanti che costringono a slanciare: movimento lento e controllato, specie in discesa.'
+        }
+      },
+      {
+        nome:'Alzate laterali (macchina)', serieTarget:3, ripTarget:'8-10', recupero:60,
+        note:'Passata a 3 serie rispetto alle 2 del giorno Meccanico: l\'RIR 3-4 conservativo lo consente senza rischio per la spalla. RIR 3-4 fisso.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=jTRbSoPm9uQ',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoide laterale (spalla).',
+          esecuzione:'Seduto alla macchina con schiena aderente allo schienale, gomiti appoggiati ai pad imbottiti. Solleva le braccia lateralmente fino all\'altezza delle spalle spingendo con i gomiti, poi scendi con controllo senza far ricadere il peso.',
+          errori:'Non superare l\'altezza delle spalle, non usare slancio del busto. Carico ridotto per la spalla sinistra: fermati al primo fastidio.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'blocco3d',
+    gruppo: 'blocco3',
+    frequenzaSettimanale: 4,
+    nome: 'Blocco 3 — Arti Metabolico',
+    periodo: '2 mesi · 4x/settimana (Torso/Arti) · split Forza + Ipertrofia',
+    durataSettimane: 8,
+    descrizione: 'Quarto giorno della settimana: secondo stimolo per quadricipiti e polpacci, seconda variante per i glutei (Hip Thrust Kneeling) e seconda esposizione settimanale per bicipiti/tricipiti in superset.',
+    note: 'RIR generalmente più alto rispetto al giorno Meccanico sugli isolamenti ad articolazione tollerante (via libera vicino al cedimento), più conservativo su Hyperextension (RIR 2 fisso, focus glutei, non cedimento libero). Superset ammesso solo su bicipiti/tricipiti: recupero pieno dopo la coppia, non tra i due esercizi. Niente scarico a metà percorso: deload completo solo a fine Blocco 3.',
+    riscaldamento: [
+      {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
+      {nome:'Leg swings', serie:'10 per lato', note:'Sblocca l\'anca prima di leg press e stacchi', video:'https://www.youtube.com/watch?v=difYoBtZi2s'},
+      {nome:'Caviglia contro muro (ginocchio a muro)', serie:'5-6 per lato', note:'Migliora la profondità in leg press', video:'https://www.youtube.com/watch?v=-9XqrNwJ6aI'},
+      {nome:'Rotazioni anca (hip circles)', serie:'8-10 per lato', note:'Prepara l\'anca al lavoro di hip thrust e bulgarian squat', video:'https://www.youtube.com/watch?v=JYqLwajOGjI'},
+      {nome:'Ponte glutei a corpo libero', serie:'10-12 ripetizioni', note:'Attiva i glutei prima di hip thrust e bulgarian squat', video:'https://www.youtube.com/watch?v=6Ee51lGlQFE'}
+    ],
+    esercizi: [
+      {
+        nome:'Leg Press 45°', serieTarget:3, ripTarget:'12-15', recupero:90,
+        note:'Secondo stimolo quadricipiti della settimana, dopo l\'Hack Squat del giorno Meccanico. RIR 2-3.',
+        alternativa:'Squat a corpo libero',
+        video:'https://www.youtube.com/watch?v=z-6O7fi2uJA',
+        immagine:'https://wger.de/media/exercise-images/371/d2136f96-3a43-4d4c-9944-1919c4ca1ce1.webp',
+        guida:{
+          muscoli:'Quadricipiti, glutei, femorali (secondari).',
+          esecuzione:'Siediti con schiena e bacino aderenti allo schienale. Piedi sulla pedana all\'altezza delle spalle. Scendi controllato fino a circa 90° di flessione senza staccare i talloni, poi spingi senza bloccare le ginocchia a fine corsa.',
+          errori:'Non staccare i talloni, non avvicinare troppo le ginocchia, non bloccare le ginocchia in estensione completa.'
+        }
+      },
+      {
+        nome:'Bulgarian Squat (macchina)', serieTarget:3, ripTarget:'8-10 per gamba', recupero:90,
+        note:'Nuovo: esercizio compound, stessa cautela sul carico iniziale — un gradino sotto il percepito nelle prime sedute. RIR 2.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Quadricipiti, glutei, femorali in stabilizzazione.',
+          esecuzione:'Piede posteriore appoggiato su un supporto rialzato, piede anteriore avanti sulla pedana della macchina. Scendi flettendo il ginocchio anteriore fino a circa 90°, poi spingi per risalire. Completa tutte le ripetizioni su una gamba prima di cambiare lato.',
+          errori:'Il ginocchio anteriore non deve superare troppo la punta del piede; mantieni il busto eretto per tutto il movimento.'
+        }
+      },
+      {
+        nome:'Hip Thrust Kneeling (Impulse)', serieTarget:3, ripTarget:'12-15', recupero:90,
+        note:'Seconda variante glutei della settimana, dopo l\'Hip Thrust classico del giorno Meccanico. RIR 2-3.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Glutei principalmente, femorali in stabilizzazione.',
+          esecuzione:'In ginocchio alla macchina Impulse, busto appoggiato al pad superiore, rullo imbottito sopra le anche. Spingi le anche in avanti/alto estendendole contro il rullo, poi torna con controllo.',
+          errori:'Non inarcare la zona lombare in cima al movimento: la spinta parte dai glutei, non dalla schiena.'
+        }
+      },
+      {
+        nome:'Hyperextension (macchina)', serieTarget:3, ripTarget:'12-15', recupero:75,
+        note:'Focus glutei confermato. RIR 2 fisso — non è un esercizio da portare a cedimento libero.',
+        alternativa:'Superman a terra',
+        video:'https://www.youtube.com/watch?v=fe6mAfwLlK0',
+        immagine:'',
+        guida:{
+          muscoli:'Glutei, femorali, lombari in stabilizzazione (catena posteriore).',
+          esecuzione:'Sulla panca hyperextension con bacino sul cuscino e caviglie bloccate, busto piegato in avanti. Solleva il busto fino ad allineare schiena e gambe contraendo i glutei, senza inarcare oltre, poi scendi con controllo.',
+          errori:'Niente slancio: salita fino all\'allineamento e basta, mai iperestendere oltre la linea retta.'
+        }
+      },
+      {
+        nome:'Abduttore', serieTarget:3, ripTarget:'15-20', recupero:60,
+        note:'Articolazione tollerante: via libera vicino al cedimento tecnico. RIR 1-2.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Medio e piccolo gluteo (abduttori dell\'anca).',
+          esecuzione:'Seduto alla macchina con le ginocchia contro i pad esterni. Apri le gambe verso l\'esterno contro la resistenza, poi torna con controllo senza far "sbattere" i pad al centro.',
+          errori:'Non usare slancio del busto, movimento controllato in entrambe le direzioni.'
+        }
+      },
+      {
+        nome:'Adduttore', serieTarget:3, ripTarget:'15-20', recupero:60,
+        note:'Articolazione tollerante: via libera vicino al cedimento tecnico. RIR 1-2.',
+        alternativa:'—',
+        video:'', immagine:'',
+        guida:{
+          muscoli:'Adduttori della coscia (interno coscia).',
+          esecuzione:'Seduto alla macchina con le ginocchia contro i pad interni, gambe leggermente aperte in partenza. Chiudi le gambe verso il centro contro la resistenza, poi torna con controllo.',
+          errori:'Non usare slancio, non forzare oltre l\'ampiezza comoda dell\'anca.'
+        }
+      },
+      {
+        nome:'Calf raise in piedi', serieTarget:3, ripTarget:'15-20', recupero:60,
+        note:'Secondo stimolo polpacci della settimana. RIR 1-2.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=zfDcdL06LxI',
+        immagine:'',
+        guida:{
+          muscoli:'Polpacci (gastrocnemio e soleo).',
+          esecuzione:'In piedi, punte dei piedi su un rialzo o alla macchina dedicata. Sali sulle punte il più possibile, poi scendi lasciando allungare bene il polpaccio.',
+          errori:'Non rimbalzare a fine corsa: cerca l\'escursione completa.'
+        }
+      },
+      {
+        nome:'Bicep curl (panca inclinata 30°)', serieTarget:2, ripTarget:'12-15', recupero:5,
+        note:'Seconda esposizione braccia della settimana. In superset con Tricep pushdown (esercizio successivo): nessun recupero tra i due. RIR 2-3.',
+        alternativa:'panca Scott/preacher curl',
+        video:'https://www.youtube.com/watch?v=DCe8f6vMe9A',
+        immagine:'',
+        guida:{
+          muscoli:'Bicipite brachiale, avambraccio.',
+          esecuzione:'Sdraiato sulla schiena su una panca inclinata a circa 30°, un manubrio per mano con le braccia che pendono verso il basso. Fletti portando il peso verso la spalla mantenendo il gomito fermo, poi scendi con controllo fino a distendere completamente il braccio.',
+          errori:'La schiena resta aderente allo schienale: non staccarla né spingere in avanti con il busto per aiutarsi.'
+        }
+      },
+      {
+        nome:'Tricep pushdown (corda)', serieTarget:2, ripTarget:'12-15', recupero:90,
+        note:'In superset con Bicep curl (esercizio precedente): il recupero di 90" arriva dopo la coppia. RIR 2-3.',
+        alternativa:'Tricep pushdown con barra dritta',
+        video:'https://www.youtube.com/watch?v=d-ySLTHUgQA',
+        immagine:'',
+        guida:{
+          muscoli:'Tricipite brachiale.',
+          esecuzione:'In piedi davanti al cavo alto, gomiti fissi vicino al busto, impugna la corda con presa neutra. Spingi verso il basso estendendo il gomito e ruotando leggermente i polsi verso l\'esterno a fine corsa, poi torna con controllo senza bloccare l\'articolazione.',
+          errori:'Non muovere i gomiti in avanti/indietro durante il movimento, non usare il peso del corpo per spingere.'
+        }
+      }
+    ]
   }
 ];
 
@@ -1786,6 +2222,24 @@ const CARDIO_INFO = {
   nota: 'Negli altri giorni liberi dalla palestra: 15-20 minuti di camminata a passo sostenuto o cyclette leggera, come nel Blocco 1.'
 };
 
+/* Sessione cardio del Blocco 3: 2x/settimana fisse (mercoledì e sabato),
+   con lavoro addominale a corpo libero dopo il cardio (mai prima: un core
+   già affaticato comprometterebbe la stabilità della sessione). Stessa
+   logica di CARDIO_INFO ma dati propri — mostrata al posto di CARDIO_INFO
+   quando il gruppo "blocco3" è tra quelli con una scheda assegnata. */
+const CARDIO_INFO_BLOCCO3 = {
+  gruppo: 'blocco3',
+  titolo: '🫁 Sessione cardio dedicata',
+  frequenza: '2x/settimana (mercoledì e sabato)',
+  righe: [
+    { label: 'Quando', testo: 'Mercoledì e sabato, 30 minuti ciascuna.' },
+    { label: 'Attività', testo: 'Tapis roulant a passo veloce (~9 km/h come riferimento, non un numero fisso). Preferisci la cyclette il mercoledì se le gambe sono ancora provate dal giorno Arti Meccanico del martedì.' },
+    { label: 'Intensità', testo: 'Usa sempre il test del parlato: una frase di 8-10 parole detta senza fiatone. Se a 9 km/h non ci riesci comodamente, scendi anche a 7.5-8 km/h senza problemi.' },
+    { label: 'Addominali dopo il cardio', testo: 'Solo dopo i 30 minuti, non prima: Plank 3x45-60" e Crunch (machine o corpo libero) 3x15-20, vicino al cedimento tecnico — articolazione tollerante.' }
+  ],
+  nota: 'Niente scarico programmato a metà blocco: a metà percorso (settimana 4) si fa comunque un controllo dei dati (RPE, recupero, costanza) per decidere se continuare invariati o intervenire in piccolo. Il deload pieno è riservato alla fine delle 8 settimane.'
+};
+
 /* Attività per la sessione cardio avviabile dall'app, con il MET (Metabolic
    Equivalent of Task) di riferimento per ciascuna a ritmo Zona 2/moderato —
    valori standard da tabelle di compendio dell'attività fisica. Servono solo
@@ -1800,15 +2254,33 @@ const CARDIO_ATTIVITA = [
 /* Blocchi futuri (non ancora attivabili): anteprima informativa fedele al piano PDF.
    L'ex voce "Impostazione" è stata rimossa da qui perché ora è una scheda vera
    (Blocco 2 — Giorno A/B) e comparirebbe due volte, come testo statico e come
-   scheda reale caricata da Firestore. */
-const PROSSIMI_BLOCCHI = [
-  {
-    nome: 'Progressione',
-    periodo: 'Durata da definire · 4x/settimana',
-    focus: 'Aumento volume/intensità in base ai risultati',
-    descrizione: 'Il volume e l\'intensità aumenteranno in base ai risultati reali raggiunti nei blocchi precedenti, quando sarai pronto ad allenarti 4 volte a settimana.'
-  }
-];
+   scheda reale caricata da Firestore. Stesso discorso ora per il Blocco 3: è
+   diventato una scheda vera (in stand-by, vedi BLOCCO3_SCHEDA_IDS), quindi
+   l'anteprima generica "Progressione" è stata rimossa per non duplicarla —
+   la card di stand-by in Allenamento mostra già l'avanzamento reale. */
+const PROSSIMI_BLOCCHI = [];
+
+/* ============ STAND-BY BLOCCO 3 ============
+   Il Blocco 3 è già presente nel catalogo schede (per i dettagli degli
+   esercizi, vedi SCHEDE_DEFAULT) ma resta bloccato finché non si completa la
+   12ª seduta del Blocco 2: lo sblocco è legato alle sedute fatte, non al
+   calendario. Il cambio del piano alimentare è un secondo trigger, distinto
+   e successivo: scatta solo quando l'utente avvia davvero il primo
+   allenamento del Blocco 3 (non quando il Blocco 3 si sblocca). */
+const BLOCCO3_SCHEDA_IDS = ['blocco3a','blocco3b','blocco3c','blocco3d'];
+const BLOCCO3_SEDUTE_SBLOCCO = 12;
+
+function blocco3Sbloccato(){
+  return sessioniGruppo('blocco2').length >= BLOCCO3_SEDUTE_SBLOCCO;
+}
+
+/* Vero dal momento in cui l'utente avvia la prima sessione su una scheda del
+   Blocco 3 (avviaSessione imposta blocchiIniziati[schedaId]): è questo,
+   esplicitamente, "il primo giorno del Blocco 3" che fa scattare il nuovo
+   piano alimentare — non lo sblocco in sé, non una data di calendario. */
+function blocco3Attivo(){
+  return BLOCCO3_SCHEDA_IDS.some(id => !!blocchiIniziati[id]);
+}
 
 /* Catalogo schede reale, caricato da Firestore (collection "schede").
    Al primissimo avvio in assoluto, se la collection è vuota, viene popolata
@@ -1855,9 +2327,18 @@ function schedeAssegnateUtente(){
    Non esiste più un override modificabile dall'utente in Profilo: la dieta
    la aggiorna il trainer direttamente nel piano (DIETA_PIANO), così i target
    restano sempre coerenti col tipo di giorno invece di restare bloccati su
-   un valore fisso. */
+   un valore fisso.
+   Dal momento in cui parte il Blocco 3 (blocco3Attivo(), vedi sopra), i
+   target passano a DIETA_PIANO_BLOCCO3: le opzioni/alimenti dei pasti restano
+   quelle del piano Blocco 2 (nessun nuovo piano pasto-per-pasto fornito),
+   solo i totali giornalieri cambiano — targetPastiCalibrati() li ridistribuisce
+   comunque in automatico sui pasti esistenti. */
+function pianoDietaAttivo(){
+  return blocco3Attivo() ? DIETA_PIANO_BLOCCO3 : DIETA_PIANO;
+}
 function obiettiviAttivi(allenamento){
-  const base = allenamento ? DIETA_PIANO.target.allenamento : DIETA_PIANO.target.riposo;
+  const piano = pianoDietaAttivo();
+  const base = allenamento ? piano.target.allenamento : piano.target.riposo;
   return { kcal:base.kcal, prot:base.prot, carb:base.carb, grassi:base.grassi, acquaMl:2500 };
 }
 
@@ -3232,7 +3713,13 @@ function toggleCardioEspansa(){
 }
 function renderAllenamentoList(){
   pageTitle.textContent = 'Allenamento';
-  const disponibili = schedeAssegnateUtente();
+  const tutteAssegnate = schedeAssegnateUtente();
+  // Il Blocco 3 esiste già nel catalogo ma resta in stand-by finché non si
+  // completano le sedute richieste del Blocco 2 (vedi BLOCCO3_SCHEDA_IDS):
+  // lo si filtra via qui, così non può comparire né essere avviato prima
+  // dello sblocco. Una volta sbloccato, torna a comportarsi come le altre schede.
+  const blocco3Pronto = blocco3Sbloccato();
+  const disponibili = tutteAssegnate.filter(s => !(BLOCCO3_SCHEDA_IDS.includes(s.id) && !blocco3Pronto));
   const attive = disponibili.filter(s=>!schedaScaduta(s));
   const passate = disponibili.filter(s=>schedaScaduta(s));
 
@@ -3283,25 +3770,28 @@ function renderAllenamentoList(){
   `;
   }).join('');
 
-  if(gruppiMostrati.has(CARDIO_INFO.gruppo)){
-    const righeHtml = CARDIO_INFO.righe.map(r=>`<div class="cardio-row"><b>${r.label}</b><span>${r.testo}</span></div>`).join('');
+  // Card cardio: una per ogni gruppo con info dedicate (Blocco 2 e, dal suo
+  // sblocco, anche Blocco 3) effettivamente presente tra le schede mostrate.
+  [CARDIO_INFO, CARDIO_INFO_BLOCCO3].forEach(info=>{
+    if(!gruppiMostrati.has(info.gruppo)) return;
+    const righeHtml = info.righe.map(r=>`<div class="cardio-row"><b>${r.label}</b><span>${r.testo}</span></div>`).join('');
     const fatteSettimana = cardioSessioniUltimi7Giorni();
     html += `<p class="section-label">Cardio</p><div class="cardio-card">
       <div class="cardio-head">
         <span class="cardio-icon">🫁</span>
         <div>
-          <h3>${CARDIO_INFO.titolo}</h3>
-          <span class="cardio-freq">${fatteSettimana>0 ? `${fatteSettimana} fatta${fatteSettimana===1?'':'e'} negli ultimi 7 giorni` : CARDIO_INFO.frequenza}</span>
+          <h3>${info.titolo}</h3>
+          <span class="cardio-freq">${fatteSettimana>0 ? `${fatteSettimana} fatta${fatteSettimana===1?'':'e'} negli ultimi 7 giorni` : info.frequenza}</span>
         </div>
       </div>
       <button class="btn" style="margin-bottom:8px;" onclick="avviaSessioneCardio()">▶ Avvia sessione cardio</button>
       <button class="cardio-toggle" onclick="toggleCardioEspansa()">${cardioEspansa ? '– Nascondi dettagli' : '+ Come funziona'}</button>
       ${cardioEspansa ? `
         <div class="cardio-rows">${righeHtml}</div>
-        <p class="cardio-nota">${CARDIO_INFO.nota}</p>
+        <p class="cardio-nota">${info.nota}</p>
       ` : ''}
     </div>`;
-  }
+  });
 
   if(passate.length){
     html += `<p class="section-label">Allenamenti passati</p>`;
@@ -3311,6 +3801,25 @@ function renderAllenamentoList(){
         <p>${s.periodo} · blocco concluso</p>
       </div>
     `).join('');
+  }
+
+  // Card di stand-by per il Blocco 3: visibile finché non si sblocca,
+  // mostra l'avanzamento reale verso la 12ª seduta del Blocco 2. Una volta
+  // sbloccato, il Blocco 3 compare normalmente tra "Le tue schede" e questa
+  // card sparisce da sola (blocco3Pronto diventa true).
+  if(!blocco3Pronto && tutteAssegnate.some(s=>BLOCCO3_SCHEDA_IDS.includes(s.id))){
+    const fatte = sessioniGruppo('blocco2').length;
+    const pct = Math.min(100, Math.round(fatte/BLOCCO3_SEDUTE_SBLOCCO*100));
+    html += `<p class="section-label">Prossimo blocco</p>
+    <div class="list-item locked">
+      <h3>🔒 Blocco 3 — Forza + Ipertrofia</h3>
+      <p>2 mesi · 4x/settimana · split Torso/Arti, Meccanico/Metabolico</p>
+      <p class="scheda-desc">Si sblocca al completamento della ${BLOCCO3_SEDUTE_SBLOCCO}ª seduta del Blocco 2. Il nuovo piano alimentare partirà a parte, dal giorno in cui avvierai davvero la prima sessione del Blocco 3.</p>
+      <div class="blocco-progress" style="margin-top:10px;">
+        <p class="bp-label">${fatte}/${BLOCCO3_SEDUTE_SBLOCCO} sedute del Blocco 2 completate</p>
+        <div class="bp-bar"><div class="bp-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
   }
 
   // L'anteprima dei blocchi futuri è parte del piano personale di Antonio:
@@ -5631,6 +6140,25 @@ const DIETA_PIANO = {
   ]
 };
 
+/* Target nutrizionali del Blocco 3 (Piano_Nutrizionale_Blocco3_per_Sviluppatore,
+   preparato 01/10/2026): sostituiscono DIETA_PIANO.target da quando
+   blocco3Attivo() diventa vero (vedi pianoDietaAttivo()/obiettiviAttivi()).
+   Le opzioni pasto (alimenti, preparazioni) restano quelle di DIETA_PIANO:
+   nel documento ricevuto sono stati forniti solo i target di macro
+   giornalieri aggregati, non un nuovo piano pasto-per-pasto — targetPastiCalibrati()
+   ridistribuisce comunque i nuovi totali sui pasti esistenti in automatico.
+   Giorni con solo sessione cardio (mercoledì, sabato) contano come riposo a
+   livello calorico, per scelta esplicita dell'utente. */
+const DIETA_PIANO_BLOCCO3 = {
+  versione: 'v9-blocco3',
+  aggiornato: '01/10/2026',
+  fase: 'Ricomposizione corporea + Blocco 3 di allenamento',
+  target: {
+    riposo:      { kcal:2195, prot:155, carb:250, grassi:62 },
+    allenamento: { kcal:2495, prot:155, carb:325, grassi:62 }
+  }
+};
+
 /* ============ MICRONUTRIENTI (vitamine, minerali, acqua) ============
    Valori indicativi per 100g, presi da tabelle nutrizionali standard
    (riferimento generico tipo CREA/USDA per l'alimento "medio" nella
@@ -6226,7 +6754,7 @@ function renderAlimentazione(){
   view.innerHTML = `
     <div class="diet-summary diet-summary-glow">
       <div class="tlt">Piano nutrizionale</div>
-      <div class="tsb">${DIETA_PIANO.fase}<br>5 pasti al giorno · segna cosa mangi davvero, pasto per pasto</div>
+      <div class="tsb">${pianoDietaAttivo().fase}<br>5 pasti al giorno · segna cosa mangi davvero, pasto per pasto</div>
       ${cache.dietaLogOggi.giornoAllenamento!==null ? `<div class="day-mode-toggle">
         <button class="dmt-btn${!cache.dietaLogOggi.giornoAllenamento?' active':''}" onclick="impostaGiornoDiretto(false)">🛋️ Riposo</button>
         <button class="dmt-btn${cache.dietaLogOggi.giornoAllenamento?' active':''}" onclick="impostaGiornoDiretto(true)">🏋️ Allenamento</button>
