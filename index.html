@@ -388,6 +388,12 @@
     border-radius:10px;padding:9px 2px;font-size:12.5px;font-weight:700;text-align:center;
   }
   .set-row select:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+  .abs-row{display:grid;grid-template-columns:22px 1fr 30px;gap:8px;align-items:center;margin-bottom:8px;}
+  .abs-row.abs-peso{grid-template-columns:22px 1fr 1fr 30px;}
+  .abs-row span{font-size:13px;color:var(--text-dim);font-weight:700;}
+  .abs-row input[type=number]{width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 9px;font-size:14.5px;font-weight:600;}
+  .abs-row input[type=number]:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+  .abs-row input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent);}
   .peso-stepper{display:flex;align-items:center;gap:3px;}
   .peso-stepper input[type=number]{flex:1;min-width:0;text-align:center;padding:10px 2px;}
   .stepper-btn{
@@ -2310,8 +2316,13 @@ const PROSSIMI_BLOCCHI = [];
 const BLOCCO3_SCHEDA_IDS = ['blocco3a','blocco3b','blocco3c','blocco3d'];
 const BLOCCO3_SEDUTE_SBLOCCO = 12;
 
+/* Gruppi di schede chiusi a mano (blocco concluso senza aspettare la scadenza
+   a calendario): trattati da schedaScaduta() come "passati", non più
+   avviabili. Chiudere il Blocco 2 sblocca anche il Blocco 3. */
+const BLOCCHI_CHIUSI = ['blocco2'];
+
 function blocco3Sbloccato(){
-  return sessioniGruppo('blocco2').length >= BLOCCO3_SEDUTE_SBLOCCO;
+  return BLOCCHI_CHIUSI.includes('blocco2') || sessioniGruppo('blocco2').length >= BLOCCO3_SEDUTE_SBLOCCO;
 }
 
 /* Vero dal momento in cui l'utente avvia la prima sessione su una scheda del
@@ -2568,6 +2579,7 @@ let blocchiIniziati = {};
 let alternativeSalvate = {};
 
 function schedaScaduta(s){
+  if(s.gruppo && BLOCCHI_CHIUSI.includes(s.gruppo)) return true;
   const inizio = blocchiIniziati[s.id];
   if(!inizio || !s.durataSettimane) return false;
   const fine = new Date(inizio);
@@ -3120,6 +3132,15 @@ backBtn.addEventListener('click', async ()=>{
   if(route.name==='sessione'){
     if(!(await mostraConferma('Uscire? Il progresso di questa sessione andrà perso se non la salvi.'))) return;
     goHome();
+    return;
+  }
+  // In "Cerca alimento", se hai aperto il dettaglio di un alimento (magari
+  // quello sbagliato) la freccia indietro torna ai risultati della ricerca,
+  // non alla Dieta: query e risultati restano come li avevi lasciati, senza
+  // dover riaprire il pasto e rifare la ricerca.
+  if(route.name==='cerca-alimento' && ricercaAlimentoState.selezionato){
+    ricercaAlimentoState.selezionato = null;
+    renderCercaAlimento();
     return;
   }
   setRoute({name: BACK_MAP[route.name] || 'home'});
@@ -3835,7 +3856,7 @@ function renderAllenamentoList(){
           <span class="cardio-freq">${fatteSettimana>0 ? `${fatteSettimana} fatta${fatteSettimana===1?'':'e'} negli ultimi 7 giorni` : info.frequenza}</span>
         </div>
       </div>
-      <button class="btn" style="margin-bottom:8px;" onclick="avviaSessioneCardio()">▶ Avvia sessione cardio</button>
+      <button class="btn" style="margin-bottom:8px;" onclick="avviaSessioneCardio()">${info.gruppo==='blocco3' ? '▶ Avvia cardio e addome' : '▶ Avvia sessione cardio'}</button>
       <button class="cardio-toggle" onclick="toggleCardioEspansa()">${cardioEspansa ? '– Nascondi dettagli' : '+ Come funziona'}</button>
       ${cardioEspansa ? `
         <div class="cardio-rows">${righeHtml}</div>
@@ -3847,7 +3868,7 @@ function renderAllenamentoList(){
   if(passate.length){
     html += `<p class="section-label">Allenamenti passati</p>`;
     html += passate.map(s=>`
-      <div class="list-item passato" onclick='avviaSessione("${s.id}")'>
+      <div class="list-item passato" style="cursor:default;">
         <h3>${s.nome}</h3>
         <p>${s.periodo} · blocco concluso</p>
       </div>
@@ -3984,8 +4005,74 @@ function cardioSessioniUltimi7Giorni(){
   return cache.cardioSessioni.filter(s=> new Date(s.data).getTime() >= settimanaFa).length;
 }
 
+/* Addome del Blocco 3: va sempre DOPO i 30 minuti di cardio. Le serie si
+   segnano nella stessa schermata del cardio e vengono salvate con la sessione
+   (campo "addome" di cardioSessioni). Plank in secondi, Crunch in ripetizioni
+   con carico facoltativo (machine). */
+const ADDOME_BLOCCO3 = [
+  { nome:'Plank', serie:3, rip:'45-60"', unita:'sec', conPeso:false, nota:'Isometrico: si tiene la posizione ferma' },
+  { nome:'Crunch (machine o corpo libero)', serie:3, rip:'15-20', unita:'rip', conPeso:true, nota:'Movimento lento e controllato' }
+];
+
+// Con il Blocco 3 sbloccato la sessione cardio diventa "cardio + addome", da 30 minuti.
+function cardioBlocco3(){ return blocco3Sbloccato(); }
+
+function cardioObiettivo(){
+  return cardioBlocco3()
+    ? { ms:30*60*1000, etichetta:'30 min', intro:"Obiettivo: 30 minuti sul tapis roulant. Intensità: test del parlato — riesci a dire una frase di 8-10 parole senza fiatone. A 9 km/h si corre, non si cammina: se non parli comodamente scendi a 7,5-8 km/h. Poi l'addome, sempre dopo il cardio.", hint:'Test del parlato: una frase di 8-10 parole senza fiatone.' }
+    : { ms:22.5*60*1000, etichetta:'20-25 min', intro:"Obiettivo: 20-25 minuti continui in Zona 2 — riesci a parlare a frasi intere ma non a cantare.", hint:'Zona 2: riesci a parlare a frasi intere ma non a cantare.' };
+}
+
+function aggiornaAddome(ei, si, campo, valore){
+  if(!cardioDraft || !cardioDraft.addome) return;
+  const set = cardioDraft.addome[ei] && cardioDraft.addome[ei].sets[si];
+  if(!set) return;
+  set[campo] = valore;
+  if(campo==='fatta' && valore) hapticaLieve();
+}
+
+function aggiornaDatiAttrezzo(campo, valore){
+  if(!cardioDraft) return;
+  cardioDraft[campo] = valore;
+}
+
+// Dati letti sull'attrezzo (display di tapis/cyclette): facoltativi, si
+// salvano accanto alla stima dell'app per tenere un secondo riferimento.
+function renderDatiAttrezzoCardio(){
+  if(!cardioDraft) return '';
+  return `<div class="card"><h3 style="margin-top:0;font-size:15px;">📟 Dati dell'attrezzo <span style="font-size:11px;color:var(--text-dim);font-weight:600;">(facoltativi)</span></h3>
+    <div class="grid2">
+      <div class="field" style="margin-bottom:0;"><label>Kcal sull'attrezzo</label>
+        <input type="number" inputmode="numeric" min="0" max="3000" placeholder="es. 300" value="${cardioDraft.kcalAttrezzo||''}" oninput="aggiornaDatiAttrezzo('kcalAttrezzo',this.value)"></div>
+      <div class="field" style="margin-bottom:0;"><label>Velocità (km/h)</label>
+        <input type="number" inputmode="decimal" step="0.1" min="0" max="30" placeholder="es. 9" value="${cardioDraft.velocita||''}" oninput="aggiornaDatiAttrezzo('velocita',this.value)"></div>
+    </div>
+    <p class="field-hint" style="margin:10px 0 0;">Puoi inserirli anche a fine sessione, prima di premere Termina.</p>
+  </div>`;
+}
+
+function renderAddomeCardio(){
+  if(!cardioDraft || !cardioDraft.addome) return '';
+  const esercizi = cardioDraft.addome.map((d,ei)=>{
+    const def = ADDOME_BLOCCO3[ei];
+    const righe = d.sets.map((set,si)=>`<div class="abs-row${def.conPeso?' abs-peso':''}">
+      <span>${si+1}</span>
+      ${def.conPeso ? `<input type="number" inputmode="decimal" min="0" max="500" placeholder="kg" value="${set.peso}" oninput="aggiornaAddome(${ei},${si},'peso',this.value)">` : ''}
+      <input type="number" inputmode="numeric" min="0" placeholder="${def.unita==='sec'?'secondi':'ripetizioni'}" value="${set.val}" oninput="aggiornaAddome(${ei},${si},'val',this.value)">
+      <input type="checkbox" ${set.fatta?'checked':''} onchange="aggiornaAddome(${ei},${si},'fatta',this.checked)">
+    </div>`).join('');
+    return `<div style="margin-top:${ei?18:8}px;">
+      <div style="font-weight:800;font-size:14px;">${def.nome}</div>
+      <div class="ex-meta" style="margin:2px 0 10px;">${def.serie} x ${def.rip} · ${def.nota}</div>
+      ${righe}
+    </div>`;
+  }).join('');
+  return `<div class="card"><h3 style="margin-top:0;font-size:15px;">💪 Addome — dopo il cardio</h3>${esercizi}</div>`;
+}
+
 function avviaSessioneCardio(){
-  cardioDraft = { tipo:null, avviata:false };
+  cardioDraft = { tipo:null, avviata:false,
+    addome: cardioBlocco3() ? ADDOME_BLOCCO3.map(e=>({ nome:e.nome, unita:e.unita, sets:Array.from({length:e.serie},()=>({peso:'', val:'', fatta:false})) })) : null };
   setRoute({name:'sessione-cardio'});
 }
 
@@ -4042,10 +4129,10 @@ function aggiornaDisplayCardio(){
   const fill = document.getElementById('cardioTargetFill');
   const label = document.getElementById('cardioTargetLabel');
   if(fill && label){
-    const targetMs = 22.5*60*1000;
-    const pct = Math.min(100, Math.round(ms/targetMs*100));
+    const ob = cardioObiettivo();
+    const pct = Math.min(100, Math.round(ms/ob.ms*100));
     fill.style.width = pct+'%';
-    label.textContent = pct>=100 ? 'Obiettivo 20-25 min raggiunto 💪' : `${pct}% dell'obiettivo (20-25 min)`;
+    label.textContent = pct>=100 ? `Obiettivo ${ob.etichetta} raggiunto 💪` : `${pct}% dell'obiettivo (${ob.etichetta})`;
   }
 }
 
@@ -4062,6 +4149,16 @@ async function terminaSessioneCardio(){
     kcalStimate: kcal,
     data: new Date().toISOString()
   };
+  // Serie di addome segnate (solo quelle spuntate o con un valore).
+  const addome = (cardioDraft.addome||[]).map(e=>({
+    nome: e.nome,
+    unita: e.unita,
+    sets: e.sets.filter(x=>x.fatta || x.val!=='').map(x=>({ val:Number(x.val)||0, peso: x.peso!=='' ? Number(x.peso) : null, fatta: !!x.fatta }))
+  })).filter(e=>e.sets.length);
+  if(addome.length) payload.addome = addome;
+  const kcalAttr = Number(cardioDraft.kcalAttrezzo), vel = Number(cardioDraft.velocita);
+  if(kcalAttr>0) payload.kcalAttrezzo = Math.round(kcalAttr);
+  if(vel>0) payload.velocita = Math.round(vel*10)/10;
   try{
     const ref = await userCollection('cardioSessioni').add(payload);
     cache.cardioSessioni.push({ id: ref.id, ...payload });
@@ -4094,7 +4191,7 @@ function renderSessioneCardio(){
     view.innerHTML = `
       <div class="card">
         <h3 style="margin-top:0;">🫁 Nuova sessione cardio</h3>
-        <p style="color:var(--text-dim);font-size:12.5px;line-height:1.6;margin:0 0 16px;">Scegli l'attività, poi avvia il cronometro. Obiettivo: 20-25 minuti continui in Zona 2 — riesci a parlare a frasi intere ma non a cantare.</p>
+        <p style="color:var(--text-dim);font-size:12.5px;line-height:1.6;margin:0 0 16px;">Scegli l'attività, poi avvia il cronometro. ${cardioObiettivo().intro}</p>
         <div class="field">
           <label>Attività</label>
           <div class="chip-select">${chipsHtml}</div>
@@ -4110,17 +4207,19 @@ function renderSessioneCardio(){
   const elapsedMs = cardioElapsedMs();
   const att = CARDIO_ATTIVITA.find(a=>a.key===cardioDraft.tipo);
   const kcal = Math.round(kcalStimateCardio(cardioDraft.tipo, elapsedMs));
-  const targetMs = 22.5*60*1000;
-  const pct = Math.min(100, Math.round(elapsedMs/targetMs*100));
+  const ob = cardioObiettivo();
+  const pct = Math.min(100, Math.round(elapsedMs/ob.ms*100));
   view.innerHTML = `
     <div class="card cardio-session-card">
       <p class="cardio-session-tipo">${att.icona} ${att.label}</p>
       <div class="cardio-timer-display" id="cardioT">${formatMMSS(elapsedMs)}</div>
       <div class="cardio-target-bar"><div class="cardio-target-fill" id="cardioTargetFill" style="width:${pct}%;"></div></div>
-      <p class="cardio-target-label" id="cardioTargetLabel">${pct>=100 ? 'Obiettivo 20-25 min raggiunto 💪' : `${pct}% dell'obiettivo (20-25 min)`}</p>
+      <p class="cardio-target-label" id="cardioTargetLabel">${pct>=100 ? `Obiettivo ${ob.etichetta} raggiunto 💪` : `${pct}% dell'obiettivo (${ob.etichetta})`}</p>
       <p class="cardio-kcal-live"><span id="cardioKcalLive">${kcal}</span> kcal stimate</p>
-      <p class="field-hint" style="margin:14px 0 0;">Zona 2: riesci a parlare a frasi intere ma non a cantare.</p>
+      <p class="field-hint" style="margin:14px 0 0;">${ob.hint}</p>
     </div>
+    ${renderDatiAttrezzoCardio()}
+    ${renderAddomeCardio()}
     <div style="display:flex;gap:10px;margin-top:14px;">
       <button class="btn secondary" style="flex:1;" onclick="togglePausaCardio()">${cardioDraft.paused ? '▶ Riprendi' : '⏸ Pausa'}</button>
       <button class="btn" style="flex:1;" onclick="terminaSessioneCardio()">⏹ Termina</button>
@@ -5165,6 +5264,9 @@ function renderStoricoAllenamento(){
             <div class="misura-card-meta">
               <span class="misura-pill">⏱️ ${minuti} min</span>
               <span class="misura-pill">🔥 ${s.kcalStimate||0} kcal</span>
+              ${s.kcalAttrezzo ? `<span class="misura-pill">📟 ${s.kcalAttrezzo} kcal attrezzo</span>` : ''}
+              ${s.velocita ? `<span class="misura-pill">⚡ ${s.velocita} km/h</span>` : ''}
+              ${(s.addome||[]).map(e=>`<span class="misura-pill">💪 ${e.nome.split(' (')[0]} ${e.sets.map(x=>x.val+(e.unita==='sec'?'"':'')).join('/')}</span>`).join('')}
             </div>
           </div>
         </div>
@@ -8342,6 +8444,13 @@ async function rimuoviAlimentoRecente(i){
    "+ Aggiungi a [pasto]" nelle card target di Segna pasto), invece di
    lasciare che venga dedotto dall'ora attuale. */
 function apriRicercaPerPasto(pi){
+  // Se eri uscito a metà dalla ricerca dello stesso pasto (freccia indietro,
+  // senza premere "Fatto"), la ricerca riparte da dove l'avevi lasciata.
+  if(ricercaAlimentoState.pastoIdx===pi && (ricercaAlimentoState.query || (ricercaAlimentoState.sessionAggiunti||[]).length)){
+    ricercaAlimentoState.selezionato = null;
+    setRoute({name:'cerca-alimento'});
+    return;
+  }
   ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoIdx: pi, fonte:null, sessionAggiunti:[] };
   setRoute({name:'cerca-alimento'});
 }
