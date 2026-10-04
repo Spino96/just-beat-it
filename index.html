@@ -5102,11 +5102,10 @@ function renderStoricoMisure(){
     <div class="icon">➕</div>
     <div><div class="label">Nuova misurazione</div><div class="sub">Registra peso, misure e foto di oggi</div></div>
   </div>`;
-  const misureConFoto = cache.misure.filter(m=>m.fotoThumb || m.foto);
-  if(misureConFoto.length>=2){
+  if(cache.misure.length>=2){
     html += `<div class="home-cat" onclick="setRoute({name:'confronta-foto'})">
-      <div class="icon">📸</div>
-      <div><div class="label">Confronta foto</div><div class="sub">Vedi i cambiamenti tra due date</div></div>
+      <div class="icon">🔀</div>
+      <div><div class="label">Confronta misure</div><div class="sub">Scegli due date: valori e, se ci sono, foto</div></div>
     </div>`;
   }
 
@@ -8516,10 +8515,12 @@ async function salvaMisura(){
     };
     const ref = await userCollection('misure').add(payload);
 
-    for(const {i, file} of slotOccupati){
+    // Ridimensionamento e upload delle foto in parallelo invece che una dopo
+    // l'altra: con 4 foto il salvataggio dura circa un quarto.
+    await Promise.all(slotOccupati.map(async ({i, file})=>{
       const fotoDataUrl = await resizeImage(file, 900, 0.72);
       await userCollection('misureFoto').add({ misuraId: ref.id, ordine: i, foto: fotoDataUrl });
-    }
+    }));
 
     cache.misure.push({ id: ref.id, ...payload });
     cache.misure.sort((a,b)=> new Date(a.data)-new Date(b.data));
@@ -8536,6 +8537,7 @@ async function eliminaMisura(id){
     const fotoSnap = await userCollection('misureFoto').where('misuraId','==',id).get();
     await Promise.all(fotoSnap.docs.map(d=> d.ref.delete()));
     await userCollection('misure').doc(id).delete();
+    delete fotoMisuraCache[id];
     cache.misure = cache.misure.filter(m=>m.id!==id);
     setRoute({name:'storico-misure'});
   }catch(e){ alert('Errore: '+e.message); }
@@ -8610,15 +8612,41 @@ function renderMisuraDetail(){
   caricaFotoMisura(m);
 }
 
+/* Cache in memoria delle foto a piena qualità per rilevazione. Prima ogni
+   apertura di un dettaglio o ogni cambio data nel confronto riscaricava da
+   Firestore ~1 MB di base64 per foto: ora si scarica una volta sola per
+   sessione e le aperture successive sono istantanee. Va invalidata quando
+   le foto di una rilevazione cambiano o la rilevazione viene eliminata. */
+const fotoMisuraCache = {};
+
+async function fotoDiMisure(ids){
+  const mancanti = ids.filter(id=>!(id in fotoMisuraCache));
+  if(mancanti.length){
+    // "in" accetta al massimo 10 valori: qui sono sempre 1 o 2.
+    const snap = await userCollection('misureFoto').where('misuraId','in',mancanti).get();
+    mancanti.forEach(id=>{ fotoMisuraCache[id] = []; });
+    snap.docs.forEach(d=>{ const f = d.data(); if(fotoMisuraCache[f.misuraId]) fotoMisuraCache[f.misuraId].push(f); });
+    mancanti.forEach(id=>fotoMisuraCache[id].sort((a,b)=>(a.ordine||0)-(b.ordine||0)));
+  }
+  const out = {};
+  ids.forEach(id=>{
+    let foto = fotoMisuraCache[id];
+    // Compatibilita' con rilevazioni salvate prima della collezione misureFoto.
+    if(!foto.length){
+      const m = cache.misure.find(x=>x.id===id);
+      if(m && m.foto) foto = [{ordine:0, foto:m.foto}];
+    }
+    out[id] = foto;
+  });
+  return out;
+}
+
 async function caricaFotoMisura(m){
   const grid = document.getElementById('misuraFotoGrid');
   try{
-    const snap = await userCollection('misureFoto').where('misuraId','==',m.id).get();
+    const foto = (await fotoDiMisure([m.id]))[m.id];
     // Se la sessione e' cambiata pagina nel frattempo, non tocchiamo un DOM che non esiste piu'.
     if(!document.getElementById('misuraFotoGrid') || route.name!=='misura-detail' || route.id!==m.id) return;
-
-    let foto = snap.docs.map(d=>d.data()).sort((a,b)=> (a.ordine||0)-(b.ordine||0));
-    if(!foto.length && m.foto){ foto = [{ordine:0, foto:m.foto}]; } // compatibilita' con rilevazioni salvate prima di questa funzione
 
     if(!foto.length){
       grid.innerHTML = `<p class="empty" style="padding:10px 0;">Nessuna foto per questa rilevazione.</p>`;
@@ -8779,9 +8807,10 @@ async function salvaModificaMisura(id){
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try{
     let clearLegacyFoto = false;
-    for(let i=0;i<4;i++){
+    // Gli slot sono indipendenti: li elaboro in parallelo (resize + upload).
+    await Promise.all([0,1,2,3].map(async i=>{
       const st = misuraModificaFotoState[i];
-      if(!st) continue;
+      if(!st) return;
       if(st.tipo==='rimossa'){
         if(st.docId) await userCollection('misureFoto').doc(st.docId).delete();
         else clearLegacyFoto = true;
@@ -8794,7 +8823,8 @@ async function salvaModificaMisura(id){
           clearLegacyFoto = true; // se sostituiva il vecchio campo legacy, va ripulito sulla misura
         }
       }
-    }
+    }));
+    delete fotoMisuraCache[id];
 
     // Ricalcola la miniatura dello storico sulla prima foto rimasta (se c'e').
     const fotoSnap = await userCollection('misureFoto').where('misuraId','==',id).get();
@@ -8838,11 +8868,19 @@ async function salvaModificaMisura(id){
    Componente riusato per la galleria del dettaglio misura: un pannello
    scorrevole a swipe con indicatori, invece di una griglia statica.
    Toccare la foto corrente apre comunque la vista a schermo intero. */
+let caroselloFotoCorrente = [];
+function apriLightboxCarosello(i){
+  const f = caroselloFotoCorrente[i];
+  if(f) apriLightbox(f.foto);
+}
 function renderCaroselloFoto(foto, idPrefix){
-  const slides = foto.map(f=>{
+  // Le foto restano in memoria e la slide passa solo l'indice: prima il
+  // base64 intero (centinaia di KB) veniva copiato dentro l'attributo onclick,
+  // gonfiando il DOM e rallentando il rendering.
+  caroselloFotoCorrente = foto;
+  const slides = foto.map((f,i)=>{
     const label = FOTO_MISURA_LABELS[f.ordine] || '';
-    const src = (f.foto||'').replace(/'/g, "\\'");
-    return `<div class="carousel-slide" onclick="apriLightbox('${src}')">
+    return `<div class="carousel-slide" onclick="apriLightboxCarosello(${i})">
       <img src="${f.foto}">
       ${label ? `<span class="photo-grid-tag">${label}</span>` : ''}
     </div>`;
@@ -8890,7 +8928,18 @@ function initCarosello(idPrefix, count){
   track.addEventListener('pointerup', fine);
   track.addEventListener('pointercancel', fine);
   track.addEventListener('click', e=>{ if(swiped){ e.preventDefault(); e.stopImmediatePropagation(); swiped=false; } }, true);
-  window.addEventListener('resize', ()=>goTo(index));
+  // Un solo listener 'resize' per carosello: prima ne veniva aggiunto uno
+  // nuovo (mai rimosso) a ogni apertura di un dettaglio, accumulandosi.
+  if(window._caroselloResize) window.removeEventListener('resize', window._caroselloResize);
+  window._caroselloResize = ()=>{
+    if(!document.body.contains(track)){
+      window.removeEventListener('resize', window._caroselloResize);
+      window._caroselloResize = null;
+      return;
+    }
+    goTo(index);
+  };
+  window.addEventListener('resize', window._caroselloResize);
   goTo(0);
 }
 
@@ -9019,37 +9068,41 @@ function apriCompareSlider(srcA, srcB, labelA, labelB){
    i cambiamenti che il numero sulla bilancia da solo non racconta. */
 let confrontaState = { idA:null, idB:null, tab:0, fotoA:[], fotoB:[] };
 
+function haFotoMisura(m){ return !!(m && (m.fotoThumb || m.foto)); }
+
 function renderConfrontaFoto(){
-  pageTitle.textContent = 'Confronta foto';
-  const misureConFoto = cache.misure
-    .filter(m=> m.fotoThumb || m.foto)
+  pageTitle.textContent = 'Confronta misure';
+  // Si possono confrontare TUTTE le rilevazioni, non solo quelle con foto:
+  // le foto compaiono nel confronto solo se almeno una delle due date le ha.
+  const tutte = cache.misure
     .slice()
     .sort((a,b)=> new Date(a.data)-new Date(b.data));
 
-  if(misureConFoto.length<2){
-    view.innerHTML = `<p class="empty"><span class="empty-icon">📸</span>Servono almeno due rilevazioni con foto per confrontarle.</p>`;
+  if(tutte.length<2){
+    view.innerHTML = `<p class="empty"><span class="empty-icon">📏</span>Servono almeno due rilevazioni per confrontarle.</p>`;
     return;
   }
 
-  const idA = misureConFoto[0].id;
-  const idB = misureConFoto[misureConFoto.length-1].id;
+  const idA = tutte[0].id;
+  const idB = tutte[tutte.length-1].id;
   confrontaState = { idA, idB, tab:0, fotoA:[], fotoB:[] };
 
-  const opzione = m => `<option value="${m.id}">${new Date(m.data).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'})}${m.peso?' · '+m.peso+'kg':''}</option>`;
+  const opzione = m => `<option value="${m.id}">${new Date(m.data).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'})}${m.peso?' · '+m.peso+'kg':''}${haFotoMisura(m)?' · 📸':''}</option>`;
 
   view.innerHTML = `<div class="card compare-head">
     <div class="compare-dates">
       <div class="field compare-field"><label>📅 Prima</label>
-        <select id="compareSelA" onchange="cambiaConfronto()">${misureConFoto.map(opzione).join('')}</select>
+        <select id="compareSelA" onchange="cambiaConfronto()">${tutte.map(opzione).join('')}</select>
       </div>
       <button type="button" class="compare-swap-btn" onclick="scambiaConfronto()" aria-label="Inverti prima e dopo" title="Inverti">⇄</button>
       <div class="field compare-field"><label>📅 Dopo</label>
-        <select id="compareSelB" onchange="cambiaConfronto()">${misureConFoto.map(opzione).join('')}</select>
+        <select id="compareSelB" onchange="cambiaConfronto()">${tutte.map(opzione).join('')}</select>
       </div>
     </div>
     <p class="compare-distanza" id="compareDistanza"></p>
   </div>
-  <div id="compareBody">${spinnerHtml('Carico le foto...')}</div>`;
+  <div id="compareDiff"></div>
+  <div id="compareBody"></div>`;
 
   document.getElementById('compareSelA').value = idA;
   document.getElementById('compareSelB').value = idB;
@@ -9088,21 +9141,30 @@ function aggiornaDistanzaConfronto(mA, mB){
 
 async function caricaConfronto(idA, idB){
   confrontaState.idA = idA; confrontaState.idB = idB;
+  const mA = cache.misure.find(m=>m.id===idA);
+  const mB = cache.misure.find(m=>m.id===idB);
+  // Le differenze di misure non dipendono dalle foto: si mostrano subito,
+  // senza aspettare nessuna richiesta di rete.
+  aggiornaDistanzaConfronto(mA, mB);
+  renderCompareDiff();
+
   const body = document.getElementById('compareBody');
-  if(body) body.innerHTML = spinnerHtml('Carico le foto...');
+  if(!body) return;
+  if(!haFotoMisura(mA) && !haFotoMisura(mB)){
+    confrontaState.fotoA = []; confrontaState.fotoB = [];
+    body.innerHTML = '';
+    return;
+  }
+  body.innerHTML = spinnerHtml('Carico le foto...');
   try{
-    const snap = await userCollection('misureFoto').where('misuraId','in',[idA,idB]).get();
+    const daCaricare = [haFotoMisura(mA)?idA:null, haFotoMisura(mB)?idB:null].filter(Boolean);
+    const mappa = await fotoDiMisure([...new Set(daCaricare)]);
+    // Se nel frattempo si è cambiata schermata o selezione, scarta il risultato.
     if(!document.getElementById('compareBody') || route.name!=='confronta-foto') return;
+    if(confrontaState.idA!==idA || confrontaState.idB!==idB) return;
 
-    const tutte = snap.docs.map(d=>d.data());
-    let fotoA = tutte.filter(f=>f.misuraId===idA).sort((a,b)=>(a.ordine||0)-(b.ordine||0));
-    let fotoB = tutte.filter(f=>f.misuraId===idB).sort((a,b)=>(a.ordine||0)-(b.ordine||0));
-    const mA = cache.misure.find(m=>m.id===idA);
-    const mB = cache.misure.find(m=>m.id===idB);
-    // Compatibilita' con rilevazioni salvate prima della collezione misureFoto.
-    if(!fotoA.length && mA && mA.foto) fotoA = [{ordine:0, foto:mA.foto}];
-    if(!fotoB.length && mB && mB.foto) fotoB = [{ordine:0, foto:mB.foto}];
-
+    const fotoA = mappa[idA] || [];
+    const fotoB = mappa[idB] || [];
     confrontaState.fotoA = fotoA;
     confrontaState.fotoB = fotoB;
 
@@ -9126,11 +9188,50 @@ const CAMPI_CONFRONTO_MISURE = [
   {key:'vita', label:'Vita', unit:'cm', icon:'📏'},
   {key:'petto', label:'Petto', unit:'cm', icon:'📏'},
   {key:'fianchi', label:'Fianchi', unit:'cm', icon:'📏'},
+  {key:'collo', label:'Collo', unit:'cm', icon:'📏'},
   {key:'braccioDx', label:'Braccio Dx', unit:'cm', icon:'💪'},
   {key:'braccioSx', label:'Braccio Sx', unit:'cm', icon:'💪'},
   {key:'cosciaDx', label:'Coscia Dx', unit:'cm', icon:'🦵'},
   {key:'cosciaSx', label:'Coscia Sx', unit:'cm', icon:'🦵'}
 ];
+
+// Tabella delle differenze tra le due rilevazioni scelte. Un valore presente
+// in una sola delle due date compare comunque (con "—" dall'altra parte),
+// invece di sparire come prima.
+function renderCompareDiff(){
+  const el = document.getElementById('compareDiff');
+  if(!el) return;
+  const mA = cache.misure.find(m=>m.id===confrontaState.idA);
+  const mB = cache.misure.find(m=>m.id===confrontaState.idB);
+  if(!mA || !mB){ el.innerHTML = `<p class="empty">Rilevazione non trovata.</p>`; return; }
+  const ha = (m,k)=> m[k]!=null && m[k]!=='';
+
+  const righe = CAMPI_CONFRONTO_MISURE
+    .filter(c=> ha(mA,c.key) || ha(mB,c.key))
+    .map(c=>{
+      const entrambi = ha(mA,c.key) && ha(mB,c.key);
+      const vA = ha(mA,c.key) ? `${mA[c.key]}${c.unit}` : '—';
+      const vB = ha(mB,c.key) ? `${mB[c.key]}${c.unit}` : '—';
+      let testoDelta = 'n/d', direzione = '';
+      if(entrambi){
+        const delta = Math.round((mB[c.key]-mA[c.key])*10)/10;
+        const segno = delta>0 ? '+' : '';
+        direzione = delta>0 ? 'up' : (delta<0 ? 'down' : '');
+        const freccia = delta>0 ? '▲' : (delta<0 ? '▼' : '＝');
+        testoDelta = delta===0 ? 'invariato' : `${freccia} ${segno}${delta}${c.unit}`;
+      }
+      return `<div class="diff-row">
+        <span class="diff-icon">${c.icon}</span>
+        <span class="diff-label">${c.label}</span>
+        <span class="diff-vals">${vA} → ${vB}</span>
+        <span class="diff-delta ${direzione}">${testoDelta}</span>
+      </div>`;
+    }).join('');
+
+  el.innerHTML = righe
+    ? `<div class="card"><h3 style="margin-top:0;font-size:15px;">📈 Differenze</h3>${righe}</div>`
+    : `<div class="card"><p class="field-hint" style="margin:0;">Nessun valore da confrontare tra queste due date.</p></div>`;
+}
 
 function renderComparePane(){
   const body = document.getElementById('compareBody');
@@ -9138,12 +9239,11 @@ function renderComparePane(){
   const { idA, idB, tab, fotoA, fotoB } = confrontaState;
   const mA = cache.misure.find(m=>m.id===idA);
   const mB = cache.misure.find(m=>m.id===idB);
-  if(!mA || !mB){ body.innerHTML = `<p class="empty">Rilevazione non trovata.</p>`; return; }
+  if(!mA || !mB){ body.innerHTML = ''; return; }
 
   const angoliDisponibili = FOTO_MISURA_LABELS.map((_,i)=>i).filter(i=> fotoA.some(f=>f.ordine===i) || fotoB.some(f=>f.ordine===i));
-  const tabsHtml = angoliDisponibili.length
-    ? `<div class="chip-select">${angoliDisponibili.map(i=>`<div class="chip ${i===tab?'active':''}" onclick="selezionaTabConfronto(${i})">${FOTO_MISURA_LABELS[i]}</div>`).join('')}</div>`
-    : '';
+  if(!angoliDisponibili.length){ body.innerHTML = ''; return; }
+  const tabsHtml = `<div class="chip-select">${angoliDisponibili.map(i=>`<div class="chip ${i===tab?'active':''}" onclick="selezionaTabConfronto(${i})">${FOTO_MISURA_LABELS[i]}</div>`).join('')}</div>`;
 
   const fA = fotoA.find(f=>f.ordine===tab);
   const fB = fotoB.find(f=>f.ordine===tab);
@@ -9160,27 +9260,9 @@ function renderComparePane(){
   </div>
   ${puoIngrandire ? `<p class="field-hint compare-zoom-hint">🔍 Tocca una foto per il confronto a schermo intero${(fA&&fB)?' con slider':''}</p>` : ''}`;
 
-  const righeDiff = CAMPI_CONFRONTO_MISURE
-    .filter(c=> mA[c.key]!=null && mB[c.key]!=null)
-    .map(c=>{
-      const delta = Math.round((mB[c.key]-mA[c.key])*10)/10;
-      const segno = delta>0 ? '+' : '';
-      const direzione = delta>0 ? 'up' : (delta<0 ? 'down' : '');
-      const freccia = delta>0 ? '▲' : (delta<0 ? '▼' : '＝');
-      const testoDelta = delta===0 ? 'invariato' : `${freccia} ${segno}${delta}${c.unit}`;
-      return `<div class="diff-row">
-        <span class="diff-icon">${c.icon}</span>
-        <span class="diff-label">${c.label}</span>
-        <span class="diff-vals">${mA[c.key]}${c.unit} → ${mB[c.key]}${c.unit}</span>
-        <span class="diff-delta ${direzione}">${testoDelta}</span>
-      </div>`;
-    }).join('');
-
-  body.innerHTML = `<div class="card">${tabsHtml}${paneHtml}${angoliDisponibili.length>1?`<p class="field-hint" style="margin:10px 2px 0;text-align:center;">← scorri per cambiare angolazione →</p>`:''}</div>
-    ${righeDiff ? `<div class="card"><h3 style="margin-top:0;font-size:15px;">📈 Differenze</h3>${righeDiff}</div>` : ''}`;
+  body.innerHTML = `<div class="card"><h3 style="margin-top:0;font-size:15px;">📸 Foto</h3>${tabsHtml}${paneHtml}${angoliDisponibili.length>1?`<p class="field-hint" style="margin:10px 2px 0;text-align:center;">← scorri per cambiare angolazione →</p>`:''}</div>`;
 
   attachSwipeTabConfronto(angoliDisponibili, tab);
-  aggiornaDistanzaConfronto(mA, mB);
 }
 
 // Permette di scorrere tra le angolazioni disponibili nel confronto foto con
