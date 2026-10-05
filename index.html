@@ -1853,6 +1853,18 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
+        nome:'Pullover (macchina Panatta Super Pullover)', serieTarget:2, ripTarget:'12-15', recupero:75,
+        note:'NUOVO, dalla settimana 3. Chiude il dorso. RPE 8-9.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Gran dorsale, pettorali (secondari), tricipite lungo in stabilizzazione.',
+          esecuzione:'Seduto alla macchina con schiena aderente, gomiti sui supporti. Porta le braccia in avanti e in basso con movimento controllato, poi torna lentamente senza cercare l\'apertura massima.',
+          errori:'Non spingere con il busto e non inarcare la schiena: il movimento parte dal dorsale, non dallo slancio.'
+        }
+      },
+      {
         nome:'Alzate laterali (macchina Panatta a pacco pesi)', serieTarget:3, ripTarget:'12-15', recupero:75,
         note:'NUOVO. Parti da circa 25 kg. RPE 8-9.',
         alternativa:'—',
@@ -1921,7 +1933,7 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Stacchi rumeni (RDL)', serieTarget:3, ripTarget:'8-10', recupero:120,
+        nome:'Stacchi rumeni (RDL)', serieTarget:4, ripTarget:'8-10', recupero:120,
         note:'Schiena neutra = limite tecnico. Carico moderato.',
         alternativa:'Hip hinge a corpo libero',
         video:'https://www.youtube.com/watch?v=avFCLVJB0xs',
@@ -1945,7 +1957,7 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Leg Extension', serieTarget:3, ripTarget:'12-15', recupero:75,
+        nome:'Leg Extension', serieTarget:4, ripTarget:'12-15', recupero:75,
         note:'Separato, non in superset.',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=wRSr98kKUsg',
@@ -2022,8 +2034,20 @@ const SCHEDE_DEFAULT = [
     ],
     esercizi: [
       {
-        nome:'Chest Press Inclinata (macchina guidata)', serieTarget:3, ripTarget:'10-12', recupero:90,
-        note:'Fasci alti del petto, spinta controllata.',
+        nome:'Pec Fly (macchina dedicata)', serieTarget:3, ripTarget:'10-12', recupero:75,
+        note:'Pre-affatica il petto: arriva più attivo alla pressa.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=ybi3NPUK47M',
+        immagine:'',
+        guida:{
+          muscoli:'Pettorali (fascio principale), spalle anteriori in stabilizzazione.',
+          esecuzione:'Seduto con schiena aderente allo schienale, braccia leggermente piegate sui pad. Porta le braccia in avanti fino quasi a toccarsi davanti al petto, poi torna con controllo lasciando aprire il petto.',
+          errori:'Non estendere troppo indietro le braccia in apertura, non usare slancio: mantieni i gomiti leggermente piegati per tutto il movimento.'
+        }
+      },
+      {
+        nome:'Chest Press Inclinata (macchina guidata)', serieTarget:3, ripTarget:'12-10-8', recupero:90,
+        note:'Fasci alti. Carico più basso del solito, sali un po\' a ogni serie. RPE 8-9.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2034,8 +2058,8 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Cavi incrociati (carrucola bassa→alta)', serieTarget:2, ripTarget:'12-15', recupero:75,
-        note:'Complementare alla pec fly.',
+        nome:'Cavi dal basso (carrucola bassa→alta)', serieTarget:2, ripTarget:'12', recupero:75,
+        note:'Complementare alle presse, petto alto.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2043,18 +2067,6 @@ const SCHEDE_DEFAULT = [
           muscoli:'Pettorali (fascio alto/clavicolare).',
           esecuzione:'Carrucole basse, un manubrio/maniglia per mano, busto leggermente inclinato in avanti. Porta le mani in alto e verso il centro davanti al viso, incrociandole leggermente, poi torna con controllo.',
           errori:'Non usare slancio del busto, mantieni un leggero piegamento del gomito per tutto il movimento.'
-        }
-      },
-      {
-        nome:'Pec Fly (macchina dedicata)', serieTarget:2, ripTarget:'10-12', recupero:75,
-        note:'Chiusura petto.',
-        alternativa:'—',
-        video:'https://www.youtube.com/watch?v=ybi3NPUK47M',
-        immagine:'',
-        guida:{
-          muscoli:'Pettorali (fascio principale), spalle anteriori in stabilizzazione.',
-          esecuzione:'Seduto con schiena aderente allo schienale, braccia leggermente piegate sui pad. Porta le braccia in avanti fino quasi a toccarsi davanti al petto, poi torna con controllo lasciando aprire il petto.',
-          errori:'Non estendere troppo indietro le braccia in apertura, non usare slancio: mantieni i gomiti leggermente piegati per tutto il movimento.'
         }
       },
       {
@@ -2886,6 +2898,27 @@ async function loadData(){
     // null = non ancora chiesto oggi ("Oggi ti alleni?" in Dieta); true/false una volta risposto.
     giornoAllenamento: (oggi && typeof oggi.giornoAllenamento === 'boolean') ? oggi.giornoAllenamento : null
   };
+}
+
+/* Correzione una tantum (05/10/2026): la seduta di Torso Meccanico di oggi è
+   stata salvata prima che il Pullover macchina entrasse in scheda. Aggiungiamo
+   le 2 serie già fatte (30 kg x 12, RPE 9) subito dopo il Rematore. Si applica
+   una sola volta: se l'esercizio c'è già, non fa nulla. */
+async function applicaPulloverSessioneOggi(){
+  try{
+    const NOME = 'Pullover (macchina Panatta Super Pullover)';
+    const oggi = new Date('2026-10-05T12:00:00').toDateString();
+    const s = cache.sessioni.find(x=> new Date(x.data).toDateString()===oggi
+      && /torso meccanico/i.test(x.schedaNome||'') && Array.isArray(x.esercizi));
+    if(!s || s.esercizi.some(e=>e.nome===NOME)) return;
+    const nuovo = { nome:NOME, usaAlternativa:false, noteUtente:'', sets:[
+      {peso:30, rip:'12', fatta:true, rpe:9, saltata:false},
+      {peso:30, rip:'12', fatta:true, rpe:9, saltata:false}
+    ]};
+    const idx = s.esercizi.findIndex(e=>/^Rematore/i.test(e.nome));
+    s.esercizi.splice(idx>=0 ? idx+1 : s.esercizi.length, 0, nuovo);
+    await userCollection('sessioni').doc(s.id).update({ esercizi: s.esercizi });
+  }catch(e){ console.warn('Correzione pullover non applicata', e); }
 }
 
 function salvaDietaLogOggi(){
@@ -9545,6 +9578,7 @@ async function avviaApp(){
     // loadDataInVolo è ancora vuoto, quindi partiamo da zero come prima.
     await (loadDataInVolo || loadData());
     loadDataInVolo = null;
+    await applicaPulloverSessioneOggi();
     // Chiesto qui, prima della Home, così vale per tutta la sessione di oggi
     // (statistiche di Home e target di Dieta inclusi) e non solo aprendo Dieta.
     const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
