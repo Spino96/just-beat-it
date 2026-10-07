@@ -3133,7 +3133,7 @@ const headerEl = document.querySelector('header');
    Statistiche, Misure, Profilo...) resta sul verde di base. */
 function sectionAccentColor(routeName){
   const allenamento = ['allenamento-list','sessione','sessione-modifica','sessione-cardio','blocco3-anteprima'];
-  const dieta = ['alimentazione','diario','menu-alimentare','cerca-alimento','crea-alimento-custom'];
+  const dieta = ['alimentazione','diario','menu-alimentare','cerca-alimento','crea-alimento-custom','ricetta-editor'];
   if(allenamento.includes(routeName)) return 'var(--accent-3)';
   if(dieta.includes(routeName)) return 'var(--accent-2)';
   return 'var(--accent)';
@@ -3145,6 +3145,7 @@ const BACK_MAP = {
   'alimentazione':'home',
   'cerca-alimento':'alimentazione',
   'crea-alimento-custom':'cerca-alimento',
+  'ricetta-editor':'cerca-alimento',
   'diario':'alimentazione',
   'menu-alimentare':'alimentazione',
   'misure':'home',
@@ -3549,6 +3550,7 @@ function render(){
   else if(route.name==='allenamento-list') renderAllenamentoList();
   else if(route.name==='cerca-alimento') renderCercaAlimento();
   else if(route.name==='crea-alimento-custom') renderCreaAlimentoCustom();
+  else if(route.name==='ricetta-editor') renderRicettaEditor();
   else if(route.name==='diario') renderDiario();
   else if(route.name==='menu-alimentare') renderMenuAlimentare();
   else if(route.name==='sessione') renderSessione();
@@ -4321,6 +4323,10 @@ function mostraAlternativeSheetOverlay(){
   }
   overlay.innerHTML = `<div class="sheet-box" id="altSheetBox"><div class="sheet-handle"></div>${renderAlternativeSheetBody()}</div>`;
   attachSwipeDownToDismiss(overlay.querySelector('#altSheetBox'), chiudiAlternativeSheet);
+}
+
+function escHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function escapeAttr(s){
@@ -7535,7 +7541,7 @@ function renderCercaAlimento(){
       view.innerHTML = `
         <div class="card">
           <h3 style="margin-top:0;">🍲 ${p.nome}</h3>
-          <p class="field-hint" style="margin-top:0;">Ricetta a porzione fissa: macro sempre uguali, nessun peso da inserire.</p>
+          <p class="field-hint" style="margin-top:0;">${(p.ingredienti&&p.ingredienti.length)?'Ricetta con ingredienti: puoi variare le quantità prima di aggiungerla.':'Ricetta a porzione fissa: macro sempre uguali. Tocca "Modifica ricetta" per aggiungere gli ingredienti.'}</p>
           <div class="field">
             <label>In quale pasto lo aggiungi?</label>
             <div class="chip-select">${pastoChipsHtml}</div>
@@ -7544,12 +7550,16 @@ function renderCercaAlimento(){
             <label>Fonte principale</label>
             <div class="chip-select">${fonteChipsHtml}</div>
           </div>
+          ${(p.ingredienti&&p.ingredienti.length)?`<div class="field"><label>Ingredienti (cambia le quantità solo per questa volta)</label>
+            ${p.ingredienti.map((ing,k)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="flex:1;font-size:14px;">${escHtml(ing.nome)}</span><input type="number" min="0" step="1" inputmode="decimal" value="${ing.grammi}" style="width:80px;text-align:center;" aria-label="Grammi di ${escHtml(ing.nome)}" oninput="aggiornaGrammiIngredienteRicetta(${k},this.value)"><span style="font-size:12px;color:var(--text-dim);">g</span></div>`).join('')}
+          </div>`:''}
           <div class="meal-macro-mini" style="margin-bottom:16px;">
-            <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b>${fmt1(p.prot)}g</b></span>
-            <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b>${fmt1(p.carb)}g</b></span>
-            <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b>${fmt1(p.grassi)}g</b></span>
+            <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b id="rcProt">${fmt1(p.prot)}g</b></span>
+            <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b id="rcCarb">${fmt1(p.carb)}g</b></span>
+            <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b id="rcGrassi">${fmt1(p.grassi)}g</b></span>
           </div>
-          <p style="font-size:13px;color:var(--text-dim);font-weight:700;margin:0 0 16px;">${fmt1(p.kcal)} kcal totali</p>
+          <p style="font-size:13px;color:var(--text-dim);font-weight:700;margin:0 0 16px;" id="rcKcal">${fmt1(p.kcal)} kcal totali</p>
+          ${p.ricettaId?`<button class="btn small secondary" style="width:100%;margin-bottom:10px;" onclick="setRoute({name:'ricetta-editor', id:'${p.ricettaId}'})">✏️ Modifica ricetta e ingredienti</button>`:''}
           <button class="btn" style="margin-top:16px;" onclick="confermaAggiungiAlimento()">+ Aggiungi e cerca un altro</button>
           <button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="ricercaAlimentoState.selezionato=null;renderCercaAlimento()">← Torna alla ricerca senza aggiungere</button>
         </div>`;
@@ -7673,12 +7683,13 @@ function renderCercaAlimento(){
   const ricetteHtml = ricette.length ? `<div class="diet-info-card food-result-anim">
       <div class="dic-t"><span class="dic-t-badge">🍲</span> Le mie ricette</div>
       <div class="dic-b" style="margin-bottom:4px;">Piatti a porzione fissa: tocca per aggiungerli col loro totale di macro, senza inserire un peso.</div>
-      ${ricette.map((r,i)=>`<div class="qa-row">
-        <div class="qa-info" onclick="selezionaRicettaPersonalizzata(${i})">
+      ${ricette.map(r=>`<div class="qa-row">
+        <div class="qa-info" onclick="selezionaRicettaPersonalizzata('${r.id}')">
           <div class="qa-name">${r.nome}</div>
-          <div class="qa-sub">P ${fmt1(r.prot)}g · C ${fmt1(r.carb)}g · G ${fmt1(r.grassi)}g</div>
+          <div class="qa-sub">P ${fmt1(r.prot)}g · C ${fmt1(r.carb)}g · G ${fmt1(r.grassi)}g${(r.ingredienti&&r.ingredienti.length)?` · ${r.ingredienti.length} ingredienti`:''}</div>
         </div>
-        <div class="qa-kcal" onclick="selezionaRicettaPersonalizzata(${i})">${fmt1(r.kcal)}<span class="u"> kcal totali</span></div>
+        <div class="qa-kcal" onclick="selezionaRicettaPersonalizzata('${r.id}')">${fmt1(r.kcal)}<span class="u"> kcal totali</span></div>
+        <button class="qa-remove" style="color:var(--text-dim);" onclick="event.stopPropagation();setRoute({name:'ricetta-editor', id:'${r.id}'})" aria-label="Modifica ricetta e ingredienti">✏️</button>
         <button class="qa-remove" onclick="event.stopPropagation();eliminaRicettaPersonalizzata('${r.id}')" aria-label="Elimina ricetta">✕</button>
       </div>`).join('')}
     </div>` : '';
@@ -8060,7 +8071,8 @@ function renderCampiAlimentoCustom(){
       <div class="grid2">
         <div class="field"><label>Grassi totali (g)</label><input type="number" min="0" step="0.1" id="caGrassi"></div>
         <div class="field"><label>Fibre totali (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caFibre"></div>
-      </div>`;
+      </div>
+      <p class="field-hint">Dopo il salvataggio si aprono gli ingredienti: se li aggiungi, i totali si calcolano da lì.</p>`;
     return;
   }
 
@@ -8126,7 +8138,9 @@ async function salvaAlimentoCustom(){
       };
       const ref = await userCollection('ricettePersonalizzate').add(payload);
       cache.ricettePersonalizzate.push({ id: ref.id, ...payload });
-      setRoute({name:'cerca-alimento'});
+      ricettaEd = null;
+      // Appena salvata, si aprono gli ingredienti per completarla.
+      setRoute({name:'ricetta-editor', id: ref.id});
     }catch(e){
       errBox.innerHTML = `<div class="error-banner">${e.message}</div>`;
       btn.disabled = false; btn.textContent = 'Salva';
@@ -8172,11 +8186,15 @@ async function eliminaRicettaPersonalizzata(id){
   }catch(e){ alert('Errore: '+e.message); }
 }
 
-function selezionaRicettaPersonalizzata(i){
-  const r = cache.ricettePersonalizzate[i];
+function selezionaRicettaPersonalizzata(id){
+  const r = cache.ricettePersonalizzate.find(x=>x.id===id);
+  if(!r) return;
   ricercaAlimentoState.selezionato = {
-    nome: r.nome, marca: '', isRicetta: true,
+    nome: r.nome, marca: '', isRicetta: true, ricettaId: r.id,
     kcal: r.kcal, prot: r.prot, carb: r.carb, grassi: r.grassi,
+    // Copia degli ingredienti: le quantità si possono cambiare per questa
+    // sola aggiunta senza toccare la ricetta salvata.
+    ingredienti: (r.ingredienti||[]).map(x=>({...x})),
     micro100: {}, acqua100: null,
     fonte: r.fonte
   };
@@ -8184,6 +8202,185 @@ function selezionaRicettaPersonalizzata(i){
   if(ricercaAlimentoState.pastoIdx==null) ricercaAlimentoState.pastoIdx = pastoSuggeritoOra();
   ricercaAlimentoState.fonte = r.fonte || suggerisciFonte(r);
   renderCercaAlimento();
+}
+
+/* Totali di una ricetta a partire dagli ingredienti (grammi x valori per
+   100g). Le kcal sono sempre derivate dai macro (kcalDaMacro). */
+function totaliRicettaDaIngredienti(ingredienti){
+  let prot=0, carb=0, grassi=0;
+  (ingredienti||[]).forEach(i=>{
+    const f = (Number(i.grammi)||0)/100;
+    prot += (Number(i.prot100)||0)*f;
+    carb += (Number(i.carb100)||0)*f;
+    grassi += (Number(i.grassi100)||0)*f;
+  });
+  prot = Math.round(prot*10)/10; carb = Math.round(carb*10)/10; grassi = Math.round(grassi*10)/10;
+  return { prot, carb, grassi, kcal: kcalDaMacro(prot, carb, grassi) };
+}
+
+// Cambio quantità di un ingrediente al momento di aggiungere la ricetta al
+// diario (solo per questa volta: la ricetta salvata non cambia).
+function aggiornaGrammiIngredienteRicetta(k, val){
+  const p = ricercaAlimentoState.selezionato;
+  if(!p || !p.ingredienti || !p.ingredienti[k]) return;
+  p.ingredienti[k].grammi = Math.max(0, Number(val)||0);
+  const t = totaliRicettaDaIngredienti(p.ingredienti);
+  p.prot = t.prot; p.carb = t.carb; p.grassi = t.grassi; p.kcal = t.kcal;
+  const set = (id,txt)=>{ const el=document.getElementById(id); if(el) el.textContent = txt; };
+  set('rcProt', fmt1(t.prot)+'g'); set('rcCarb', fmt1(t.carb)+'g'); set('rcGrassi', fmt1(t.grassi)+'g');
+  set('rcKcal', fmt1(t.kcal)+' kcal totali');
+}
+
+/* ============ EDITOR RICETTA (ingredienti) ============
+   Una ricetta può avere una lista di ingredienti (nome, grammi, macro per
+   100g): i totali si calcolano da lì. Senza ingredienti restano i totali
+   fissi salvati (ricette create prima di questa funzione). */
+let ricettaEd = null;
+
+function ricettaEdInit(id){
+  if(ricettaEd && ricettaEd.id===id) return;
+  const r = cache.ricettePersonalizzate.find(x=>x.id===id);
+  if(!r){ ricettaEd = null; return; }
+  ricettaEd = {
+    id, nome: r.nome, fonte: r.fonte || null,
+    ingredienti: (r.ingredienti||[]).map(x=>({...x})),
+    fisso: { prot:r.prot||0, carb:r.carb||0, grassi:r.grassi||0, kcal:r.kcal||0 },
+    query:'', loading:false, risultati:[], errore:null, manuale:false, salvando:false
+  };
+}
+
+function ricettaEdTotali(){
+  return ricettaEd.ingredienti.length ? totaliRicettaDaIngredienti(ricettaEd.ingredienti) : ricettaEd.fisso;
+}
+
+function renderRicettaEditor(){
+  pageTitle.textContent = 'Ricetta';
+  ricettaEdInit(route.id);
+  if(!ricettaEd){ view.innerHTML = '<div class="card"><p>Ricetta non trovata.</p></div>'; return; }
+  const e = ricettaEd;
+  const t = ricettaEdTotali();
+  const fonteChips = FONTE_OPZIONI.map(fo=>`<div class="chip${fo.key===e.fonte?' active':''}" onclick="ricettaEdFonte('${fo.key}')">${fo.icona} ${fo.label}</div>`).join('');
+
+  const ingHtml = e.ingredienti.length ? e.ingredienti.map((i,k)=>{
+    const f=(Number(i.grammi)||0)/100;
+    return `<div class="extra-food-item" style="align-items:center;gap:8px;">
+      <div class="efi-info" style="flex:1;min-width:0;">
+        <div class="efi-n">${escHtml(i.nome)}${i.marca?` <span class="efi-brand">· ${escHtml(i.marca)}</span>`:''}</div>
+        <div class="efi-m" id="ingM${k}">${fmt1(kcalDaMacro(i.prot100*f,i.carb100*f,i.grassi100*f))} kcal · P ${fmt1(i.prot100*f)}g · C ${fmt1(i.carb100*f)}g · G ${fmt1(i.grassi100*f)}g</div>
+      </div>
+      <input type="number" min="0" step="1" inputmode="decimal" value="${i.grammi}" aria-label="Grammi di ${escHtml(i.nome)}" style="width:76px;text-align:center;" oninput="ricettaEdGrammi(${k},this.value)"><span style="font-size:12px;color:var(--text-dim);">g</span>
+      <button class="efi-remove" onclick="ricettaEdRimuovi(${k})" aria-label="Rimuovi ingrediente">✕</button>
+    </div>`;
+  }).join('') : `<p class="field-hint" style="margin:0 0 4px;">Nessun ingrediente: la ricetta usa i totali fissi (${fmt1(e.fisso.kcal)} kcal · P ${fmt1(e.fisso.prot)}g · C ${fmt1(e.fisso.carb)}g · G ${fmt1(e.fisso.grassi)}g). Aggiungi gli ingredienti qui sotto: da quel momento i totali si calcolano da soli.</p>`;
+
+  const custom = e.query ? (cache.alimentiPersonalizzati||[]).filter(a=>alimentoCorrispondeRicerca(a,e.query)) : (cache.alimentiPersonalizzati||[]);
+  const customHtml = custom.length ? `<div class="field-hint" style="margin:10px 0 4px;font-weight:700;">I tuoi alimenti</div>` + custom.map(a=>`<div class="qa-row"><div class="qa-info" onclick="ricettaEdAggiungiCustom('${a.id}')"><div class="qa-name">${escHtml(a.nome)}</div><div class="qa-sub">per 100g · P ${fmt1(a.prot100)} · C ${fmt1(a.carb100)} · G ${fmt1(a.grassi100)}</div></div><div class="qa-kcal" onclick="ricettaEdAggiungiCustom('${a.id}')">＋</div></div>`).join('') : '';
+  const risHtml = e.loading ? '<p class="field-hint">Ricerca in corso…</p>'
+    : e.errore ? `<div class="error-banner">${escHtml(e.errore)}</div>`
+    : e.risultati.length ? `<div class="field-hint" style="margin:10px 0 4px;font-weight:700;">Risultati</div>` + e.risultati.map((a,i)=>`<div class="qa-row"><div class="qa-info" onclick="ricettaEdAggiungiRisultato(${i})"><div class="qa-name">${escHtml(a.nome)}${a.marca?` · ${escHtml(a.marca)}`:''}</div><div class="qa-sub">per 100g · ${fmt1(a.kcal100)} kcal · P ${fmt1(a.prot100)} · C ${fmt1(a.carb100)} · G ${fmt1(a.grassi100)}</div></div><div class="qa-kcal" onclick="ricettaEdAggiungiRisultato(${i})">＋</div></div>`).join('') : '';
+
+  view.innerHTML = `<div class="card">
+    <div id="reError"></div>
+    <div class="field"><label>Nome ricetta</label><input type="text" id="reNome" value="${escHtml(e.nome)}" oninput="ricettaEd.nome=this.value"></div>
+    <div class="field"><label>Fonte principale</label><div class="chip-select">${fonteChips}</div></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;font-size:15px;">🥣 Ingredienti</h3>
+    <div class="extra-food-list" id="reIngLista">${ingHtml}</div>
+    <div class="meal-macro-mini" style="margin:14px 0 6px;">
+      <span><span class="mb-dot" style="background:var(--accent);"></span>Prot. <b id="reProt">${fmt1(t.prot)}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b id="reCarb">${fmt1(t.carb)}g</b></span>
+      <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b id="reGrassi">${fmt1(t.grassi)}g</b></span>
+    </div>
+    <p style="font-size:13px;color:var(--text-dim);font-weight:700;margin:0;" id="reKcal">${fmt1(t.kcal)} kcal totali</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;font-size:15px;">➕ Aggiungi ingrediente</h3>
+    <div class="food-hero-searchbar" style="margin-bottom:8px;">
+      <span class="fhs-icon">🔎</span>
+      <input type="text" id="reCerca" aria-label="Cerca ingrediente" placeholder="Es. riso, pollo, olio..." value="${escHtml(e.query)}" onkeydown="if(event.key==='Enter'){ricettaEdCerca();}">
+    </div>
+    <button class="btn small" style="width:100%;" onclick="ricettaEdCerca()">Cerca</button>
+    ${customHtml}${risHtml}
+    <button class="btn small secondary" style="width:100%;margin-top:12px;" onclick="ricettaEd.manuale=!ricettaEd.manuale;renderRicettaEditor()">${e.manuale?'Chiudi inserimento manuale':'✍️ Inserisci a mano nome e valori'}</button>
+    ${e.manuale?`<div style="margin-top:10px;">
+      <div class="field"><label>Nome ingrediente</label><input type="text" id="reMNome"></div>
+      <div class="field"><label>Quantità (g)</label><input type="number" min="0" id="reMG" value="100"></div>
+      <div class="grid2">
+        <div class="field"><label>Proteine /100g</label><input type="number" min="0" step="0.1" id="reMP"></div>
+        <div class="field"><label>Carboidrati /100g</label><input type="number" min="0" step="0.1" id="reMC"></div>
+      </div>
+      <div class="field"><label>Grassi /100g</label><input type="number" min="0" step="0.1" id="reMF"></div>
+      <button class="btn small" style="width:100%;" onclick="ricettaEdAggiungiManuale()">Aggiungi alla ricetta</button>
+    </div>`:''}
+  </div>
+  <button class="btn" id="reSalva" style="width:100%;margin-top:4px;" onclick="salvaRicettaEditor()">Salva ricetta</button>`;
+}
+
+function ricettaEdAggiornaTotali(){
+  const t = ricettaEdTotali();
+  const set=(id,txt)=>{const el=document.getElementById(id); if(el) el.textContent=txt;};
+  set('reProt',fmt1(t.prot)+'g'); set('reCarb',fmt1(t.carb)+'g'); set('reGrassi',fmt1(t.grassi)+'g'); set('reKcal',fmt1(t.kcal)+' kcal totali');
+}
+function ricettaEdFonte(k){ ricettaEd.fonte = k; renderRicettaEditor(); }
+function ricettaEdGrammi(k,val){
+  const i = ricettaEd.ingredienti[k]; if(!i) return;
+  i.grammi = Math.max(0, Number(val)||0);
+  const f=i.grammi/100, m=document.getElementById('ingM'+k);
+  if(m) m.textContent = `${fmt1(kcalDaMacro(i.prot100*f,i.carb100*f,i.grassi100*f))} kcal · P ${fmt1(i.prot100*f)}g · C ${fmt1(i.carb100*f)}g · G ${fmt1(i.grassi100*f)}g`;
+  ricettaEdAggiornaTotali();
+}
+function ricettaEdRimuovi(k){ ricettaEd.ingredienti.splice(k,1); renderRicettaEditor(); }
+function ricettaEdPush(nome, marca, p, c, g, grammi){
+  ricettaEd.ingredienti.push({ nome, marca: marca||'', grammi: grammi==null?100:grammi, prot100:Number(p)||0, carb100:Number(c)||0, grassi100:Number(g)||0 });
+  hapticaLieve && hapticaLieve();
+  renderRicettaEditor();
+}
+function ricettaEdAggiungiCustom(id){
+  const a = cache.alimentiPersonalizzati.find(x=>x.id===id); if(!a) return;
+  ricettaEdPush(a.nome,'',a.prot100,a.carb100,a.grassi100);
+}
+function ricettaEdAggiungiRisultato(i){
+  const a = ricettaEd.risultati[i]; if(!a) return;
+  ricettaEdPush(a.nome,a.marca,a.prot100,a.carb100,a.grassi100);
+}
+function ricettaEdAggiungiManuale(){
+  const v=id=>document.getElementById(id).value;
+  const nome=v('reMNome').trim(), g=Number(v('reMG'));
+  if(!nome || isNaN(g) || g<=0){ document.getElementById('reError').innerHTML='<div class="error-banner">Inserisci nome e quantità dell\'ingrediente.</div>'; return; }
+  ricettaEd.manuale=false;
+  ricettaEdPush(nome,'',v('reMP'),v('reMC'),v('reMF'),g);
+}
+async function ricettaEdCerca(){
+  const input=document.getElementById('reCerca');
+  const q = input ? input.value.trim() : '';
+  ricettaEd.query = q; ricettaEd.errore=null; ricettaEd.risultati=[];
+  if(!q){ renderRicettaEditor(); return; }
+  ricettaEd.loading = true; renderRicettaEditor();
+  const [off, usda] = await Promise.allSettled([cercaSuOpenFoodFacts(q), cercaSuUSDA(q)]);
+  if(!ricettaEd || ricettaEd.query!==q || route.name!=='ricetta-editor') return;
+  if(off.status==='rejected' && usda.status==='rejected') ricettaEd.errore='Ricerca non riuscita: controlla la connessione e riprova.';
+  else ricettaEd.risultati = dedupRisultatiAlimenti([...(off.status==='fulfilled'?off.value:[]), ...(usda.status==='fulfilled'?usda.value:[])]).slice(0,30);
+  ricettaEd.loading=false; renderRicettaEditor();
+}
+async function salvaRicettaEditor(){
+  const e = ricettaEd; if(!e) return;
+  const errBox=document.getElementById('reError'), btn=document.getElementById('reSalva');
+  const nome=(e.nome||'').trim();
+  if(!nome){ errBox.innerHTML='<div class="error-banner">Dai un nome alla ricetta.</div>'; return; }
+  const t = ricettaEdTotali();
+  const upd = { nome, fonte: e.fonte || null, ingredienti: e.ingredienti, prot:t.prot, carb:t.carb, grassi:t.grassi, kcal: kcalDaMacro(t.prot,t.carb,t.grassi) };
+  btn.disabled=true; btn.textContent='Salvataggio...';
+  try{
+    await userCollection('ricettePersonalizzate').doc(e.id).update(upd);
+    const r = cache.ricettePersonalizzate.find(x=>x.id===e.id);
+    if(r) Object.assign(r, upd);
+    ricettaEd = null;
+    setRoute({name:'cerca-alimento'});
+  }catch(err){
+    errBox.innerHTML=`<div class="error-banner">${escHtml(err.message)}</div>`;
+    btn.disabled=false; btn.textContent='Salva ricetta';
+  }
 }
 
 function aggiornaAnteprimaGrammi(){
