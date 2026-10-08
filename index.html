@@ -6401,14 +6401,24 @@ const DIETA_PIANO = {
    Giorni con solo sessione cardio (mercoledì, sabato) contano come riposo a
    livello calorico, per scelta esplicita dell'utente. */
 const DIETA_PIANO_BLOCCO3 = {
-  versione: 'v9-blocco3',
-  aggiornato: '04/10/2026',
-  inizio: '12/10/2026',
-  fase: 'Ricomposizione corporea + Blocco 3 di allenamento',
+  versione: 'v10-blocco3',
+  aggiornato: '08/10/2026',
+  inizio: '05/10/2026',
+  fase: 'Ricomposizione corporea (da ~14,5% a ~12% di massa grassa) + Blocco 3 di allenamento',
+  // Proteine e grassi fissi tutti i giorni: l'unica variabile fra riposo e
+  // allenamento sono i carboidrati. kcal sempre derivate dai macro.
+  // Riposo = Mer/Sab (cardio + addome) e Dom; allenamento = Lun/Mar/Gio/Ven.
   target: {
+    riposo:      { kcal:2170, prot:158, carb:245, grassi:62 },
+    allenamento: { kcal:2426, prot:158, carb:309, grassi:62 }
+  },
+  // Target di riferimento se compaiono affaticamento, sonno peggiore, forza
+  // in calo o RPE alto (stesse proteine e grassi): non attivo di default.
+  fallback: {
     riposo:      { kcal:2270, prot:158, carb:270, grassi:62 },
     allenamento: { kcal:2550, prot:158, carb:340, grassi:62 }
-  }
+  },
+  checkIn: '19/10/2026'
 };
 
 /* ============ MICRONUTRIENTI (vitamine, minerali, acqua) ============
