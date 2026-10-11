@@ -1794,7 +1794,7 @@ const SCHEDE_DEFAULT = [
     esercizi: [
       {
         nome:'Panca 15° al multipower', serieTarget:4, ripTarget:'5-6', recupero:150,
-        note:'Principale del giorno. Le prime due settimane parti leggero per imparare il gesto, tieni 1-2 ripetizioni di riserva.',
+        note:'Principale del giorno. Tieni 1-2 ripetizioni di riserva, RPE 9 al massimo.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -1854,7 +1854,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Pullover (macchina Panatta Super Pullover)', serieTarget:2, ripTarget:'12-15', recupero:75,
-        note:'NUOVO, dalla settimana 3. Chiude il dorso. RPE 8-9.',
+        note:'Chiude il dorso. RPE 8-9.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -1865,8 +1865,20 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Alzate laterali (macchina Panatta a pacco pesi)', serieTarget:3, ripTarget:'12-15', recupero:75,
-        note:'NUOVO. Parti da circa 25 kg. RPE 8-9.',
+        nome:'Lento avanti al multipower', serieTarget:3, ripTarget:'6-8', recupero:120,
+        note:'NUOVO. Parti leggero e trova carico e posizione della panca. RPE 8, 2 ripetizioni di riserva. Se senti fastidio alla spalla, fermati.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoidi anteriori e mediali, tricipiti, parte alta del petto.',
+          esecuzione:'Panca regolata quasi verticale sotto il multipower, schiena aderente. Scendi con controllo fino all\'altezza del mento/clavicole, poi spingi in alto senza bloccare i gomiti.',
+          errori:'Non inarcare la schiena e non scendere oltre ciò che la spalla tollera: se senti fastidio, fermati.'
+        }
+      },
+      {
+        nome:'Alzate laterali (macchina Panatta a pacco pesi)', serieTarget:3, ripTarget:'12', recupero:75,
+        note:'Parti da circa 20-25 kg. RPE 8-9.',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=jTRbSoPm9uQ',
         immagine:'',
@@ -1877,20 +1889,8 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Alzate laterali (manubri)', serieTarget:2, ripTarget:'12-15', recupero:5, superset:'ss1',
-        note:'NUOVO. Manubri leggeri, carico a parte da quello dell\'esercizio precedente. In superset con il Rear Delt: nessuna pausa tra i due.',
-        alternativa:'—',
-        video:'https://www.youtube.com/watch?v=gCNQ5fQiwNs',
-        immagine:'',
-        guida:{
-          muscoli:'Deltoide laterale (spalla).',
-          esecuzione:'In piedi, un manubrio leggero per mano, gomiti leggermente piegati. Solleva le braccia lateralmente fino all\'altezza delle spalle, poi scendi con controllo.',
-          errori:'Carico molto leggero e indipendente da quello della macchina: non salire oltre l\'altezza delle spalle, niente slancio. Fermati al primo fastidio alla spalla sinistra.'
-        }
-      },
-      {
-        nome:'Rear Delt (reverse fly)', serieTarget:2, ripTarget:'12-15', recupero:90, superset:'ss1',
-        note:'NUOVO. Parti da circa 10-15 kg. RPE 8-9. Recupero dopo la coppia.',
+        nome:'Rear Delt (reverse fly)', serieTarget:3, ripTarget:'15', recupero:75,
+        note:'Parti da circa 10-12,5 kg. RPE 8-9.',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=phNhRhn7EOI',
         immagine:'',
@@ -1933,8 +1933,32 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
+        nome:'Glute Leg Press', serieTarget:3, ripTarget:'8-10', recupero:120,
+        note:'NUOVO. Piedi alti e larghi sulla pedana per spostare il lavoro sui glutei. Se senti il ginocchio, riduci la profondità.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Glutei, quadricipiti e adduttori.',
+          esecuzione:'Sulla leg press, piedi alti e larghi sulla pedana, punte leggermente aperte. Scendi con controllo mantenendo il bacino aderente allo schienale, poi spingi con i talloni.',
+          errori:'Non staccare il bacino dallo schienale in fondo e non bloccare le ginocchia in alto.'
+        }
+      },
+      {
+        nome:'Leg Extension', serieTarget:3, ripTarget:'12', recupero:75,
+        note:'Separato, non in superset.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=wRSr98kKUsg',
+        immagine:'',
+        guida:{
+          muscoli:'Quadricipiti.',
+          esecuzione:'Seduto con schiena aderente allo schienale, cuscinetto sopra le caviglie. Estendi le ginocchia sollevando il peso, poi torna con controllo senza far "cadere" il peso.',
+          errori:'Non bloccare le ginocchia di scatto in cima, non sollevare il bacino dal sedile.'
+        }
+      },
+      {
         nome:'Stacchi rumeni (RDL)', serieTarget:4, ripTarget:'8-10', recupero:120,
-        note:'Schiena neutra = limite tecnico. Carico moderato.',
+        note:'Schiena neutra = limite tecnico. Se la schiena perde la posizione, fermati alla terza serie.',
         alternativa:'Hip hinge a corpo libero',
         video:'https://www.youtube.com/watch?v=avFCLVJB0xs',
         immagine:'',
@@ -1942,6 +1966,18 @@ const SCHEDE_DEFAULT = [
           muscoli:'Femorali, glutei, bassa schiena in stabilizzazione.',
           esecuzione:'In piedi con bilanciere o manubri davanti alle cosce, ginocchia leggermente piegate. Spingi i fianchi indietro mantenendo la schiena dritta, scendi il peso lungo le gambe fino a sentire lo stiramento dei femorali, poi risali spingendo con i fianchi.',
           errori:'Al primo segnale che la schiena perde la posizione neutra, la serie finisce lì: non è un esercizio su cui cercare il cedimento, mai.'
+        }
+      },
+      {
+        nome:'Leg Curl (seduto, fisso)', serieTarget:3, ripTarget:'12', recupero:75,
+        note:'Sempre seduto. Risalita lenta in 2-3 secondi, fermati prima dell\'estensione completa. Se il fastidio dietro il ginocchio torna, salta l\'esercizio.',
+        alternativa:'—',
+        video:'https://www.youtube.com/watch?v=1zevKZn_n1E',
+        immagine:'https://wger.de/media/exercise-images/364/b318dde9-f5f2-489f-940a-cd864affb9e3.png',
+        guida:{
+          muscoli:'Femorali (parte posteriore della coscia).',
+          esecuzione:'Seduto, cuscinetto superiore sopra le ginocchia, inferiore dietro le caviglie. Fletti portando il cuscinetto verso i glutei, torna con eccentrica lenta di circa 3 secondi.',
+          errori:'Non inarcare la schiena sollevando il bacino, non lasciare che il ritorno sia incontrollato. Usa sempre la versione seduta, non quella sdraiata.'
         }
       },
       {
@@ -1954,30 +1990,6 @@ const SCHEDE_DEFAULT = [
           muscoli:'Glutei principalmente, femorali e core di supporto.',
           esecuzione:'Seduto sulla macchina con la schiena appoggiata allo schienale basculante e i piedi sulla pedana, rullo imbottito posizionato sopra le anche. Spingi le anche in alto estendendole contro il rullo fino ad allineare ginocchia-bacino-spalle, poi torna giù con controllo.',
           errori:'Non iperestendere la schiena in cima: fermati quando bacino e spalle sono allineati.'
-        }
-      },
-      {
-        nome:'Leg Extension', serieTarget:4, ripTarget:'12-15', recupero:75,
-        note:'Separato, non in superset.',
-        alternativa:'—',
-        video:'https://www.youtube.com/watch?v=wRSr98kKUsg',
-        immagine:'',
-        guida:{
-          muscoli:'Quadricipiti.',
-          esecuzione:'Seduto con schiena aderente allo schienale, cuscinetto sopra le caviglie. Estendi le ginocchia sollevando il peso, poi torna con controllo senza far "cadere" il peso.',
-          errori:'Non bloccare le ginocchia di scatto in cima, non sollevare il bacino dal sedile.'
-        }
-      },
-      {
-        nome:'Leg Curl (seduto, fisso)', serieTarget:4, ripTarget:'12-15', recupero:75,
-        note:'Sempre seduto: carichi confrontabili.',
-        alternativa:'—',
-        video:'https://www.youtube.com/watch?v=1zevKZn_n1E',
-        immagine:'https://wger.de/media/exercise-images/364/b318dde9-f5f2-489f-940a-cd864affb9e3.png',
-        guida:{
-          muscoli:'Femorali (parte posteriore della coscia).',
-          esecuzione:'Seduto, cuscinetto superiore sopra le ginocchia, inferiore dietro le caviglie. Fletti portando il cuscinetto verso i glutei, torna con eccentrica lenta di circa 3 secondi.',
-          errori:'Non inarcare la schiena sollevando il bacino, non lasciare che il ritorno sia incontrollato. Usa sempre la versione seduta, non quella sdraiata.'
         }
       },
       {
@@ -2034,20 +2046,20 @@ const SCHEDE_DEFAULT = [
     ],
     esercizi: [
       {
-        nome:'Pec Fly (macchina dedicata)', serieTarget:3, ripTarget:'10-12', recupero:75,
-        note:'Pre-affatica il petto: arriva più attivo alla pressa.',
+        nome:'Spinte panca 30° (manubri)', serieTarget:3, ripTarget:'15-12-10', recupero:90,
+        note:'Sali di carico a ogni serie. RPE 8-9.',
         alternativa:'—',
-        video:'https://www.youtube.com/watch?v=ybi3NPUK47M',
+        video:'',
         immagine:'',
         guida:{
-          muscoli:'Pettorali (fascio principale), spalle anteriori in stabilizzazione.',
-          esecuzione:'Seduto con schiena aderente allo schienale, braccia leggermente piegate sui pad. Porta le braccia in avanti fino quasi a toccarsi davanti al petto, poi torna con controllo lasciando aprire il petto.',
-          errori:'Non estendere troppo indietro le braccia in apertura, non usare slancio: mantieni i gomiti leggermente piegati per tutto il movimento.'
+          muscoli:'Pettorali (fascio alto), spalle anteriori e tricipiti.',
+          esecuzione:'Panca inclinata a 30°, un manubrio per mano all\'altezza del petto alto. Spingi in alto avvicinando i manubri senza sbatterli, poi scendi con controllo fino a sentire lo stiramento del petto.',
+          errori:'Non far scendere i gomiti troppo oltre la linea della schiena e non inarcare: le spalle restano appoggiate alla panca.'
         }
       },
       {
-        nome:'Chest Press Inclinata (macchina guidata)', serieTarget:3, ripTarget:'12-10-8', recupero:90,
-        note:'Fasci alti. Carico più basso del solito, sali un po\' a ogni serie. RPE 8-9.',
+        nome:'Inclined Chest Press (macchina guidata)', serieTarget:3, ripTarget:'10', recupero:90,
+        note:'Carico più basso del solito. RPE 8-9.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2058,8 +2070,8 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Cavi dal basso (carrucola bassa→alta)', serieTarget:2, ripTarget:'12', recupero:75,
-        note:'Complementare alle presse, petto alto.',
+        nome:'Croci ai cavi dal basso', serieTarget:2, ripTarget:'12', recupero:75,
+        note:'Petto alto, movimento controllato.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2094,32 +2106,32 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Alzate laterali (macchina Panatta a pacco pesi)', serieTarget:3, ripTarget:'12-15', recupero:75,
-        note:'NUOVO. Stesso carico del lunedì. RPE 8-9.',
+        nome:'Shoulder Press', serieTarget:2, ripTarget:'10', recupero:90,
+        note:'NUOVO. RPE 8. Se senti fastidio alla spalla, fermati. Dopo due settimane, se tutto va bene, puoi portarla a 3 serie.',
         alternativa:'—',
-        video:'https://www.youtube.com/watch?v=jTRbSoPm9uQ',
+        video:'',
         immagine:'',
         guida:{
-          muscoli:'Deltoide laterale (spalla).',
-          esecuzione:'Seduto alla macchina con schiena aderente allo schienale, gomiti appoggiati ai pad imbottiti. Solleva le braccia lateralmente fino all\'altezza delle spalle spingendo con i gomiti, poi scendi con controllo senza far ricadere il peso.',
-          errori:'Non superare l\'altezza delle spalle, non usare slancio del busto. Carico ridotto per la spalla sinistra: fermati al primo fastidio.'
+          muscoli:'Deltoidi (anteriori e mediali), tricipiti.',
+          esecuzione:'Seduto con schiena aderente, maniglie all\'altezza delle spalle. Spingi verso l\'alto senza bloccare i gomiti, poi scendi con controllo.',
+          errori:'Non inarcare la schiena e non alzare le spalle verso le orecchie: se senti fastidio, fermati.'
         }
       },
       {
-        nome:'Alzate laterali (manubri)', serieTarget:2, ripTarget:'12-15', recupero:5, superset:'ss3',
-        note:'NUOVO. Manubri leggeri, carico a parte da quello dell\'esercizio precedente. In superset con il Rear Delt: nessuna pausa tra i due.',
+        nome:'Alzate laterali ai cavi', serieTarget:4, ripTarget:'12', recupero:75,
+        note:'NUOVO. Carico leggero: segnalo a parte da quello della macchina. RPE 8-9.',
         alternativa:'—',
-        video:'https://www.youtube.com/watch?v=gCNQ5fQiwNs',
+        video:'',
         immagine:'',
         guida:{
-          muscoli:'Deltoide laterale (spalla).',
-          esecuzione:'In piedi, un manubrio leggero per mano, gomiti leggermente piegati. Solleva le braccia lateralmente fino all\'altezza delle spalle, poi scendi con controllo.',
-          errori:'Carico molto leggero e indipendente da quello della macchina: non salire oltre l\'altezza delle spalle, niente slancio. Fermati al primo fastidio alla spalla sinistra.'
+          muscoli:'Deltoide mediale.',
+          esecuzione:'In piedi di lato alla carrucola bassa, maniglia nella mano più lontana. Solleva il braccio di lato fino all\'altezza della spalla con gomito leggermente piegato, poi torna lentamente.',
+          errori:'Niente slancio del busto e non salire oltre l\'altezza delle spalle.'
         }
       },
       {
-        nome:'Rear Delt (reverse fly)', serieTarget:2, ripTarget:'12-15', recupero:90, superset:'ss3',
-        note:'NUOVO. Parti da circa 10-15 kg. RPE 8-9. Recupero dopo la coppia.',
+        nome:'Rear Delt (reverse fly)', serieTarget:3, ripTarget:'15', recupero:75,
+        note:'RPE 8-9.',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=phNhRhn7EOI',
         immagine:'',
@@ -2222,15 +2234,15 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Calf raise in piedi', serieTarget:3, ripTarget:'15-20', recupero:60,
-        note:'Secondo stimolo polpacci.',
+        nome:'Calf seduto', serieTarget:3, ripTarget:'12-15', recupero:60,
+        note:'Lavora il soleo e completa il calf raise in piedi del martedì. RPE 9.',
         alternativa:'—',
-        video:'https://www.youtube.com/watch?v=zfDcdL06LxI',
+        video:'',
         immagine:'',
         guida:{
-          muscoli:'Polpacci (gastrocnemio e soleo).',
-          esecuzione:'In piedi, punte dei piedi su un rialzo o alla macchina dedicata. Sali sulle punte il più possibile, poi scendi lasciando allungare bene il polpaccio.',
-          errori:'Non rimbalzare a fine corsa: cerca l\'escursione completa, salita piena e discesa fino ad allungare il polpaccio.'
+          muscoli:'Soleo e gemelli.',
+          esecuzione:'Seduto alla macchina con le ginocchia sotto il cuscino. Spingi sulle punte fino in alto, pausa breve, poi scendi lentamente fino a sentire lo stiramento.',
+          errori:'Non rimbalzare in basso e non accorciare la corsa del movimento.'
         }
       },
       {
@@ -2293,7 +2305,7 @@ const CARDIO_INFO_BLOCCO3 = {
     { label: 'Quando', testo: 'Mercoledì e sabato, 30 minuti sul tapis roulant. Il cardio è il jolly: puoi spostarlo o accorciarlo per far posto ai pesi.' },
     { label: 'Intensità', testo: 'Test del parlato: riuscire a dire una frase di 8-10 parole senza fiatone. A 9 km/h si corre, non si cammina: se non parli comodamente, scendi a 7,5-8 km/h o cammina in salita a passo svelto.' },
     { label: 'Se sei stanco', testo: 'Accorcia a 20-25 minuti a passo tranquillo. Il mercoledì puoi usare la cyclette se le gambe sono ancora provate dal martedì.' },
-    { label: 'Addome', testo: 'Sempre dopo il cardio, mai prima: Plank 3x45-60" (isometrico, posizione ferma) e Crunch (machine o corpo libero) 3x15-20, movimento lento e controllato.' }
+    { label: 'Addome', testo: 'Sempre dopo il cardio, mai prima: Vacuum addominale 3x15-20" (prima del plank, a stomaco vuoto o 2 ore dopo un pasto; fermati se ti gira la testa), Plank 3x45-60" (isometrico, posizione ferma) e Crunch (machine o corpo libero) 3x15-20, movimento lento e controllato.' }
   ],
   nota: 'Niente scarico a metà blocco: alla settimana 4 si guardano RPE, carichi, costanza e sonno. Se vedi RPE 10 quasi ovunque, carichi che scendono o sonno sotto le 6 ore, si toglie volume (qualche serie di petto) o si anticipa lo scarico, previsto in ogni caso a fine blocco.'
 };
@@ -4045,6 +4057,7 @@ function cardioSessioniUltimi7Giorni(){
    (campo "addome" di cardioSessioni). Plank in secondi, Crunch in ripetizioni
    con carico facoltativo (machine). */
 const ADDOME_BLOCCO3 = [
+  { nome:'Vacuum addominale', serie:3, rip:'15-20"', unita:'sec', conPeso:false, nota:'Prima del plank, a stomaco vuoto o 2 ore dopo un pasto. Si può fare anche ogni giorno, al mattino. Fermati se ti gira la testa' },
   { nome:'Plank', serie:3, rip:'45-60"', unita:'sec', conPeso:false, nota:'Isometrico: si tiene la posizione ferma' },
   { nome:'Crunch (machine o corpo libero)', serie:3, rip:'15-20', unita:'rip', conPeso:true, nota:'Movimento lento e controllato' }
 ];
