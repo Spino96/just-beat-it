@@ -6415,23 +6415,25 @@ const DIETA_PIANO = {
    livello calorico, per scelta esplicita dell'utente. */
 const DIETA_PIANO_BLOCCO3 = {
   versione: 'v11-blocco3',
-  aggiornato: '17/10/2026',
+  aggiornato: '18/10/2026',
   inizio: '05/10/2026',
   fase: 'Ricomposizione corporea (verso ~12% di massa grassa) + Blocco 3 di allenamento',
   // Due fasi, cambio automatico per data (nessun intervento a mano):
   // - fase 1: dal 05/10 al 18/10/2026
-  // - fase 2: dal 19/10/2026 (rivalutazione il 30/10/2026)
+  // - fase 2: ufficialmente dal 19/10/2026, ma su richiesta dell'utente
+  //   attivata già dal 18/10/2026 (rivalutazione il 30/10/2026). Pavimento:
+  //   2000 / 2250 kcal, da qui non si scende più.
   // Proteine e grassi fissi tutti i giorni: l'unica variabile fra riposo e
   // pesi sono i carboidrati. kcal sempre derivate dai macro.
   // "Riposo" = giorni senza pesi (solo cardio + addome, o riposo completo).
-  dataFase2: new Date(2026, 9, 19),
+  dataFase2: new Date(2026, 9, 18),
   fase1: {
     riposo:      { kcal:2170, prot:158, carb:245, grassi:62 },
     allenamento: { kcal:2426, prot:158, carb:309, grassi:62 }
   },
   fase2: {
     riposo:      { kcal:2002, prot:158, carb:203, grassi:62 },
-    allenamento: { kcal:2302, prot:158, carb:278, grassi:62 }
+    allenamento: { kcal:2250, prot:158, carb:265, grassi:62 }
   },
   get target(){ return new Date() >= this.dataFase2 ? this.fase2 : this.fase1; },
   // Target di riserva: se compaiono forza in calo, sonno peggiore, stanchezza
