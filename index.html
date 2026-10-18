@@ -6414,24 +6414,38 @@ const DIETA_PIANO = {
    Giorni con solo sessione cardio (mercoledì, sabato) contano come riposo a
    livello calorico, per scelta esplicita dell'utente. */
 const DIETA_PIANO_BLOCCO3 = {
-  versione: 'v10-blocco3',
-  aggiornato: '08/10/2026',
+  versione: 'v11-blocco3',
+  aggiornato: '17/10/2026',
   inizio: '05/10/2026',
-  fase: 'Ricomposizione corporea (da ~14,5% a ~12% di massa grassa) + Blocco 3 di allenamento',
+  fase: 'Ricomposizione corporea (verso ~12% di massa grassa) + Blocco 3 di allenamento',
+  // Due fasi, cambio automatico per data (nessun intervento a mano):
+  // - fase 1: dal 05/10 al 18/10/2026
+  // - fase 2: dal 19/10/2026 (rivalutazione il 30/10/2026)
   // Proteine e grassi fissi tutti i giorni: l'unica variabile fra riposo e
-  // allenamento sono i carboidrati. kcal sempre derivate dai macro.
-  // Riposo = Mer/Sab (cardio + addome) e Dom; allenamento = Lun/Mar/Gio/Ven.
-  target: {
+  // pesi sono i carboidrati. kcal sempre derivate dai macro.
+  // "Riposo" = giorni senza pesi (solo cardio + addome, o riposo completo).
+  dataFase2: new Date(2026, 9, 19),
+  fase1: {
     riposo:      { kcal:2170, prot:158, carb:245, grassi:62 },
     allenamento: { kcal:2426, prot:158, carb:309, grassi:62 }
   },
-  // Target di riferimento se compaiono affaticamento, sonno peggiore, forza
-  // in calo o RPE alto (stesse proteine e grassi): non attivo di default.
+  fase2: {
+    riposo:      { kcal:2002, prot:158, carb:203, grassi:62 },
+    allenamento: { kcal:2302, prot:158, carb:278, grassi:62 }
+  },
+  get target(){ return new Date() >= this.dataFase2 ? this.fase2 : this.fase1; },
+  // Target di riserva: se compaiono forza in calo, sonno peggiore, stanchezza
+  // o fame fuori controllo per più giorni, si torna ai valori della fase 1.
+  // Emergenza ulteriore: 2270 / 2550 kcal (C 270 / 340 g). Non attivi di default.
   fallback: {
+    riposo:      { kcal:2170, prot:158, carb:245, grassi:62 },
+    allenamento: { kcal:2426, prot:158, carb:309, grassi:62 }
+  },
+  emergenza: {
     riposo:      { kcal:2270, prot:158, carb:270, grassi:62 },
     allenamento: { kcal:2550, prot:158, carb:340, grassi:62 }
   },
-  checkIn: '19/10/2026'
+  checkIn: '30/10/2026'
 };
 
 /* ============ MICRONUTRIENTI (vitamine, minerali, acqua) ============
