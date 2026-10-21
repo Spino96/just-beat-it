@@ -1306,15 +1306,15 @@
     padding:16px 12px 14px;position:relative;overflow:hidden;
   }
   .oggi-stat:nth-child(1)::after,.oggi-stat:nth-child(2)::after{content:'';position:absolute;right:-22px;top:-22px;width:70px;height:70px;border-radius:50%;opacity:.22;}
-  .oggi-stat:nth-child(1)::after{background:var(--c-allen,#a06bff);}
+  .oggi-stat:nth-child(1)::after{background:#5b8cff;}
   .oggi-stat:nth-child(2)::after{background:var(--c-dieta,#ff8a3d);}
   .oggi-stat .v{font-family:var(--disp);font-size:42px;letter-spacing:.02em;font-weight:400;line-height:1;
     background:linear-gradient(90deg,#fff,var(--sa));-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .oggi-stat:nth-child(1) .v{background:linear-gradient(90deg,#fff,#c3a6ff);-webkit-background-clip:text;background-clip:text;}
+  .oggi-stat:nth-child(1) .v{background:linear-gradient(90deg,#fff,#a9c2ff);-webkit-background-clip:text;background-clip:text;}
   .oggi-stat:nth-child(2) .v{background:linear-gradient(90deg,#fff,#ffc58f);-webkit-background-clip:text;background-clip:text;}
   .oggi-stat .l{font-size:10px;letter-spacing:.06em;}
   .os-bar{height:6px;border-radius:6px;background:#ffffff14;margin-top:10px;overflow:hidden;}
-  .os-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#8b5cff,#ff4fd0);}
+  .os-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#5b8cff,#3a4fe0);}
   .oggi-stat:nth-child(2) .os-bar i{background:linear-gradient(90deg,#ff7a2f,#ffc83d);}
   .oggi-row{padding:11px 0;}
   .oggi-row b{font-size:14px;color:#fff;}
@@ -1348,9 +1348,9 @@
   .h-tile .h-sub{font-size:12px;font-weight:700;opacity:.9;margin-top:3px;line-height:1.35;position:relative;z-index:1;}
   .h-tile .h-go{position:absolute;right:14px;bottom:14px;z-index:1;width:34px;height:34px;border-radius:50%;
     background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;}
-  .h-tile.t-allen{--t1:#8b5cff;--t2:#ff4fd0;}
+  .h-tile.t-allen{--t1:#4f7dff;--t2:#2a3bd0;}
   .h-tile.t-dieta{--t1:#ff7a2f;--t2:#ffc83d;--tfg:#2b1500;}
-  .h-tile.t-stats{--t1:#1fb6ff;--t2:#4f6bff;}
+  .h-tile.t-stats{--t1:#22e0d0;--t2:#12a89c;--tfg:#03160f;}
   .h-tile.t-storico{--t1:#ff4f7d;--t2:#ff8a4d;}
   .h-tile.t-misure{--t1:#a6f23a;--t2:#2fe39a;--tfg:#0b1a05;}
 
@@ -1457,6 +1457,11 @@
   .misura-delta.down{color:var(--accent);}
   .week-stat b{font-family:var(--mono);}
   .diff-row{border-radius:14px;}
+  .rec-chip{display:inline-flex;align-items:center;gap:5px;margin-left:2px;padding:5px 11px;border-radius:20px;font-family:var(--mono);font-size:12px;font-weight:900;cursor:pointer;
+    color:var(--sa);background:color-mix(in srgb, var(--sa) 14%, transparent);border:1px solid color-mix(in srgb, var(--sa) 45%, transparent);}
+  .rec-chip.custom{background:linear-gradient(135deg,var(--sa),var(--sb));color:var(--sfg);border-color:transparent;}
+  .rec-chip:active{transform:scale(.95);}
+  .rec-presets{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:4px 0 14px;}
 
   /* --- Form --- */
   .field input,.field textarea,.field select,input,textarea{border-radius:16px;}
@@ -2832,6 +2837,26 @@ let profiloUtente = null;
 // tutte insieme invece che in fila una dopo l'altra (vedi boot()/avviaApp()).
 let loadDataInVolo = null;
 let blocchiIniziati = {};
+/* Recupero tra le serie personalizzato per esercizio (secondi), chiave = nome
+   dell'esercizio in scheda. Se manca, vale il recupero previsto dalla scheda.
+   Salvato sul profilo utente: vale per tutte le sedute future. */
+let recuperiPersonalizzati = {};
+function recuperoEsercizio(e){
+  const v = recuperiPersonalizzati[e.nome];
+  return (typeof v==='number' && v>=0 && v<=900) ? v : e.recupero;
+}
+function fmtRecupero(sec){
+  if(sec>=60 && sec%60===0) return (sec/60)+"'";
+  if(sec>=60) return Math.floor(sec/60)+"'"+String(sec%60).padStart(2,'0')+'"';
+  return sec+'"';
+}
+function salvaRecuperiPersonalizzati(){
+  if(!currentUid) return;
+  try{
+    attendiScrittura(db.collection('users').doc(currentUid).set({ recuperiPersonalizzati }, { mergeFields:['recuperiPersonalizzati'] }));
+  }catch(e){ console.warn('Recuperi non salvati', e); }
+}
+
 /* Alternative "salvate": una volta che scegli il nome di un esercizio
    alternativo (es. l'attrezzo era occupato), lo ricordiamo per quell'
    esercizio — mappa {nomeEsercizioOriginale: nomeAlternativaScelta} salvata
@@ -2955,6 +2980,7 @@ async function checkProfilo(){
   const snap = await db.collection('users').doc(currentUid).get();
   const data = snap.exists ? snap.data() : {};
   blocchiIniziati = data.blocchiIniziati || {};
+  recuperiPersonalizzati = data.recuperiPersonalizzati || {};
   // Normalizza il formato: versioni precedenti salvavano una singola stringa
   // per esercizio, ora è un array (più alternative possibili tra cui scegliere).
   const raw = data.alternativeSalvate || {};
@@ -3111,6 +3137,7 @@ async function registrati(){
     await attendiScrittura(db.collection('users').doc(currentUid).set(nuovoProfilo));
     profiloUtente = { ...nuovoProfilo, isTrainer:false, avatar:null };
     blocchiIniziati = {};
+    recuperiPersonalizzati = {};
     alternativeSalvate = {};
     document.getElementById('registerScreen').style.display = 'none';
     await avviaApp();
@@ -3413,9 +3440,9 @@ function sectionAccentColor(routeName){
    <body> a ogni cambio schermata da render(). */
 function temaSezione(routeName){
   const T = {
-    allenamento:{ sa:'#a06bff', sb:'#ff4fd0', sfg:'#ffffff' },
+    allenamento:{ sa:'#5b8cff', sb:'#3a4fe0', sfg:'#ffffff' },
     dieta:      { sa:'#ff8a3d', sb:'#ffc83d', sfg:'#2b1500' },
-    stats:      { sa:'#2ac7ff', sb:'#4f7bff', sfg:'#04121c' },
+    stats:      { sa:'#22e0d0', sb:'#12a89c', sfg:'#03160f' },
     misure:     { sa:'#b6ff3d', sb:'#3dffa0', sfg:'#0b1a05' },
     storico:    { sa:'#ff5c8a', sb:'#ff8a4d', sfg:'#240812' },
     base:       { sa:'#3dffa0', sb:'#19c27a', sfg:'#04140d' }
@@ -4273,7 +4300,7 @@ function renderBlocco3Anteprima(){
     sc.esercizi.forEach(e=>{
       const alt = (e.alternativa && e.alternativa!=='—') ? ` · alt.: ${e.alternativa}` : '';
       html += `<div class="anteprima-ex"><b>${e.superset?'🔗 ':''}${e.nome}</b>
-        <div class="am">${e.serieTarget} x ${e.ripTarget}${e.superset?' · superset':` · recupero ${e.recupero}"`}${alt}</div>
+        <div class="am">${e.serieTarget} x ${e.ripTarget}${e.superset?' · superset':` · recupero ${fmtRecupero(recuperoEsercizio(e))}`}${alt}</div>
         ${e.note ? `<div class="an">${e.note}</div>` : ''}</div>`;
     });
     html += `</div>`;
@@ -5053,7 +5080,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
       ${(!usaAlt && e.immagine) ? `<div class="ex-thumb"><img src="${e.immagine}" alt="${e.nome}" loading="lazy"></div>` : ''}
       <div class="ex-head-info">
         <h3>${nomeAttivo}${usaAlt ? ' <span class="alt-tag">alternativa</span>' : ''}</h3>
-        <div class="ex-meta" style="margin-bottom:0;">${e.serieTarget} x ${e.ripTarget} · recupero ${e.recupero}"</div>
+        <div class="ex-meta" style="margin-bottom:0;">${e.serieTarget} x ${e.ripTarget} · <button type="button" class="rec-chip${recuperiPersonalizzati[e.nome]!=null?' custom':''}" onclick="apriModificaRecupero(${ei})" aria-label="Modifica il tempo di recupero">⏱ ${fmtRecupero(recuperoEsercizio(e))} ✎</button></div>
       </div>
     </div>`;
   const ultimaVolta = datiUltimaSessione(nomeAttivo);
@@ -5094,7 +5121,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
         <option value="">RPE</option>
         ${[6,7,8,9,10].map(v=>`<option value="${v}" ${set.rpe===v?'selected':''}>${v}</option>`).join('')}
       </select>
-      <input type="checkbox" ${set.fatta?'checked':''} onchange="markSetDone(${ei},${si},${e.recupero},this.checked,this)">
+      <input type="checkbox" ${set.fatta?'checked':''} onchange="markSetDone(${ei},${si},${recuperoEsercizio(e)},this.checked,this)">
     </div>`;
     html += `<div class="set-row-actions" id="setact-${ei}-${si}">
       ${rpeMissing ? `<span class="set-row-hint">⚠️ Segna l'RPE per completare questa serie</span>` : ''}
@@ -5229,6 +5256,51 @@ function adjustPeso(ei, si, delta){
   set.peso = nuovo;
   const input = document.getElementById(`peso-${ei}-${si}`);
   if(input) input.value = nuovo;
+}
+
+/* Foglio per cambiare il recupero di un esercizio: preset rapidi + secondi
+   liberi, "Ripristina" torna al valore della scheda. Il valore resta salvato
+   per le sedute future (recuperiPersonalizzati sul profilo). */
+function apriModificaRecupero(ei){
+  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const e = scheda.esercizi[ei];
+  const attuale = recuperoEsercizio(e);
+  const presets = [30,45,60,75,90,120,150,180,240];
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.id = 'recOverlay';
+  overlay.innerHTML = `<div class="confirm-box">
+    <p class="confirm-msg" style="margin-bottom:4px;">⏱ Recupero tra le serie</p>
+    <p class="field-hint" style="text-align:center;margin:0 0 14px;">${escHtml(e.nome)}<br>Previsto dalla scheda: ${fmtRecupero(e.recupero)}</p>
+    <div class="rec-presets">${presets.map(p=>`<div class="chip${p===attuale?' active':''}" data-p="${p}">${fmtRecupero(p)}</div>`).join('')}</div>
+    <div class="field" style="margin-bottom:14px;"><label>Oppure scegli i secondi</label>
+      <input type="number" id="recSecInput" min="0" max="900" step="5" inputmode="numeric" value="${attuale}" style="text-align:center;font-size:20px;font-weight:900;">
+    </div>
+    <div class="confirm-actions" style="flex-wrap:wrap;">
+      <button class="btn secondary" id="recResetBtn">Ripristina</button>
+      <button class="btn" id="recSaveBtn">Salva</button>
+    </div>
+    <button class="btn small secondary" id="recCancelBtn" style="width:100%;margin-top:10px;">Annulla</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  const input = overlay.querySelector('#recSecInput');
+  overlay.querySelectorAll('.chip').forEach(c=> c.onclick = ()=>{
+    input.value = c.dataset.p;
+    overlay.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active', x===c));
+  });
+  const chiudi = ()=> overlay.remove();
+  overlay.querySelector('#recCancelBtn').onclick = chiudi;
+  overlay.addEventListener('click', ev=>{ if(ev.target===overlay) chiudi(); });
+  overlay.querySelector('#recResetBtn').onclick = ()=>{
+    delete recuperiPersonalizzati[e.nome];
+    salvaRecuperiPersonalizzati(); chiudi(); hapticaLieve(); renderSessionePreservandoScroll();
+  };
+  overlay.querySelector('#recSaveBtn').onclick = ()=>{
+    const v = Math.round(Number(input.value));
+    if(isNaN(v) || v<0 || v>900){ input.style.borderColor = 'var(--danger)'; return; }
+    if(v===e.recupero) delete recuperiPersonalizzati[e.nome]; else recuperiPersonalizzati[e.nome] = v;
+    salvaRecuperiPersonalizzati(); chiudi(); hapticaLieve(); renderSessionePreservandoScroll();
+  };
 }
 
 function markSetDone(ei,si,recupero,checked,el){
