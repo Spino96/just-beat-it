@@ -25,12 +25,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Bebas+Neue&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <style>
   :root{
     --bg:#08090c;
@@ -89,12 +88,11 @@
     border-bottom:1px solid transparent;
     padding:20px 18px 12px;
     display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
-    transition:background-color .25s ease, backdrop-filter .25s ease, border-color .25s ease, transform .3s ease;
+    transition:background-color .25s ease, border-color .25s ease, transform .3s ease;
     --section-accent:var(--accent);
   }
   header.scrolled{
-    background:rgba(8,9,12,.93);
-    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    background:rgba(8,9,12,.97);
     border-bottom-color:var(--border);
   }
   /* Barra che si nasconde scorrendo verso il basso (più spazio per il
@@ -1227,6 +1225,245 @@
   }
 
   :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* ==================================================================
+     TEMA SPORT v2 — restyling grafico (colori per sezione, card piu'
+     ricche, numeri grandi, progress a gradiente). Sta in fondo al CSS e
+     sovrascrive solo l'aspetto: nessuna modifica a struttura o logica.
+     Ogni sezione imposta --sa / --sb / --sfg su <body> (vedi
+     temaSezione() in JS): colore principale, secondario e testo sui
+     bottoni pieni.
+     ================================================================== */
+  :root{
+    --bg:#06070c;
+    --panel:#10131c;
+    --panel-2:#171b28;
+    --border:#242a3d;
+    --text:#f6f8fc;
+    --text-dim:#98a1b9;
+    --accent:#3dffa0;
+    --accent-2:#ff8a3d;
+    --accent-3:#a06bff;
+    --danger:#ff4f72;
+    --radius:24px;
+    --radius-sm:20px;
+    --shadow-card:0 10px 26px -16px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.045);
+    --shadow-btn:0 10px 24px -10px #3dffa099;
+    --sa:#3dffa0; --sb:#19c27a; --sfg:#04140d;
+  }
+  body{
+    background:
+      radial-gradient(ellipse 900px 520px at 50% -14%, color-mix(in srgb, var(--sa) 20%, transparent), transparent 62%),
+      radial-gradient(ellipse 700px 460px at 108% 20%, rgba(160,107,255,.11), transparent 62%),
+      radial-gradient(ellipse 620px 420px at -12% 72%, rgba(255,138,61,.08), transparent 60%),
+      var(--bg);
+  }
+
+  /* --- Header --- */
+  header{padding:18px 18px 12px;}
+  header h1{font-size:20px;font-weight:900;letter-spacing:-.3px;
+    background:linear-gradient(90deg,#fff 20%,var(--sa) 120%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  header::after{height:3px;opacity:1;background:linear-gradient(90deg,var(--sa),var(--sb),transparent);}
+  .back-btn{background:linear-gradient(145deg,var(--panel-2),var(--panel));border-color:#2c3350;}
+  .avatar-btn{filter:drop-shadow(0 4px 10px color-mix(in srgb, var(--sa) 45%, transparent));}
+
+  /* --- Card generiche --- */
+  .card,.oggi-panel,.meal-card,.diet-summary,.diet-info-card,.exercise-card,.cardio-card{
+    background:linear-gradient(180deg,#151927 0%,var(--panel) 62%);
+    border:1px solid #252b42;
+    border-radius:var(--radius);
+  }
+  .card{position:relative;overflow:hidden;}
+  .card::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--sa),var(--sb));opacity:.9;pointer-events:none;}
+  .exercise-card::before,.diet-summary-glow::before,.oggi-panel::before{
+    height:4px;background:linear-gradient(90deg,var(--sa),var(--sb));}
+  .section-label{color:var(--text-dim);font-size:11.5px;font-weight:900;letter-spacing:.14em;
+    display:flex;align-items:center;gap:10px;margin:22px 2px 12px;}
+  .section-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+
+  /* --- Bottoni --- */
+  .btn{
+    background:linear-gradient(135deg,var(--sa),var(--sb));color:var(--sfg);
+    border-radius:20px;padding:16px 18px;font-size:15.5px;font-weight:900;letter-spacing:.1px;
+    box-shadow:0 12px 26px -12px color-mix(in srgb, var(--sa) 80%, transparent), inset 0 1px 0 rgba(255,255,255,.28);
+  }
+  .btn:active{transform:scale(.97);}
+  .btn.secondary{background:linear-gradient(145deg,var(--panel-2),var(--panel));color:var(--text);border:1px solid #2c3350;box-shadow:none;}
+  .btn.small{border-radius:16px;padding:10px 16px;}
+  .chip{background:linear-gradient(145deg,var(--panel-2),var(--panel));border:1px solid #2a3149;font-weight:800;padding:10px 16px;}
+  .chip.active{background:linear-gradient(135deg,var(--sa),var(--sb));color:var(--sfg);border-color:transparent;
+    box-shadow:0 8px 18px -8px color-mix(in srgb, var(--sa) 80%, transparent);}
+  .pill{background:linear-gradient(135deg,var(--sa),var(--sb));color:var(--sfg);border-radius:20px;font-weight:900;}
+  .turn-badge{background:linear-gradient(90deg,var(--sa),var(--sb));color:var(--sfg);
+    box-shadow:0 6px 16px -6px color-mix(in srgb, var(--sa) 80%, transparent);}
+
+  /* --- Home: pannello Oggi --- */
+  .oggi-panel{padding:18px;box-shadow:0 18px 40px -22px color-mix(in srgb, var(--sa) 55%, transparent), var(--shadow-card);}
+  .oggi-stats{gap:12px;margin-bottom:6px;}
+  .oggi-stat{
+    background:linear-gradient(160deg,#1b2033,#12151f);border:1px solid #2a3149;border-radius:20px;
+    padding:16px 12px 14px;position:relative;overflow:hidden;
+  }
+  .oggi-stat:nth-child(1)::after,.oggi-stat:nth-child(2)::after{content:'';position:absolute;right:-22px;top:-22px;width:70px;height:70px;border-radius:50%;opacity:.22;}
+  .oggi-stat:nth-child(1)::after{background:var(--c-allen,#a06bff);}
+  .oggi-stat:nth-child(2)::after{background:var(--c-dieta,#ff8a3d);}
+  .oggi-stat .v{font-family:var(--disp);font-size:42px;letter-spacing:.02em;font-weight:400;line-height:1;
+    background:linear-gradient(90deg,#fff,var(--sa));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .oggi-stat:nth-child(1) .v{background:linear-gradient(90deg,#fff,#c3a6ff);-webkit-background-clip:text;background-clip:text;}
+  .oggi-stat:nth-child(2) .v{background:linear-gradient(90deg,#fff,#ffc58f);-webkit-background-clip:text;background-clip:text;}
+  .oggi-stat .l{font-size:10px;letter-spacing:.06em;}
+  .os-bar{height:6px;border-radius:6px;background:#ffffff14;margin-top:10px;overflow:hidden;}
+  .os-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#8b5cff,#ff4fd0);}
+  .oggi-stat:nth-child(2) .os-bar i{background:linear-gradient(90deg,#ff7a2f,#ffc83d);}
+  .oggi-row{padding:11px 0;}
+  .oggi-row b{font-size:14px;color:#fff;}
+  .oggi-water-btn{background:linear-gradient(135deg,#2ac7ff33,#4f7bff22);border-color:#2ac7ff66;font-weight:800;}
+  .water-fill{background:linear-gradient(90deg,#2ac7ff,#4f7bff)!important;}
+
+  /* --- Home: saluto --- */
+  .home-hello{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:2px 2px 16px;}
+  .home-hello .hh-name{font-size:26px;font-weight:900;letter-spacing:-.6px;line-height:1.05;margin:0;}
+  .home-hello .hh-name span{background:linear-gradient(90deg,var(--sa),#fff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .home-hello .hh-date{font-size:11.5px;color:var(--text-dim);font-weight:800;text-transform:capitalize;margin:0;white-space:nowrap;
+    background:#ffffff0d;border:1px solid var(--border);border-radius:20px;padding:6px 12px;}
+
+  /* --- Home: tessere colorate --- */
+  .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .h-tile{
+    --t1:#3dffa0;--t2:#19c27a;--tfg:#fff;
+    position:relative;overflow:hidden;border-radius:26px;padding:18px 16px 16px;min-height:128px;
+    display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;color:var(--tfg);
+    background:linear-gradient(135deg,var(--t1),var(--t2));
+    box-shadow:0 18px 34px -18px var(--t1), inset 0 1px 0 rgba(255,255,255,.3);
+    transition:transform .15s ease, box-shadow .2s ease, filter .2s ease;
+  }
+  .h-tile::before{content:'';position:absolute;right:-34px;top:-34px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.16);}
+  .h-tile::after{content:'';position:absolute;left:-30px;bottom:-50px;width:120px;height:120px;border-radius:50%;background:rgba(0,0,0,.10);}
+  .h-tile:active{transform:scale(.97);}
+  .h-tile.tapped{transform:scale(.96);filter:brightness(1.12);box-shadow:0 0 0 2px #fff6, 0 0 36px 6px var(--t1);}
+  .h-tile.wide{grid-column:1 / -1;min-height:150px;}
+  .h-tile .h-emoji{font-size:36px;line-height:1;position:relative;z-index:1;filter:drop-shadow(0 6px 10px rgba(0,0,0,.28));}
+  .h-tile .h-label{font-size:19px;font-weight:900;letter-spacing:-.3px;position:relative;z-index:1;margin-top:14px;}
+  .h-tile .h-sub{font-size:12px;font-weight:700;opacity:.9;margin-top:3px;line-height:1.35;position:relative;z-index:1;}
+  .h-tile .h-go{position:absolute;right:14px;bottom:14px;z-index:1;width:34px;height:34px;border-radius:50%;
+    background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;}
+  .h-tile.t-allen{--t1:#8b5cff;--t2:#ff4fd0;}
+  .h-tile.t-dieta{--t1:#ff7a2f;--t2:#ffc83d;--tfg:#2b1500;}
+  .h-tile.t-stats{--t1:#1fb6ff;--t2:#4f6bff;}
+  .h-tile.t-storico{--t1:#ff4f7d;--t2:#ff8a4d;}
+  .h-tile.t-misure{--t1:#a6f23a;--t2:#2fe39a;--tfg:#0b1a05;}
+
+  /* --- Righe-categoria (Storico, Misure...) --- */
+  .home-cat{
+    background:linear-gradient(160deg,#171b2a,#10131c);border:1px solid #262c44;border-radius:24px;
+    padding:16px 18px;position:relative;overflow:hidden;
+  }
+  .home-cat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--sa),var(--sb));}
+  .home-cat .icon{
+    width:54px;height:54px;border:none;font-size:26px;
+    background:linear-gradient(135deg,var(--sa),var(--sb));box-shadow:0 10px 20px -10px var(--sa);
+  }
+  .home-cat .label{font-size:18px;font-weight:900;}
+  .home-cat.tapped{border-color:var(--sa);box-shadow:0 0 0 1.5px var(--sa),0 0 30px 4px color-mix(in srgb, var(--sa) 45%, transparent);}
+  .home-square .icon{background:linear-gradient(135deg,var(--sa),var(--sb));border:none;}
+  .diet-quicklinks .qlink{background:linear-gradient(160deg,#1a1f31,#12151f);border-color:#2a3149;border-radius:18px;}
+  .diet-quicklinks .qlink .ql{color:var(--text);}
+
+  /* --- Liste schede / voci --- */
+  .list-item{
+    background:linear-gradient(160deg,#171b2a,#10131c);border:1px solid #262c44;
+    border-left:5px solid var(--sa);border-radius:22px;padding:18px 18px;
+  }
+  .list-item h3{font-size:17px;font-weight:900;letter-spacing:-.2px;}
+  .list-item.turno{border-left-color:var(--sa);box-shadow:0 0 0 1.5px var(--sa), 0 18px 34px -20px var(--sa);
+    background:linear-gradient(160deg,color-mix(in srgb, var(--sa) 14%, #171b2a),#10131c);}
+  .scheda-toggle{color:var(--sa);font-weight:900;}
+  .blocco-progress .bp-bar,.finish-bar-progress .bp-bar,.session-progress .bp-bar{height:9px;border-radius:9px;background:#ffffff12;border:none;}
+  .blocco-progress .bp-fill,.finish-bar-progress .bp-fill,.session-progress .bp-fill{
+    background:linear-gradient(90deg,var(--sa),var(--sb));border-radius:9px;box-shadow:0 0 14px -2px var(--sa);}
+  .sessione-card-icon{background:linear-gradient(135deg,var(--sa),var(--sb))!important;border:none!important;}
+  .misura-pill{background:#ffffff0f;border:1px solid #2a3149;font-weight:800;}
+
+  /* --- Sessione allenamento --- */
+  .exercise-card{padding:20px 18px;box-shadow:0 14px 30px -20px #000, var(--shadow-card);}
+  .exercise-card h3{font-size:18px;font-weight:900;letter-spacing:-.2px;}
+  .ex-meta{color:var(--sa);font-weight:900;font-family:var(--mono);font-size:12.5px;}
+  .set-row{grid-template-columns:28px minmax(0,1.5fr) minmax(0,1fr) 52px 30px;gap:6px;margin-bottom:10px;}
+  .set-row>span:first-child{
+    width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--sa),var(--sb));color:var(--sfg);font-weight:900;font-size:12.5px;
+  }
+  .set-row input[type=number],.set-row input[type=text],.set-row select{
+    background:#0c0e15;border:1px solid #2a3149;border-radius:14px;font-weight:800;
+  }
+  .set-row input[type=checkbox]{
+    -webkit-appearance:none;appearance:none;width:30px;height:30px;border-radius:50%;
+    background:#0c0e15;border:2px solid #3a4262;cursor:pointer;position:relative;transition:all .15s ease;
+  }
+  .set-row input[type=checkbox]:checked{background:linear-gradient(135deg,var(--sa),var(--sb));border-color:transparent;
+    box-shadow:0 0 16px -2px var(--sa);}
+  .set-row input[type=checkbox]:checked::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:var(--sfg);font-weight:900;font-size:17px;}
+  .set-row.rpe-missing select{border-color:var(--accent-2);box-shadow:0 0 0 2px #ff8a3d44;}
+  .stepper-btn{background:linear-gradient(145deg,var(--panel-2),#0c0e15);border:1px solid #2a3149;border-radius:12px;font-weight:900;}
+  .peso-stepper{gap:2px;}
+  .peso-stepper input[type=number]{border-radius:12px;padding:10px 0;}
+  .stepper-btn{width:22px;border-radius:9px;}
+  .stepper-btn:active{background:var(--sa);color:var(--sfg);}
+  .prev-session-tip{background:linear-gradient(160deg,#1c2036,#12151f);border:1px solid #2f3658;border-radius:18px;}
+  .pst-set{background:#ffffff10;border-radius:10px;font-weight:800;}
+  .finish-bar{background:linear-gradient(180deg,#141828f2,#0c0e16);border-top:1px solid #2a3149;border-radius:26px 26px 0 0;
+    box-shadow:0 -16px 40px -12px rgba(0,0,0,.85);}
+  .session-elapsed{background:linear-gradient(135deg,#1b2033,#12151f);border:1px solid #2a3149;border-radius:20px;font-weight:800;}
+  .timer-bar{background:linear-gradient(180deg,#171c30,#0d1019);border-top:1px solid #2f3658;border-radius:26px 26px 0 0;}
+  .timer-ring-fill{stroke:var(--sa)!important;}
+  .superset-group{border-color:var(--sa);}
+  .superset-label,.superset-tag{color:var(--sa);font-weight:900;}
+  .cardio-card::before{background:linear-gradient(90deg,var(--sa),var(--sb))!important;height:4px!important;}
+
+  /* --- Dieta --- */
+  .diet-summary{padding:22px 20px;}
+  .day-mode-toggle .dmt-btn{background:linear-gradient(145deg,var(--panel-2),var(--panel));border-radius:16px;font-weight:900;}
+  .dmt-btn.active{background:linear-gradient(135deg,var(--sa),var(--sb));color:var(--sfg);border-color:transparent;
+    box-shadow:0 10px 20px -10px var(--sa);}
+  .kcal-ring-wrap{width:180px;height:180px;}
+  .kr-n{font-size:46px;font-weight:400;}
+  .kr-fill{stroke-width:12;filter:drop-shadow(0 0 8px var(--sa));}
+  .kr-bg{stroke:#ffffff12;stroke-width:12;}
+  .kcal-ring-glow{background:radial-gradient(circle,color-mix(in srgb, var(--sa) 30%, transparent),transparent 72%);}
+  .macro-tile{background:linear-gradient(170deg,#1b2033,#12151f);border:1px solid #2a3149;border-radius:20px;}
+  .macro-tile::before{height:4px;}
+  .macro-tile .mt-track{height:8px;background:#ffffff12;}
+  .macro-tile .mt-fill{box-shadow:0 0 10px -1px var(--tile-color);}
+  .tab-bar{background:linear-gradient(145deg,var(--panel-2),var(--panel));border:1px solid #2a3149;border-radius:22px;}
+  .tab-btn.active{background:linear-gradient(135deg,var(--sa),var(--sb))!important;color:var(--sfg)!important;font-weight:900;
+    box-shadow:0 8px 18px -8px var(--sa);}
+  .meal-card{box-shadow:var(--shadow-card);}
+  .meal-head .icon,.meal-row-icon{background:linear-gradient(135deg,#ffffff14,#ffffff08);border-radius:16px;}
+  .meal-head .mh-kcal,.meal-row-kcal{font-family:var(--mono);font-weight:800;}
+  .meal-check.checked{background:linear-gradient(135deg,var(--sa),var(--sb))!important;border-color:transparent!important;box-shadow:0 0 14px -2px var(--sa);}
+  .meal-row.done{border-color:color-mix(in srgb, var(--sa) 45%, transparent);}
+  .food-hero{background:linear-gradient(135deg,color-mix(in srgb, var(--sa) 28%, #151927),#10131c 70%);border:1px solid #2f3658;border-radius:26px;}
+  .food-hero-cta{background:linear-gradient(135deg,var(--sa),var(--sb));color:var(--sfg);font-weight:900;}
+  .qa-row,.extra-food-item{border-radius:16px;}
+
+  /* --- Misure / Statistiche --- */
+  .stat-highlight{background:linear-gradient(135deg,color-mix(in srgb, var(--sa) 20%, #1b2033),#12151f);border:1px solid #2f3658;border-radius:22px;}
+  .stat-highlight-value{font-family:var(--disp);font-weight:400;font-size:52px;
+    background:linear-gradient(90deg,#fff,var(--sa));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .misura-card,.sessione-card{border-radius:22px;}
+  .misura-delta.up{color:var(--accent-2);}
+  .misura-delta.down{color:var(--accent);}
+  .week-stat b{font-family:var(--mono);}
+  .diff-row{border-radius:14px;}
+
+  /* --- Form --- */
+  .field input,.field textarea,.field select,input,textarea{border-radius:16px;}
+  .field input:focus,.field textarea:focus{outline:2px solid var(--sa);outline-offset:-1px;}
+  .success-banner{background:linear-gradient(135deg,#3dffa022,#19c27a11);border:1px solid #3dffa055;border-radius:18px;}
+  .confirm-box,.sheet-box{background:linear-gradient(180deg,#171b2a,#10131c);border:1px solid #2f3658;border-radius:28px;}
+  .app-credit span{color:var(--sa);}
 </style>
 </head>
 <body>
@@ -1375,7 +1612,7 @@ async function attivaNotifichePush(){
     const messaging = firebase.messaging();
     const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registrazioneSW });
     if(!token) throw new Error('Nessun token ottenuto');
-    await db.collection('users').doc(currentUid).set({ fcmToken: token }, { merge:true });
+    await attendiScrittura(db.collection('users').doc(currentUid).set({ fcmToken: token }, { merge:true }));
     if(profiloUtente) profiloUtente.fcmToken = token;
     if(stato) stato.innerHTML = `<div class="success-banner" style="margin:0;padding:14px;">Notifiche attivate ✅</div>`;
   }catch(e){
@@ -2566,7 +2803,7 @@ async function scegliAvatarPreset(id){
   renderHeaderAvatar();
   renderProfilo();
   try{
-    await db.collection('users').doc(currentUid).set({ avatar: profiloUtente.avatar }, { merge:true });
+    await attendiScrittura(db.collection('users').doc(currentUid).set({ avatar: profiloUtente.avatar }, { merge:true }));
   }catch(e){
     alert('Errore nel salvataggio dell\'avatar: '+e.message);
   }
@@ -2579,7 +2816,7 @@ async function scegliAvatarFoto(input){
     profiloUtente.avatar = { type:'foto', value:dataUrl };
     renderHeaderAvatar();
     renderProfilo();
-    await db.collection('users').doc(currentUid).set({ avatar: profiloUtente.avatar }, { merge:true });
+    await attendiScrittura(db.collection('users').doc(currentUid).set({ avatar: profiloUtente.avatar }, { merge:true }));
   }catch(e){
     alert('Errore nel caricamento della foto: '+e.message);
   }
@@ -2688,6 +2925,26 @@ function valutaDeload(scheda){
   return null;
 }
 
+/* Con la persistenza offline di Firestore il Promise di una scrittura si
+   risolve solo quando il server conferma: senza rete resta in sospeso per
+   sempre e i salvataggi (es. "Termina allenamento" in palestra col telefono
+   senza segnale) sembravano bloccati su "Salvataggio...". Il dato è già nella
+   cache locale e partirà da solo appena torna la connessione, quindi dopo
+   pochi secondi si prosegue comunque; gli errori veri (permessi, ecc.) che
+   arrivano prima restano segnalati come prima. */
+function attendiScrittura(promise, ms){
+  const p = Promise.resolve(promise);
+  p.catch(()=>{}); // evita "unhandled rejection" se fallisce dopo il timeout
+  return Promise.race([p, new Promise(res=>setTimeout(res, ms||2500))]);
+}
+/* Come collection.add(), ma restituisce subito il riferimento (id incluso)
+   e attende la scrittura con attendiScrittura(). */
+async function aggiungiDocRapido(coll, payload){
+  const ref = coll.doc();
+  await attendiScrittura(ref.set(payload));
+  return ref;
+}
+
 function userCollection(name){
   return db.collection('users').doc(currentUid).collection(name);
 }
@@ -2755,7 +3012,7 @@ async function salvaProfilo(){
     if(!('schedeAssegnate' in existingData)){
       payload.schedeAssegnate = [];
     }
-    await db.collection('users').doc(currentUid).set(payload, { merge:true });
+    await attendiScrittura(db.collection('users').doc(currentUid).set(payload, { merge:true }));
     profiloUtente = {
       nome, cognome, eta: Number(eta), attenzioni,
       schedeAssegnate: ('schedeAssegnate' in existingData) ? existingData.schedeAssegnate : [],
@@ -2851,7 +3108,7 @@ async function registrati(){
       nome, cognome, eta: Number(eta), attenzioni: '',
       schedeAssegnate: []
     };
-    await db.collection('users').doc(currentUid).set(nuovoProfilo);
+    await attendiScrittura(db.collection('users').doc(currentUid).set(nuovoProfilo));
     profiloUtente = { ...nuovoProfilo, isTrainer:false, avatar:null };
     blocchiIniziati = {};
     alternativeSalvate = {};
@@ -2929,7 +3186,7 @@ async function applicaPulloverSessioneOggi(){
     ]};
     const idx = s.esercizi.findIndex(e=>/^Rematore/i.test(e.nome));
     s.esercizi.splice(idx>=0 ? idx+1 : s.esercizi.length, 0, nuovo);
-    await userCollection('sessioni').doc(s.id).update({ esercizi: s.esercizi });
+    await attendiScrittura(userCollection('sessioni').doc(s.id).update({ esercizi: s.esercizi }));
   }catch(e){ console.warn('Correzione pullover non applicata', e); }
 }
 
@@ -3151,6 +3408,30 @@ function sectionAccentColor(routeName){
   return 'var(--accent)';
 }
 
+/* Tema colore per sezione (restyling Sport v2): colore principale (sa),
+   secondario (sb) e colore del testo sui bottoni pieni (sfg). Applicato su
+   <body> a ogni cambio schermata da render(). */
+function temaSezione(routeName){
+  const T = {
+    allenamento:{ sa:'#a06bff', sb:'#ff4fd0', sfg:'#ffffff' },
+    dieta:      { sa:'#ff8a3d', sb:'#ffc83d', sfg:'#2b1500' },
+    stats:      { sa:'#2ac7ff', sb:'#4f7bff', sfg:'#04121c' },
+    misure:     { sa:'#b6ff3d', sb:'#3dffa0', sfg:'#0b1a05' },
+    storico:    { sa:'#ff5c8a', sb:'#ff8a4d', sfg:'#240812' },
+    base:       { sa:'#3dffa0', sb:'#19c27a', sfg:'#04140d' }
+  };
+  const allen = ['allenamento-list','sessione','sessione-modifica','sessione-cardio','blocco3-anteprima'];
+  const dieta = ['alimentazione','diario','menu-alimentare','cerca-alimento','crea-alimento-custom','ricetta-editor'];
+  const misure = ['misure','storico-misure','misura-detail','misura-modifica','confronta-foto'];
+  const storico = ['storico','storico-allenamento','progressi-detail'];
+  if(allen.includes(routeName)) return T.allenamento;
+  if(dieta.includes(routeName)) return T.dieta;
+  if(routeName==='statistiche') return T.stats;
+  if(misure.includes(routeName)) return T.misure;
+  if(storico.includes(routeName)) return T.storico;
+  return T.base;
+}
+
 const BACK_MAP = {
   'allenamento-list':'home',
   'sessione-cardio':'allenamento-list',
@@ -3193,8 +3474,13 @@ backBtn.addEventListener('click', async ()=>{
 });
 
 let ultimoScrollYHeader = 0;
-window.addEventListener('scroll', ()=>{
-  const h = document.querySelector('header');
+// Header e scroll: elemento in cache e aggiornamento al massimo una volta per
+// frame (requestAnimationFrame), invece di cercare <header> e toccare le
+// classi a ogni singolo evento di scroll.
+let scrollFramePendente = false;
+function aggiornaHeaderScroll(){
+  scrollFramePendente = false;
+  const h = headerEl;
   if(!h) return;
   const y = window.scrollY;
   h.classList.toggle('scrolled', y > 4);
@@ -3208,6 +3494,11 @@ window.addEventListener('scroll', ()=>{
     h.classList.remove('hidden-bar');
   }
   ultimoScrollYHeader = y;
+}
+window.addEventListener('scroll', ()=>{
+  if(scrollFramePendente) return;
+  scrollFramePendente = true;
+  requestAnimationFrame(aggiornaHeaderScroll);
 }, { passive:true });
 
 function goHome(){ route={name:'home'}; render(); }
@@ -3410,7 +3701,7 @@ let pendingOrigin = null;
 let navOriginStack = [];
 
 view.addEventListener('click', function(e){
-  const cat = e.target.closest('.home-cat, .home-square');
+  const cat = e.target.closest('.home-cat, .home-square, .h-tile');
   if(cat){
     e.preventDefault();
     e.stopPropagation();
@@ -3555,6 +3846,11 @@ function render(){
   if(headerEl){
     headerEl.style.setProperty('--section-accent', sectionAccentColor(route.name));
     headerEl.classList.remove('hidden-bar'); // ogni nuova schermata parte con la barra visibile
+    const tema = temaSezione(route.name);
+    headerEl.style.setProperty('--section-accent', tema.sa);
+    document.body.style.setProperty('--sa', tema.sa);
+    document.body.style.setProperty('--sb', tema.sb);
+    document.body.style.setProperty('--sfg', tema.sfg);
     ultimoScrollYHeader = window.scrollY;
   }
   backBtn.style.visibility = route.name==='home' ? 'hidden':'visible';
@@ -3578,7 +3874,7 @@ function render(){
   else if(route.name==='blocco3-anteprima') renderBlocco3Anteprima();
   else if(route.name==='progressi-detail') renderProgressiDetail();
   else if(route.name==='sessione-modifica') renderSessioneModifica();
-  else if(route.name==='statistiche') renderStatistiche();
+  else if(route.name==='statistiche') apriStatistiche();
   else if(route.name==='profilo') renderProfilo();
 }
 
@@ -3719,7 +4015,8 @@ function renderOggiPanel(){
   // I due numeri principali diventano tile (grid), non righe di testo: più
   // leggibili a colpo d'occhio, stesso trattamento "readout" già usato per
   // l'anello kcal e il timer di recupero (vedi --mono/--disp in :root).
-  const statsTiles = [`<div class="oggi-stat"><div class="v">${allenamentiSettimanaLabel}</div><div class="l">Allenamenti completati<br>questa settimana</div></div>`];
+  const pctAllen = allenamentiTargetSettimana>0 ? Math.min(100, Math.round(allenamentiFattiSettimana/allenamentiTargetSettimana*100)) : 0;
+  const statsTiles = [`<div class="oggi-stat"><div class="v">${allenamentiSettimanaLabel}</div><div class="l">Allenamenti completati<br>questa settimana</div><div class="os-bar"><i style="width:${pctAllen}%"></i></div></div>`];
 
   let pastoRow = '';
   if(pianoPersonale){
@@ -3729,7 +4026,8 @@ function renderOggiPanel(){
     // alimento, così il residuo qui e in Dieta sono sempre coerenti tra loro.
     const kcalOggi = calcolaTotaliGiorno(cache.dietaLogOggi).kcalTot;
     const residue = t.kcal - kcalOggi;
-    statsTiles.push(`<div class="oggi-stat"><div class="v">${fmt1(Math.abs(residue))}</div><div class="l">Kcal ${residue>=0?'restanti':'oltre il target'}<br>oggi</div></div>`);
+    const pctKcal = t.kcal>0 ? Math.min(100, Math.round(kcalOggi/t.kcal*100)) : 0;
+    statsTiles.push(`<div class="oggi-stat"><div class="v">${fmt1(Math.abs(residue))}</div><div class="l">Kcal ${residue>=0?'restanti':'oltre il target'}<br>oggi</div><div class="os-bar"><i style="width:${pctKcal}%"></i></div></div>`);
 
     const idxProssimo = DIETA_PIANO.pasti.findIndex((p,i)=> !cache.dietaLogOggi.pastiFatti[i]);
     const prossimo = idxProssimo>=0 ? DIETA_PIANO.pasti[idxProssimo].nome : 'Tutto segnato ✅';
@@ -3764,52 +4062,45 @@ function renderOggiPanel(){
 
 function renderHome(){
   pageTitle.textContent = 'Beat Yourself';
-  // Data di oggi accanto al saluto: dà subito un'aria "dashboard aggiornata
-  // in tempo reale" invece di un semplice saluto statico, ed è un'ancora
-  // visiva utile quando si torna nell'app dopo giorni di pausa.
-  const oggiLbl = new Date().toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'});
+  const oggiLbl = new Date().toLocaleDateString('it-IT',{weekday:'short', day:'numeric', month:'short'});
   const saluto = profiloUtente ? `
-    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 14px;">
-      <p style="font-family:'Bahnschrift Semibold','Bahnschrift',sans-serif;font-weight:600;color:var(--text);font-size:15px;margin:0;">Ciao, ${profiloUtente.nome} 👋</p>
-      <p style="font-size:12px;color:var(--text-dim);font-weight:700;text-transform:capitalize;margin:0;white-space:nowrap;">${oggiLbl}</p>
+    <div class="home-hello">
+      <p class="hh-name">Ciao,<br><span>${profiloUtente.nome}</span> 👋</p>
+      <p class="hh-date">${oggiLbl}</p>
     </div>` : '';
-  const links = '';
   const haPianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
   const dietaSub = haPianoPersonale ? 'Piano nutrizionale e pasti' : 'In attesa del tuo piano personale';
   const promemoria = promemoriaCostanza();
   const oggiPanel = renderOggiPanel();
-  // Due piccole etichette di sezione ("Le tue sezioni" / "Monitoraggio")
-  // separano visivamente le azioni principali (allenati/mangia) da quelle
-  // di consultazione (storico/misure): stesso trattamento già usato per
-  // "Gruppo muscolare" in Statistiche, così la Home non è più un'unica
-  // colonna ininterrotta di card tutte uguali.
   view.innerHTML = `
     ${saluto}
     ${oggiPanel}
     ${promemoria}
-    ${links}
     <p class="section-label">Le tue sezioni</p>
-    <div class="home-cat c-allenamento" onclick="setRoute({name:'allenamento-list'})">
-      <div class="icon">🏋️</div>
-      <div><div class="label">Allenamento</div><div class="sub">Scegli una scheda e inizia la seduta</div></div>
-    </div>
-    <div class="home-cat c-dieta" onclick="setRoute({name:'alimentazione'})">
-      <div class="icon">🍎</div>
-      <div><div class="label">Dieta</div><div class="sub">${dietaSub}</div></div>
-    </div>
-    <div class="home-cat" onclick="setRoute({name:'statistiche'})">
-      <div class="icon">📈</div>
-      <div><div class="label">Statistiche</div><div class="sub">Carichi esercizi e misure corporee</div></div>
+    <div class="home-grid">
+      <div class="h-tile wide t-allen" onclick="setRoute({name:'allenamento-list'})">
+        <div class="h-emoji">🏋️</div>
+        <div><div class="h-label">Allenamento</div><div class="h-sub">Scegli una scheda e inizia la seduta</div></div>
+        <div class="h-go">›</div>
+      </div>
+      <div class="h-tile t-dieta" onclick="setRoute({name:'alimentazione'})">
+        <div class="h-emoji">🍎</div>
+        <div><div class="h-label">Dieta</div><div class="h-sub">${dietaSub}</div></div>
+      </div>
+      <div class="h-tile t-stats" onclick="setRoute({name:'statistiche'})">
+        <div class="h-emoji">📈</div>
+        <div><div class="h-label">Statistiche</div><div class="h-sub">Carichi e misure</div></div>
+      </div>
     </div>
     <p class="section-label">Monitoraggio</p>
-    <div class="home-squares">
-      <div class="home-square" onclick="setRoute({name:'storico'})">
-        <div class="icon">🗂️</div>
-        <div class="label">Storico</div>
+    <div class="home-grid">
+      <div class="h-tile t-storico" onclick="setRoute({name:'storico'})" style="min-height:108px;">
+        <div class="h-emoji">🗂️</div>
+        <div><div class="h-label">Storico</div></div>
       </div>
-      <div class="home-square" onclick="setRoute({name:'misure'})">
-        <div class="icon">📏</div>
-        <div class="label">Registra progressi</div>
+      <div class="h-tile t-misure" onclick="setRoute({name:'misure'})" style="min-height:108px;">
+        <div class="h-emoji">📏</div>
+        <div><div class="h-label">Registra progressi</div></div>
       </div>
     </div>
     <p class="app-credit">Created by <span>SpinoDev96</span></p>
@@ -4208,7 +4499,7 @@ async function terminaSessioneCardio(){
   if(kcalAttr>0) payload.kcalAttrezzo = Math.round(kcalAttr);
   if(vel>0) payload.velocita = Math.round(vel*10)/10;
   try{
-    const ref = await userCollection('cardioSessioni').add(payload);
+    const ref = await aggiungiDocRapido(userCollection('cardioSessioni'), payload);
     cache.cardioSessioni.push({ id: ref.id, ...payload });
   }catch(e){
     alert('Errore nel salvataggio: '+e.message);
@@ -4555,7 +4846,49 @@ function refreshLocks(){
   const precedenti = sessionDraft._locks || [];
   const cambiati = nuovi.length !== precedenti.length || nuovi.some((v,i)=>v!==precedenti[i]);
   sessionDraft._locks = nuovi;
-  if(cambiati) renderSessionePreservandoScroll();
+  if(cambiati){ renderSessionePreservandoScroll(); return; }
+  // Nessun cambio di sblocchi (es. si completa l'ULTIMO esercizio di una
+  // unità, o la serie finale): la pagina non viene ridisegnata, quindi il
+  // contatore "X di Y esercizi completati" e l'avviso RPE vanno aggiornati
+  // a mano. Prima restavano fermi e l'ultimo esercizio risultava sempre
+  // mancante finché non si toglieva e si rimetteva una serie.
+  aggiornaProgressoSessione();
+}
+
+/* Aggiorna in-place (senza ridisegnare la pagina) il contatore degli esercizi
+   completati e la barra di avanzamento. */
+function aggiornaProgressoSessione(){
+  if(!sessionDraft) return;
+  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  if(!scheda) return;
+  const tot = scheda.esercizi.length;
+  const ok = scheda.esercizi.reduce((n,_,i)=> n + (esercizioCompletato(i) ? 1 : 0), 0);
+  const box = document.getElementById('sessionProgress');
+  if(!box) return;
+  const lbl = box.querySelector('.bp-label');
+  const fill = box.querySelector('.bp-fill');
+  if(lbl) lbl.textContent = `${ok} di ${tot} esercizi completati`;
+  if(fill) fill.style.width = (tot ? Math.round(ok/tot*100) : 0) + '%';
+}
+
+/* Aggiorna in-place l'avviso "Segna l'RPE" di una singola serie dopo che è
+   stata spuntata o le è stato dato l'RPE, senza ridisegnare tutta la sessione. */
+function aggiornaAvvisoRPE(ei, si){
+  const set = sessionDraft.esercizi[ei] && sessionDraft.esercizi[ei].sets[si];
+  const row = document.getElementById(`setrow-${ei}-${si}`);
+  const act = document.getElementById(`setact-${ei}-${si}`);
+  if(!set || !row || !act) return;
+  const manca = set.fatta && set.rpe==null && !set.saltata;
+  row.classList.toggle('rpe-missing', manca);
+  let hint = act.querySelector('.set-row-hint');
+  if(manca && !hint){
+    hint = document.createElement('span');
+    hint.className = 'set-row-hint';
+    hint.textContent = "⚠️ Segna l'RPE per completare questa serie";
+    act.insertBefore(hint, act.firstChild);
+  } else if(!manca && hint){
+    hint.remove();
+  }
 }
 
 /* renderSessione() sostituisce tutto view.innerHTML: senza precauzioni il
@@ -4578,6 +4911,7 @@ function updateNotaEsercizio(ei, val){
 
 function setRPESet(ei, si, val){
   sessionDraft.esercizi[ei].sets[si].rpe = val ? Number(val) : null;
+  aggiornaAvvisoRPE(ei, si);
   refreshLocks();
 }
 
@@ -4748,7 +5082,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
       return;
     }
     const rpeMissing = set.fatta && set.rpe==null;
-    html += `<div class="set-row${rpeMissing ? ' rpe-missing' : ''}">
+    html += `<div class="set-row${rpeMissing ? ' rpe-missing' : ''}" id="setrow-${ei}-${si}">
       <span>${si+1}</span>
       <div class="peso-stepper">
         <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},-1.25)" aria-label="Togli peso">–</button>
@@ -4762,7 +5096,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
       </select>
       <input type="checkbox" ${set.fatta?'checked':''} onchange="markSetDone(${ei},${si},${e.recupero},this.checked,this)">
     </div>`;
-    html += `<div class="set-row-actions">
+    html += `<div class="set-row-actions" id="setact-${ei}-${si}">
       ${rpeMissing ? `<span class="set-row-hint">⚠️ Segna l'RPE per completare questa serie</span>` : ''}
       <button type="button" class="set-mini-btn" onclick="saltaSet(${ei},${si})">⏭ Salta serie</button>
       ${isExtra ? `<button type="button" class="set-mini-btn" onclick="rimuoviSet(${ei},${si})">🗑 Rimuovi</button>` : ''}
@@ -4909,6 +5243,7 @@ function markSetDone(ei,si,recupero,checked,el){
   }
   set.fatta = checked;
   if(checked){ hapticaLieve(); startRestTimer(recupero); }
+  aggiornaAvvisoRPE(ei, si);
   refreshLocks();
 }
 
@@ -5118,7 +5453,14 @@ async function terminaSessione(){
       data: new Date().toISOString(),
       esercizi: sessionDraft.esercizi
     };
-    const ref = await userCollection('sessioni').add(payload);
+    // Foto istantanea di kcal e macro mangiati finora oggi (restano anche
+    // nei dati esportati): utile per leggere l'allenamento insieme a ciò
+    // che si è mangiato quel giorno.
+    try{
+      const t = calcolaTotaliGiorno(cache.dietaLogOggi || {});
+      payload.dietaOggi = { kcal: Math.round(t.kcalTot), prot: Math.round(t.protTot*10)/10, carb: Math.round(t.carbTot*10)/10, grassi: Math.round(t.grassiTot*10)/10 };
+    }catch(e){}
+    const ref = await aggiungiDocRapido(userCollection('sessioni'), payload);
     cache.sessioni.push({ id: ref.id, ...payload });
     sessionDraft = null;
     setRoute({name:'storico-allenamento', justSaved:true});
@@ -5219,6 +5561,17 @@ function esportaCSV(){
     });
   });
   righe.push('');
+  righe.push('=== DIETA (kcal e macro mangiati per giorno) ===');
+  righe.push(['Data','Tipo giornata','Kcal','Proteine (g)','Carboidrati (g)','Grassi (g)','Acqua (ml)','Dettaglio parziale'].join(','));
+  cache.dietaLog.slice().sort((a,b)=> a.id.localeCompare(b.id)).forEach(g=>{
+    const t = calcolaTotaliGiorno(g);
+    if(!t.kcalTot && !t.protTot && !t.carbTot && !t.grassiTot && !g.acquaMl) return;
+    const parti = String(g.id).split('-');
+    const data = parti.length===3 ? `${parti[2]}/${parti[1]}/${parti[0]}` : g.id;
+    const tipo = typeof g.giornoAllenamento==='boolean' ? (g.giornoAllenamento ? 'pesi' : 'riposo') : '';
+    righe.push([data, tipo, Math.round(t.kcalTot), fmt1(t.protTot), fmt1(t.carbTot), fmt1(t.grassiTot), g.acquaMl||0, t.dettagliNonDisponibili?'si':''].join(','));
+  });
+  righe.push('');
   righe.push('=== CARDIO ===');
   righe.push(['Data','Attività','Durata (min)','Kcal stimate'].join(','));
   cache.cardioSessioni.slice().sort((a,b)=> new Date(a.data)-new Date(b.data)).forEach(s=>{
@@ -5258,12 +5611,19 @@ function etichettaGiornoRelativa(data){
   return new Date(data).toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long'});
 }
 
+// Paginazione: con centinaia di sedute ridisegnare tutto lo storico a ogni
+// apertura rallentava l'app; si mostrano le più recenti e il resto a richiesta.
+let storicoAllLimite = 30;
+function mostraAltroStoricoAll(){ storicoAllLimite += 30; const y=window.scrollY; renderStoricoAllenamento(); window.scrollTo(0,y); }
+
 function renderStoricoAllenamento(){
   pageTitle.textContent = 'Storico allenamento';
   const voci = [
     ...cache.sessioni.map(s=>({ tipo:'pesi', data:s.data, s })),
     ...cache.cardioSessioni.map(s=>({ tipo:'cardio', data:s.data, s }))
   ].sort((a,b)=> new Date(b.data)-new Date(a.data));
+  const vociTotali = voci.length;
+  voci.length = Math.min(voci.length, storicoAllLimite);
   let html = '';
   if(route.justSaved){
     html += `<div class="success-banner">Allenamento salvato ✅</div>`;
@@ -5325,6 +5685,9 @@ function renderStoricoAllenamento(){
       </div>`;
     }
   });
+  if(vociTotali > voci.length){
+    html += `<button class="btn secondary" style="width:100%;margin:6px 0 14px;" onclick="mostraAltroStoricoAll()">Mostra altri (${vociTotali - voci.length})</button>`;
+  }
   view.innerHTML = html;
   attachSwipeHandlers(view, eliminaVoceStorico);
 }
@@ -5337,15 +5700,19 @@ function eliminaVoceStorico(id){
 async function eliminaCardioSessione(id){
   if(!(await mostraConferma('Eliminare questa sessione cardio dallo storico?'))) return;
   try{
-    await userCollection('cardioSessioni').doc(id).delete();
+    await attendiScrittura(userCollection('cardioSessioni').doc(id).delete());
     cache.cardioSessioni = cache.cardioSessioni.filter(s=>s.id!==id);
     setRoute({name:'storico-allenamento'});
   }catch(e){ alert('Errore: '+e.message); }
 }
 
+let storicoMisLimite = 30;
+function mostraAltroStoricoMis(){ storicoMisLimite += 30; const y=window.scrollY; renderStoricoMisure(); window.scrollTo(0,y); }
+
 function renderStoricoMisure(){
   pageTitle.textContent = 'Storico misure';
-  const misure = cache.misure.slice().reverse();
+  const misureTutte = cache.misure.slice().reverse();
+  const misure = misureTutte.slice(0, storicoMisLimite + 1); // +1: serve la precedente per il delta dell'ultima mostrata
   let html = '';
   if(route.justSaved){
     html += `<div class="success-banner">Rilevazione salvata ✅</div>`;
@@ -5375,7 +5742,7 @@ function renderStoricoMisure(){
   }
 
   html += `<p class="swipe-hint">Tocca una voce per vedere il dettaglio, scorrila verso sinistra per eliminarla</p>`;
-  misure.forEach((m, i)=>{
+  misure.slice(0, storicoMisLimite).forEach((m, i)=>{
     const thumb = m.fotoThumb || m.foto;
     const precedente = misure[i+1]; // rilevazione precedente in ordine cronologico (più vecchia)
 
@@ -5406,6 +5773,9 @@ function renderStoricoMisure(){
       </div>
     </div>`;
   });
+  if(misureTutte.length > storicoMisLimite){
+    html += `<button class="btn secondary" style="width:100%;margin:6px 0 14px;" onclick="mostraAltroStoricoMis()">Mostra altre (${misureTutte.length - storicoMisLimite})</button>`;
+  }
   view.innerHTML = html;
   attachSwipeHandlers(view, eliminaMisura);
 }
@@ -5602,6 +5972,30 @@ function mediaMobileCalendario(punti, giorni){
     const media = finestra.reduce((s,q)=>s+q.y,0) / finestra.length;
     return media;
   });
+}
+
+/* Chart.js pesa ~200 KB e serve solo in Statistiche: lo carichiamo alla prima
+   apertura di quella schermata invece di bloccare l'avvio dell'app per tutti. */
+let chartJsPromise = null;
+function caricaChartJs(){
+  if(window.Chart) return Promise.resolve();
+  if(!chartJsPromise){
+    chartJsPromise = new Promise((resolve, reject)=>{
+      const sc = document.createElement('script');
+      sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js';
+      sc.onload = ()=>resolve();
+      sc.onerror = ()=>{ chartJsPromise = null; reject(new Error('Chart.js non caricato')); };
+      document.head.appendChild(sc);
+    });
+  }
+  return chartJsPromise;
+}
+function apriStatistiche(){
+  if(window.Chart){ renderStatistiche(); return; }
+  pageTitle.textContent = 'Statistiche';
+  view.innerHTML = '<p class="empty"><span class="empty-icon">📊</span>Carico i grafici…</p>';
+  caricaChartJs().then(()=>{ if(route.name==='statistiche') renderStatistiche(); })
+    .catch(()=>{ if(route.name==='statistiche') view.innerHTML = '<p class="empty"><span class="empty-icon">📡</span>Non riesco a caricare i grafici: controlla la connessione e riapri Statistiche.</p>'; });
 }
 
 function renderStatistiche(){
@@ -5873,7 +6267,7 @@ function renderProgressiDetail(){
 async function eliminaSessione(id){
   if(!(await mostraConferma('Eliminare questa seduta dallo storico?'))) return;
   try{
-    await userCollection('sessioni').doc(id).delete();
+    await attendiScrittura(userCollection('sessioni').doc(id).delete());
     cache.sessioni = cache.sessioni.filter(s=>s.id!==id);
     setRoute({name:'storico-allenamento'});
   }catch(e){ alert('Errore: '+e.message); }
@@ -5966,7 +6360,7 @@ async function salvaModificaSessione(id){
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try{
     const payload = { data, esercizi: modificaSessioneDraft.esercizi };
-    await userCollection('sessioni').doc(id).update(payload);
+    await attendiScrittura(userCollection('sessioni').doc(id).update(payload));
     const idx = cache.sessioni.findIndex(x=>x.id===id);
     if(idx>-1) cache.sessioni[idx] = { ...cache.sessioni[idx], ...payload };
     cache.sessioni.sort((a,b)=> new Date(a.data)-new Date(b.data));
@@ -6082,7 +6476,7 @@ async function salvaObiettiviCorpo(){
   const obiettiviCorpo = { pesoTarget, vitaTarget };
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try{
-    await db.collection('users').doc(currentUid).set({ obiettiviCorpo }, { merge:true });
+    await attendiScrittura(db.collection('users').doc(currentUid).set({ obiettiviCorpo }, { merge:true }));
     profiloUtente.obiettiviCorpo = obiettiviCorpo;
     btn.disabled = false; btn.textContent = 'Obiettivi salvati ✅';
     setTimeout(()=>{ if(document.getElementById('salvaObiettiviCorpoBtn')) { btn.textContent='Salva obiettivi corporei'; } }, 1800);
@@ -6119,7 +6513,7 @@ async function salvaProfiloModifiche(){
   btn.disabled = true; btn.textContent = 'Salvataggio...';
   try{
     const altezzaVal = altezza ? Number(altezza) : null;
-    await db.collection('users').doc(currentUid).set({ nome, cognome, eta: Number(eta), altezza: altezzaVal, sesso, attenzioni }, { merge:true });
+    await attendiScrittura(db.collection('users').doc(currentUid).set({ nome, cognome, eta: Number(eta), altezza: altezzaVal, sesso, attenzioni }, { merge:true }));
     profiloUtente = { ...profiloUtente, nome, cognome, eta: Number(eta), altezza: altezzaVal, sesso, attenzioni };
     setRoute({name:'home'});
   }catch(e){
@@ -7445,6 +7839,9 @@ async function salvaGiornoManuale(){
   renderDiario();
 }
 
+let diarioLimite = 21;
+function mostraAltroDiario(){ diarioLimite += 21; const y=window.scrollY; renderDiario(); window.scrollTo(0,y); }
+
 function renderDiario(){
   pageTitle.textContent = 'Diario';
   const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
@@ -7452,7 +7849,8 @@ function renderDiario(){
     view.innerHTML = `<p class="empty"><span class="empty-icon">⏳</span>Questa sezione si popolerà quando avrai un piano alimentare personale.</p>`;
     return;
   }
-  const giorni = cache.dietaLog.slice().sort((a,b)=> b.id.localeCompare(a.id));
+  const giorniTutti = cache.dietaLog.slice().sort((a,b)=> b.id.localeCompare(a.id));
+  const giorni = giorniTutti.slice(0, diarioLimite);
 
   // Azione sempre visibile in cima, anche a diario vuoto: permette di
   // aggiungere un giorno passato inserendo solo il totale kcal/macro (utile
@@ -7548,7 +7946,9 @@ function renderDiario(){
     </div>`;
   }).join('');
 
-  view.innerHTML = azioniHtml + html;
+  const altroHtml = giorniTutti.length > giorni.length
+    ? `<button class="btn secondary" style="width:100%;margin:6px 0 14px;" onclick="mostraAltroDiario()">Mostra giorni precedenti (${giorniTutti.length - giorni.length})</button>` : '';
+  view.innerHTML = azioniHtml + html + altroHtml;
 }
 
 /* ============ CERCA ALIMENTO (database Open Food Facts) ============
@@ -7804,6 +8204,15 @@ const USDA_MICRO_MAP = {
   potassio:'Potassium, K', zinco:'Zinc, Zn', sodio:'Sodium, Na'
 };
 
+/* fetch con timeout (8 s): una rete lenta o un server che non risponde non
+   deve lasciare la ricerca alimenti in "caricamento" all'infinito. */
+async function fetchConTimeout(url, ms){
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(), ms||8000);
+  try{ return await fetch(url, { signal: ctrl.signal }); }
+  finally{ clearTimeout(t); }
+}
+
 function mappaProdottiOFF(lista){
   return (lista||[])
     .filter(p=>p.product_name && p.nutriments && p.nutriments['energy-kcal_100g']!=null)
@@ -7824,7 +8233,7 @@ function mappaProdottiOFF(lista){
 
 async function cercaSuOpenFoodFactsLegacy(query){
   const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=24&sort_by=unique_scans_n&fields=product_name,brands,nutriments`;
-  const res = await fetch(url);
+  const res = await fetchConTimeout(url);
   if(!res.ok) throw new Error('OFF legacy http '+res.status);
   const data = await res.json();
   return mappaProdottiOFF(data.products);
@@ -7833,7 +8242,7 @@ async function cercaSuOpenFoodFactsLegacy(query){
 async function cercaSuOpenFoodFacts(query){
   try{
     const url = `https://search.openfoodfacts.org/search?q=${encodeURIComponent(query)}&page_size=24&fields=product_name,brands,nutriments&sort_by=-unique_scans_n`;
-    const res = await fetch(url);
+    const res = await fetchConTimeout(url);
     if(!res.ok) throw new Error('search-a-licious http '+res.status);
     const data = await res.json();
     const hits = data.hits || data.products;
@@ -7862,7 +8271,7 @@ function titleCaseSeTuttoMaiuscolo(s){
 async function cercaSuUSDA(query){
   if(!USDA_API_KEY) return [];
   const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${USDA_API_KEY}&query=${encodeURIComponent(query)}&pageSize=15&dataType=Foundation,SR%20Legacy,Branded`;
-  const res = await fetch(url);
+  const res = await fetchConTimeout(url);
   if(!res.ok) throw new Error('USDA http '+res.status);
   const data = await res.json();
   return (data.foods||[]).map(f=>{
@@ -8015,7 +8424,7 @@ function sceglieFonteExtra(key){
 async function eliminaAlimentoPersonalizzato(id){
   if(!(await mostraConferma('Eliminare questo alimento/ricetta personalizzato?'))) return;
   try{
-    await userCollection('alimentiPersonalizzati').doc(id).delete();
+    await attendiScrittura(userCollection('alimentiPersonalizzati').doc(id).delete());
     cache.alimentiPersonalizzati = cache.alimentiPersonalizzati.filter(p=>p.id!==id);
     renderCercaAlimento();
   }catch(e){ alert('Errore: '+e.message); }
@@ -8175,7 +8584,7 @@ async function salvaAlimentoCustom(){
         prot, carb, grassi, fibre,
         fonte: creaAlimentoFonte, creato: new Date().toISOString()
       };
-      const ref = await userCollection('ricettePersonalizzate').add(payload);
+      const ref = await aggiungiDocRapido(userCollection('ricettePersonalizzate'), payload);
       cache.ricettePersonalizzate.push({ id: ref.id, ...payload });
       ricettaEd = null;
       // Appena salvata, si aprono gli ingredienti per completarla.
@@ -8207,7 +8616,7 @@ async function salvaAlimentoCustom(){
 
   try{
     const payload = { nome, kcal100, prot100, carb100, grassi100, fibre100, fonte: creaAlimentoFonte, creato: new Date().toISOString() };
-    const ref = await userCollection('alimentiPersonalizzati').add(payload);
+    const ref = await aggiungiDocRapido(userCollection('alimentiPersonalizzati'), payload);
     cache.alimentiPersonalizzati.push({ id: ref.id, ...payload });
     setRoute({name:'cerca-alimento'});
   }catch(e){
@@ -8219,7 +8628,7 @@ async function salvaAlimentoCustom(){
 async function eliminaRicettaPersonalizzata(id){
   if(!(await mostraConferma('Eliminare questa ricetta?'))) return;
   try{
-    await userCollection('ricettePersonalizzate').doc(id).delete();
+    await attendiScrittura(userCollection('ricettePersonalizzate').doc(id).delete());
     cache.ricettePersonalizzate = cache.ricettePersonalizzate.filter(r=>r.id!==id);
     renderCercaAlimento();
   }catch(e){ alert('Errore: '+e.message); }
@@ -8411,7 +8820,7 @@ async function salvaRicettaEditor(){
   const upd = { nome, fonte: e.fonte || null, ingredienti: e.ingredienti, prot:t.prot, carb:t.carb, grassi:t.grassi, kcal: kcalDaMacro(t.prot,t.carb,t.grassi) };
   btn.disabled=true; btn.textContent='Salvataggio...';
   try{
-    await userCollection('ricettePersonalizzate').doc(e.id).update(upd);
+    await attendiScrittura(userCollection('ricettePersonalizzate').doc(e.id).update(upd));
     const r = cache.ricettePersonalizzate.find(x=>x.id===e.id);
     if(r) Object.assign(r, upd);
     ricettaEd = null;
@@ -9005,13 +9414,13 @@ async function salvaMisura(){
       cosciaSx: cosciaSx ? Number(cosciaSx) : null,
       fotoThumb
     };
-    const ref = await userCollection('misure').add(payload);
+    const ref = await aggiungiDocRapido(userCollection('misure'), payload);
 
     // Ridimensionamento e upload delle foto in parallelo invece che una dopo
     // l'altra: con 4 foto il salvataggio dura circa un quarto.
     await Promise.all(slotOccupati.map(async ({i, file})=>{
       const fotoDataUrl = await resizeImage(file, 900, 0.72);
-      await userCollection('misureFoto').add({ misuraId: ref.id, ordine: i, foto: fotoDataUrl });
+      await aggiungiDocRapido(userCollection('misureFoto'), { misuraId: ref.id, ordine: i, foto: fotoDataUrl });
     }));
 
     cache.misure.push({ id: ref.id, ...payload });
@@ -9027,8 +9436,8 @@ async function eliminaMisura(id){
   if(!(await mostraConferma('Eliminare questa rilevazione?'))) return;
   try{
     const fotoSnap = await userCollection('misureFoto').where('misuraId','==',id).get();
-    await Promise.all(fotoSnap.docs.map(d=> d.ref.delete()));
-    await userCollection('misure').doc(id).delete();
+    await attendiScrittura(Promise.all(fotoSnap.docs.map(d=> d.ref.delete())));
+    await attendiScrittura(userCollection('misure').doc(id).delete());
     delete fotoMisuraCache[id];
     cache.misure = cache.misure.filter(m=>m.id!==id);
     setRoute({name:'storico-misure'});
@@ -9304,14 +9713,14 @@ async function salvaModificaMisura(id){
       const st = misuraModificaFotoState[i];
       if(!st) return;
       if(st.tipo==='rimossa'){
-        if(st.docId) await userCollection('misureFoto').doc(st.docId).delete();
+        if(st.docId) await attendiScrittura(userCollection('misureFoto').doc(st.docId).delete());
         else clearLegacyFoto = true;
       } else if(st.tipo==='nuova'){
         const fotoDataUrl = await resizeImage(st.file, 900, 0.72);
         if(st.docId){
-          await userCollection('misureFoto').doc(st.docId).update({ foto: fotoDataUrl, ordine: i });
+          await attendiScrittura(userCollection('misureFoto').doc(st.docId).update({ foto: fotoDataUrl, ordine: i }));
         } else {
-          await userCollection('misureFoto').add({ misuraId: id, ordine: i, foto: fotoDataUrl });
+          await aggiungiDocRapido(userCollection('misureFoto'), { misuraId: id, ordine: i, foto: fotoDataUrl });
           clearLegacyFoto = true; // se sostituiva il vecchio campo legacy, va ripulito sulla misura
         }
       }
@@ -9340,7 +9749,7 @@ async function salvaModificaMisura(id){
       fotoThumb
     };
     if(clearLegacyFoto) payload.foto = firebase.firestore.FieldValue.delete();
-    await userCollection('misure').doc(id).update(payload);
+    await attendiScrittura(userCollection('misure').doc(id).update(payload));
 
     const idx = cache.misure.findIndex(x=>x.id===id);
     if(idx>-1){
@@ -9814,7 +10223,9 @@ async function avviaApp(){
     // loadDataInVolo è ancora vuoto, quindi partiamo da zero come prima.
     await (loadDataInVolo || loadData());
     loadDataInVolo = null;
-    await applicaPulloverSessioneOggi();
+    applicaPulloverSessioneOggi(); // senza attendere: non deve mai bloccare l'avvio
+    // A schermata già pronta, scarica i grafici in background: Statistiche si apre subito.
+    setTimeout(()=>{ (window.requestIdleCallback||setTimeout)(()=>{ caricaChartJs().catch(()=>{}); }); }, 4000);
     // Chiesto qui, prima della Home, così vale per tutta la sessione di oggi
     // (statistiche di Home e target di Dieta inclusi) e non solo aprendo Dieta.
     const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
