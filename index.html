@@ -10447,8 +10447,33 @@ if(LOGIN_ENABLED){
    o nessun segnale in palestra (l'app shell viene servita dalla cache). */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js', { updateViaCache:'none' }).then(reg=>{ try{ reg.update(); }catch(e){} }).catch(()=>{});
+    controllaNuovaVersione();
   });
+}
+
+/* Aggiornamento automatico: il service worker serve l'app dalla cache, quindi
+   dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
+   si legge index.html dal server (senza cache): se l'identificativo di versione
+   è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
+const BUILD_ID = '2026-10-22-serie-v1';
+async function controllaNuovaVersione(){
+  try{
+    if(!navigator.onLine) return;
+    const ctrl = new AbortController(); const to = setTimeout(()=>ctrl.abort(), 8000);
+    const r = await fetch('index.html?v='+Date.now(), { cache:'no-store', signal: ctrl.signal }).finally(()=>clearTimeout(to));
+    if(!r || !r.ok) return;
+    const txt = await r.text();
+    const m = txt.match(/const BUILD_ID = '([^']+)'/);
+    if(!m || m[1]===BUILD_ID) return;
+    if(sessionStorage.getItem('byReload')===m[1]) return;
+    sessionStorage.setItem('byReload', m[1]);
+    if(typeof sessionDraft!=='undefined' && sessionDraft) return; // non interrompere un allenamento in corso
+    if('caches' in window){ const ks = await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(g=>g.unregister()));
+    location.reload();
+  }catch(e){}
 }
 </script>
 </body>
