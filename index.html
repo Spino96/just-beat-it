@@ -2324,14 +2324,14 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'High Row bilaterale', serieTarget:4, ripTarget:'10-12', recupero:90,
+        nome:'High Row Impulse', serieTarget:4, ripTarget:'10-12', recupero:90,
         note:'Tirata alta, gomiti larghi: lavora anche il deltoide posteriore.',
         alternativa:'—',
         video:'',
         immagine:'',
         guida:{
           muscoli:'Dorsali, trapezio medio, romboidi, deltoide posteriore (secondario).',
-          esecuzione:'Seduto alla macchina con le maniglie in alto davanti a te, busto eretto. Tira entrambe le maniglie verso il petto portando i gomiti alti e indietro, poi torna con controllo.',
+          esecuzione:'Seduto alla macchina High Row Impulse con le maniglie in alto davanti a te, busto eretto. Tira entrambe le maniglie verso il petto portando i gomiti alti e indietro, poi torna con controllo.',
           errori:'Non usare lo slancio del busto, scapole che si muovono verso il basso e indietro, non verso le orecchie.'
         }
       },
@@ -2348,14 +2348,14 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Shoulder Press', serieTarget:2, ripTarget:'10', recupero:90,
-        note:'NUOVO. RPE 8. Se senti fastidio alla spalla, fermati. Dopo due settimane, se tutto va bene, puoi portarla a 3 serie.',
+        nome:'Shoulder Press sdraiato', serieTarget:3, ripTarget:'10', recupero:90,
+        note:'RPE 8. Se senti fastidio alla spalla, fermati.',
         alternativa:'—',
         video:'',
         immagine:'',
         guida:{
           muscoli:'Deltoidi (anteriori e mediali), tricipiti.',
-          esecuzione:'Seduto con schiena aderente, maniglie all\'altezza delle spalle. Spingi verso l\'alto senza bloccare i gomiti, poi scendi con controllo.',
+          esecuzione:'Sdraiato sulla panca/macchina con schiena aderente, maniglie all\'altezza delle spalle. Spingi verso l\'alto senza bloccare i gomiti, poi scendi con controllo.',
           errori:'Non inarcare la schiena e non alzare le spalle verso le orecchie: se senti fastidio, fermati.'
         }
       },
@@ -2372,14 +2372,14 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Rear Delt (reverse fly)', serieTarget:3, ripTarget:'15', recupero:75,
+        nome:'Deltoidi posteriori ai cavi', serieTarget:3, ripTarget:'12-15', recupero:75,
         note:'RPE 8-9.',
         alternativa:'—',
-        video:'https://www.youtube.com/watch?v=phNhRhn7EOI',
+        video:'',
         immagine:'',
         guida:{
           muscoli:'Deltoide posteriore, romboidi, trapezio.',
-          esecuzione:'Busto inclinato in avanti o seduto alla macchina reverse fly, braccia leggermente piegate. Apri le braccia lateralmente portando le scapole verso il centro, poi torna con controllo.',
+          esecuzione:'In piedi tra i due cavi alti, incrocia i cavi (maniglia destra con mano sinistra e viceversa), braccia leggermente piegate. Apri le braccia lateralmente portando le scapole verso il centro, poi torna con controllo.',
           errori:'Non usare pesi troppo pesanti che costringono a slanciare: movimento lento e controllato, specie in discesa.'
         }
       }
@@ -2841,6 +2841,41 @@ let blocchiIniziati = {};
    dell'esercizio in scheda. Se manca, vale il recupero previsto dalla scheda.
    Salvato sul profilo utente: vale per tutte le sedute future. */
 let recuperiPersonalizzati = {};
+/* Serie e ripetizioni personalizzate per esercizio (chiave = nome nella scheda),
+   salvate sul profilo come i recuperi. */
+let serieRipPersonalizzate = {};
+function serieEsercizio(e){
+  const v = serieRipPersonalizzate[e.nome];
+  return (v && Number.isInteger(v.serie) && v.serie>=1 && v.serie<=12) ? v.serie : e.serieTarget;
+}
+function ripEsercizio(e){
+  const v = serieRipPersonalizzate[e.nome];
+  return (v && v.rip) ? v.rip : e.ripTarget;
+}
+function salvaSerieRipPersonalizzate(){
+  attendiScrittura(db.collection('users').doc(currentUid).set({ serieRipPersonalizzate }, { mergeFields:['serieRipPersonalizzate'] }));
+}
+/* Nomi usati in passato / alias: lo storico dei vecchi esercizi rinominati
+   resta collegato ai nuovi, e il confronto ignora maiuscole/minuscole. */
+const ALIAS_ESERCIZI = {
+  'high row impulse':['high row bilaterale'],
+  'shoulder press sdraiato':['shoulder press'],
+  'deltoidi posteriori ai cavi':['rear delt (reverse fly)']
+};
+function nomiEquivalenti(nome){
+  const n = String(nome||'').trim().toLowerCase();
+  return [n, ...(ALIAS_ESERCIZI[n]||[])];
+}
+function trovaEsInSessione(sess, nome){
+  const ok = nomiEquivalenti(nome);
+  return (sess.esercizi||[]).find(e=> ok.includes(String(e.nome||'').trim().toLowerCase()));
+}
+/* Pesi di partenza (seduta del 22/10/2026) usati come "ultima volta" finché
+   non esiste uno storico salvato per quell'esercizio. */
+const ULTIMA_VOLTA_BASE = {
+  'high row impulse': { data:'2026-10-22T12:00:00', sets:[{peso:'40',rip:'8'},{peso:'30',rip:'12'},{peso:'30',rip:'8'},{peso:'25',rip:'12'}] },
+  'shoulder press sdraiato': { data:'2026-10-22T12:00:00', sets:[{peso:'30',rip:'8'},{peso:'25',rip:'10'},{peso:'25',rip:'9'}] }
+};
 function recuperoEsercizio(e){
   const v = recuperiPersonalizzati[e.nome];
   return (typeof v==='number' && v>=0 && v<=900) ? v : e.recupero;
@@ -2981,6 +3016,7 @@ async function checkProfilo(){
   const data = snap.exists ? snap.data() : {};
   blocchiIniziati = data.blocchiIniziati || {};
   recuperiPersonalizzati = data.recuperiPersonalizzati || {};
+  serieRipPersonalizzate = data.serieRipPersonalizzate || {};
   // Normalizza il formato: versioni precedenti salvavano una singola stringa
   // per esercizio, ora è un array (più alternative possibili tra cui scegliere).
   const raw = data.alternativeSalvate || {};
@@ -3138,6 +3174,7 @@ async function registrati(){
     profiloUtente = { ...nuovoProfilo, isTrainer:false, avatar:null };
     blocchiIniziati = {};
     recuperiPersonalizzati = {};
+    serieRipPersonalizzate = {};
     alternativeSalvate = {};
     document.getElementById('registerScreen').style.display = 'none';
     await avviaApp();
@@ -4300,7 +4337,7 @@ function renderBlocco3Anteprima(){
     sc.esercizi.forEach(e=>{
       const alt = (e.alternativa && e.alternativa!=='—') ? ` · alt.: ${e.alternativa}` : '';
       html += `<div class="anteprima-ex"><b>${e.superset?'🔗 ':''}${e.nome}</b>
-        <div class="am">${e.serieTarget} x ${e.ripTarget}${e.superset?' · superset':` · recupero ${fmtRecupero(recuperoEsercizio(e))}`}${alt}</div>
+        <div class="am">${serieEsercizio(e)} x ${ripEsercizio(e)}${e.superset?' · superset':` · recupero ${fmtRecupero(recuperoEsercizio(e))}`}${alt}</div>
         ${e.note ? `<div class="an">${e.note}</div>` : ''}</div>`;
     });
     html += `</div>`;
@@ -4612,7 +4649,7 @@ function avviaSessione(schedaId){
       nome: e.nome,
       usaAlternativa: false,
       noteUtente: '',
-      sets: Array.from({length:e.serieTarget}, ()=>({peso:'', rip:'', fatta:false, rpe:null, saltata:false}))
+      sets: Array.from({length:serieEsercizio(e)}, ()=>({peso:'', rip:'', fatta:false, rpe:null, saltata:false}))
     }))
   };
   setRoute({name:'sessione'});
@@ -4767,7 +4804,7 @@ function aggiungiSet(ei){
    della scheda non si tolgono da qui, al massimo si saltano (vedi sotto). */
 function rimuoviSet(ei, si){
   const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
-  const target = scheda.esercizi[ei].serieTarget;
+  const target = serieEsercizio(scheda.esercizi[ei]);
   if(si < target) return;
   sessionDraft.esercizi[ei].sets.splice(si, 1);
   renderSessionePreservandoScroll();
@@ -4958,9 +4995,12 @@ function parseRipTarget(str){
 function datiUltimaSessione(nomeEsercizio){
   const trovata = cache.sessioni
     .slice().sort((a,b)=> new Date(b.data)-new Date(a.data))
-    .map(s=>({ data: s.data, es: s.esercizi.find(e=>e.nome===nomeEsercizio) }))
+    .map(s=>({ data: s.data, es: trovaEsInSessione(s, nomeEsercizio) }))
     .find(x=>x.es);
-  if(!trovata) return null;
+  if(!trovata){
+    const base = ULTIMA_VOLTA_BASE[String(nomeEsercizio||'').trim().toLowerCase()];
+    return base ? { data: base.data, sets: base.sets, noteUtente:'' } : null;
+  }
   return { data: trovata.data, sets: trovata.es.sets || [], noteUtente: trovata.es.noteUtente || '' };
 }
 
@@ -4969,7 +5009,7 @@ function suggerimentoProgressione(nomeEsercizio, ripTargetStr){
   if(!target) return null;
   const ultime = cache.sessioni
     .slice().sort((a,b)=> new Date(b.data)-new Date(a.data))
-    .map(s=> s.esercizi.find(e=>e.nome===nomeEsercizio))
+    .map(s=> trovaEsInSessione(s, nomeEsercizio))
     .filter(Boolean)
     .slice(0,2);
   if(ultime.length < 2) return null;
@@ -5044,7 +5084,7 @@ function renderEsercizioBloccato(e, bannerText){
       ${e.immagine ? `<div class="ex-thumb"><img src="${e.immagine}" alt="${e.nome}" loading="lazy"></div>` : ''}
       <div class="ex-head-info">
         <h3>${e.nome}</h3>
-        <div class="ex-meta" style="margin-bottom:0;">${e.serieTarget} x ${e.ripTarget} · recupero ${e.recupero}"</div>
+        <div class="ex-meta" style="margin-bottom:0;">${serieEsercizio(e)} x ${escHtml(ripEsercizio(e))} · recupero ${e.recupero}"</div>
       </div>
     </div>
     ${bannerText ? `<div class="lock-banner">${bannerText}</div>` : ''}
@@ -5080,7 +5120,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
       ${(!usaAlt && e.immagine) ? `<div class="ex-thumb"><img src="${e.immagine}" alt="${e.nome}" loading="lazy"></div>` : ''}
       <div class="ex-head-info">
         <h3>${nomeAttivo}${usaAlt ? ' <span class="alt-tag">alternativa</span>' : ''}</h3>
-        <div class="ex-meta" style="margin-bottom:0;">${e.serieTarget} x ${e.ripTarget} · <button type="button" class="rec-chip${recuperiPersonalizzati[e.nome]!=null?' custom':''}" onclick="apriModificaRecupero(${ei})" aria-label="Modifica il tempo di recupero">⏱ ${fmtRecupero(recuperoEsercizio(e))} ✎</button></div>
+        <div class="ex-meta" style="margin-bottom:0;"><button type="button" class="rec-chip${serieRipPersonalizzate[e.nome]?' custom':''}" onclick="apriModificaSerie(${ei})" aria-label="Modifica serie e ripetizioni">${serieEsercizio(e)} x ${escHtml(ripEsercizio(e))} ✎</button> <button type="button" class="rec-chip${recuperiPersonalizzati[e.nome]!=null?' custom':''}" onclick="apriModificaRecupero(${ei})" aria-label="Modifica il tempo di recupero">⏱ ${fmtRecupero(recuperoEsercizio(e))} ✎</button></div>
       </div>
     </div>`;
   const ultimaVolta = datiUltimaSessione(nomeAttivo);
@@ -5099,7 +5139,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
   }
   html += `<p class="rpe-legend">RPE per ogni serie: 6 = leggero · 8 = a 2 rip dal cedimento · 10 = cedimento totale</p>`;
   draft.sets.forEach((set,si)=>{
-    const isExtra = si >= e.serieTarget;
+    const isExtra = si >= serieEsercizio(e);
     if(set.saltata){
       html += `<div class="set-row set-row-skipped">
         <span>${si+1}</span>
@@ -5300,6 +5340,64 @@ function apriModificaRecupero(ei){
     if(isNaN(v) || v<0 || v>900){ input.style.borderColor = 'var(--danger)'; return; }
     if(v===e.recupero) delete recuperiPersonalizzati[e.nome]; else recuperiPersonalizzati[e.nome] = v;
     salvaRecuperiPersonalizzati(); chiudi(); hapticaLieve(); renderSessionePreservandoScroll();
+  };
+}
+
+function apriModificaSerie(ei){
+  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const e = scheda.esercizi[ei];
+  let n = serieEsercizio(e);
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.id = 'serieOverlay';
+  overlay.innerHTML = `<div class="confirm-box">
+    <p class="confirm-msg" style="margin-bottom:4px;">🔢 Serie e ripetizioni</p>
+    <p class="field-hint" style="text-align:center;margin:0 0 14px;">${escHtml(e.nome)}<br>Previsto dalla scheda: ${e.serieTarget} x ${escHtml(e.ripTarget)}</p>
+    <div class="field" style="margin-bottom:14px;"><label>Numero di serie</label>
+      <div class="peso-stepper" style="justify-content:center;gap:14px;">
+        <button type="button" class="stepper-btn" id="serieMeno" style="width:48px;height:48px;font-size:22px;">–</button>
+        <span id="serieNum" style="font-size:28px;font-weight:900;min-width:40px;text-align:center;">${n}</span>
+        <button type="button" class="stepper-btn" id="seriePiu" style="width:48px;height:48px;font-size:22px;">+</button>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px;"><label>Ripetizioni previste (es. 10 oppure 10-12)</label>
+      <input type="text" id="serieRipInput" maxlength="12" value="${escHtml(ripEsercizio(e))}" style="text-align:center;font-size:20px;font-weight:900;">
+    </div>
+    <div class="confirm-actions" style="flex-wrap:wrap;">
+      <button class="btn secondary" id="serieResetBtn">Ripristina</button>
+      <button class="btn" id="serieSaveBtn">Salva</button>
+    </div>
+    <button class="btn small secondary" id="serieCancelBtn" style="width:100%;margin-top:10px;">Annulla</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  const num = overlay.querySelector('#serieNum');
+  overlay.querySelector('#serieMeno').onclick = ()=>{ if(n>1){ n--; num.textContent=n; } };
+  overlay.querySelector('#seriePiu').onclick = ()=>{ if(n<12){ n++; num.textContent=n; } };
+  const chiudi = ()=> overlay.remove();
+  overlay.querySelector('#serieCancelBtn').onclick = chiudi;
+  overlay.addEventListener('click', ev=>{ if(ev.target===overlay) chiudi(); });
+  const applicaAllaSessione = ()=>{
+    const draft = sessionDraft.esercizi[ei];
+    const t = serieEsercizio(e);
+    while(draft.sets.length < t) draft.sets.push({peso:'', rip:'', fatta:false, rpe:null, saltata:false});
+    while(draft.sets.length > t){
+      const l = draft.sets[draft.sets.length-1];
+      if(l.fatta || l.saltata || l.peso!=='' || l.rip!=='') break;
+      draft.sets.pop();
+    }
+    chiudi(); hapticaLieve(); refreshLocks(); renderSessionePreservandoScroll();
+  };
+  overlay.querySelector('#serieResetBtn').onclick = ()=>{
+    delete serieRipPersonalizzate[e.nome];
+    salvaSerieRipPersonalizzate(); applicaAllaSessione();
+  };
+  overlay.querySelector('#serieSaveBtn').onclick = ()=>{
+    const inp = overlay.querySelector('#serieRipInput');
+    const rip = inp.value.trim();
+    if(!rip){ inp.style.borderColor = 'var(--danger)'; return; }
+    if(n===e.serieTarget && rip===e.ripTarget) delete serieRipPersonalizzate[e.nome];
+    else serieRipPersonalizzate[e.nome] = { serie:n, rip };
+    salvaSerieRipPersonalizzate(); applicaAllaSessione();
   };
 }
 
@@ -5882,7 +5980,7 @@ const GRUPPI_MUSCOLARI_PATTERN = [
   {gruppo:'Dorso', re:/lat machine|pulldown|rematore|\brow\b|trazioni|dorso|schiena|pulley|hyperextens|iperestensione/i},
   // Rear Delt (reverse fly): deltoide posteriore — una spalla, non un
   // pettorale, anche se il nome contiene "fly".
-  {gruppo:'Spalle', re:/spalla|shoulder|military|alzate|arnold|rear delt/i},
+  {gruppo:'Spalle', re:/spalla|shoulder|military|alzate|arnold|rear delt|deltoid/i},
   {gruppo:'Braccia', re:/curl|bicip|tricip|push.?down|french|braccio/i}
 ];
 function gruppoMuscolareEsercizio(nome){
