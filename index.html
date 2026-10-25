@@ -2684,8 +2684,14 @@ function round1(n){
    coincidono esattamente col conto sui macro, per via di fibre, alcol e
    arrotondamenti diversi da fonte a fonte) — su richiesta esplicita, così
    il numero mostrato coincide sempre col conto fatto a mano sui macro. */
-function kcalDaMacro(prot, carb, grassi){
-  return round1(4*(Number(prot)||0) + 4*(Number(carb)||0) + 9*(Number(grassi)||0));
+const KCAL_POLIALCOLI = 2.6; // kcal per grammo di polialcoli (polioli)
+/* Kcal da macro: 4 kcal/g proteine, 4 kcal/g carboidrati, 9 kcal/g grassi.
+   I polialcoli sono "di cui" dei carboidrati: quella parte vale 2,6 kcal/g
+   invece di 4 (quindi i carboidrati restano il totale e non si contano due volte). */
+function kcalDaMacro(prot, carb, grassi, polio){
+  const c = Number(carb)||0;
+  const po = Math.min(Math.max(Number(polio)||0, 0), Math.max(c,0));
+  return round1(4*(Number(prot)||0) + 4*(c-po) + KCAL_POLIALCOLI*po + 9*(Number(grassi)||0));
 }
 
 /* Ridistribuisce il target giornaliero attivo (che dipende dal tipo di
@@ -2992,9 +2998,25 @@ function valutaDeload(scheda){
    cache locale e partirà da solo appena torna la connessione, quindi dopo
    pochi secondi si prosegue comunque; gli errori veri (permessi, ecc.) che
    arrivano prima restano segnalati come prima. */
+/* Su iPhone, se il sistema chiude il database locale (IndexedDB) mentre l'app è
+   aperta o in background, Firestore si ferma con "The client has already been
+   terminated" e ogni salvataggio fallisce finché l'app non riparte. Qui lo si
+   riconosce e si ricarica l'app (al massimo una volta ogni 30 secondi). */
+function erroreClientTerminato(err){
+  return !!(err && /terminated/i.test(String(err.message||err)));
+}
+function ripristinaConnessioneDati(){
+  try{
+    const ult = Number(sessionStorage.getItem('byRipristino')||0);
+    if(Date.now()-ult < 30000) return;
+    sessionStorage.setItem('byRipristino', String(Date.now()));
+  }catch(e){}
+  setTimeout(()=>location.reload(), 1200);
+}
+window.addEventListener('unhandledrejection', ev=>{ if(erroreClientTerminato(ev.reason)) ripristinaConnessioneDati(); });
 function attendiScrittura(promise, ms){
   const p = Promise.resolve(promise);
-  p.catch(()=>{}); // evita "unhandled rejection" se fallisce dopo il timeout
+  p.catch(err=>{ if(erroreClientTerminato(err)) ripristinaConnessioneDati(); }); // evita "unhandled rejection" se fallisce dopo il timeout
   return Promise.race([p, new Promise(res=>setTimeout(res, ms||2500))]);
 }
 /* Come collection.add(), ma restituisce subito il riferimento (id incluso)
@@ -3372,14 +3394,16 @@ function ricalcolaVoceExtraPerGrammi(voce, nuoviGrammi){
     voce.prot = round1((voce.prot100||0)*f);
     voce.carb = round1((voce.carb100||0)*f);
     voce.grassi = round1((voce.grassi100||0)*f);
+    voce.polio = round1((voce.polio100||0)*f);
   } else {
     const vecchiGrammi = voce.grammi || nuoviGrammi || 1;
     const fattore = nuoviGrammi/vecchiGrammi;
     voce.prot = round1((voce.prot||0)*fattore);
     voce.carb = round1((voce.carb||0)*fattore);
     voce.grassi = round1((voce.grassi||0)*fattore);
+    voce.polio = round1((voce.polio||0)*fattore);
   }
-  voce.kcal = kcalDaMacro(voce.prot, voce.carb, voce.grassi);
+  voce.kcal = kcalDaMacro(voce.prot, voce.carb, voce.grassi, voce.polio);
   voce.grammi = nuoviGrammi;
 }
 
@@ -5628,7 +5652,7 @@ async function terminaSessione(){
     // che si è mangiato quel giorno.
     try{
       const t = calcolaTotaliGiorno(cache.dietaLogOggi || {});
-      payload.dietaOggi = { kcal: Math.round(t.kcalTot), prot: Math.round(t.protTot*10)/10, carb: Math.round(t.carbTot*10)/10, grassi: Math.round(t.grassiTot*10)/10 };
+      payload.dietaOggi = { kcal: Math.round(t.kcalTot), prot: Math.round(t.protTot*10)/10, carb: Math.round(t.carbTot*10)/10, grassi: Math.round(t.grassiTot*10)/10, polio: Math.round((t.polioTot||0)*10)/10 };
     }catch(e){}
     const ref = await aggiungiDocRapido(userCollection('sessioni'), payload);
     cache.sessioni.push({ id: ref.id, ...payload });
@@ -5732,14 +5756,14 @@ function esportaCSV(){
   });
   righe.push('');
   righe.push('=== DIETA (kcal e macro mangiati per giorno) ===');
-  righe.push(['Data','Tipo giornata','Kcal','Proteine (g)','Carboidrati (g)','Grassi (g)','Acqua (ml)','Dettaglio parziale'].join(','));
+  righe.push(['Data','Tipo giornata','Kcal','Proteine (g)','Carboidrati (g)','di cui polialcoli (g)','Grassi (g)','Acqua (ml)','Dettaglio parziale'].join(','));
   cache.dietaLog.slice().sort((a,b)=> a.id.localeCompare(b.id)).forEach(g=>{
     const t = calcolaTotaliGiorno(g);
     if(!t.kcalTot && !t.protTot && !t.carbTot && !t.grassiTot && !g.acquaMl) return;
     const parti = String(g.id).split('-');
     const data = parti.length===3 ? `${parti[2]}/${parti[1]}/${parti[0]}` : g.id;
     const tipo = typeof g.giornoAllenamento==='boolean' ? (g.giornoAllenamento ? 'pesi' : 'riposo') : '';
-    righe.push([data, tipo, Math.round(t.kcalTot), fmt1(t.protTot), fmt1(t.carbTot), fmt1(t.grassiTot), g.acquaMl||0, t.dettagliNonDisponibili?'si':''].join(','));
+    righe.push([data, tipo, Math.round(t.kcalTot), fmt1(t.protTot), fmt1(t.carbTot), fmt1(t.polioTot||0), fmt1(t.grassiTot), g.acquaMl||0, t.dettagliNonDisponibili?'si':''].join(','));
   });
   righe.push('');
   righe.push('=== CARDIO ===');
@@ -7435,7 +7459,7 @@ function renderAlimentazione(){
   // aggiunge qui le kcal dell'opzione del piano: l'extra la sostituisce, non
   // la integra, e le sue kcal sono già contate nel giro su alimentiExtra
   // subito sotto — altrimenti risulterebbero sommate due volte.
-  const acquisito = { kcal:0, prot:0, carb:0, grassi:0 };
+  const acquisito = { kcal:0, prot:0, carb:0, grassi:0, polio:0 };
   DIETA_PIANO.pasti.forEach((p,i)=>{
     if(cache.dietaLogOggi.pastiFatti[i] && !(cache.dietaLogOggi.pastiViaExtra && cache.dietaLogOggi.pastiViaExtra[i])){
       const opz = p.opzioni[dietaOpzioneSel[i] || 0];
@@ -7449,12 +7473,13 @@ function renderAlimentazione(){
     acquisito.prot += a.prot;
     acquisito.carb += a.carb;
     acquisito.grassi += a.grassi;
+    acquisito.polio += (a.polio||0);
   });
   // Kcal ricalcolate da 4×proteine + 4×carboidrati + 9×grassi (kcalDaMacro),
   // non sommate dalle kcal dichiarate di ciascun alimento: altrimenti, per
   // via di fibre/alcol/arrotondamenti, l'anello poteva mostrare "oltre"
   // anche quando il conto a mano sui macro tornava sotto il target.
-  acquisito.kcal = kcalDaMacro(acquisito.prot, acquisito.carb, acquisito.grassi);
+  acquisito.kcal = kcalDaMacro(acquisito.prot, acquisito.carb, acquisito.grassi, acquisito.polio);
 
   const kcalPct = t.kcal ? Math.min(100, Math.round((acquisito.kcal/t.kcal)*100)) : 0;
   const kcalOver = acquisito.kcal > t.kcal;
@@ -7911,19 +7936,19 @@ function calcolaTotaliGiorno(g){
   const pastiFatti = g.pastiFatti || {};
   const pastiSnapshot = g.pastiSnapshot || {};
   const alimentiExtra = g.alimentiExtra || [];
-  let protTot = 0, carbTot = 0, grassiTot = 0, dettagliNonDisponibili = false;
+  let protTot = 0, carbTot = 0, grassiTot = 0, polioTot = 0, dettagliNonDisponibili = false;
   Object.keys(pastiFatti).forEach(i=>{
     if(!pastiFatti[i]) return;
     const snap = pastiSnapshot[i];
     if(snap){ protTot+=snap.prot; carbTot+=snap.carb; grassiTot+=snap.grassi; }
     else dettagliNonDisponibili = true;
   });
-  alimentiExtra.forEach(a=>{ protTot+=a.prot; carbTot+=a.carb; grassiTot+=a.grassi; });
+  alimentiExtra.forEach(a=>{ protTot+=a.prot; carbTot+=a.carb; grassiTot+=a.grassi; polioTot+=(a.polio||0); });
   // Kcal ricalcolate dai macro (vedi kcalDaMacro) invece di sommare le kcal
   // dichiarate di ciascun alimento: così il totale del giorno coincide
   // sempre col conto 4/4/9 fatto sui macro, anche per i giorni già loggati.
-  const kcalTot = kcalDaMacro(protTot, carbTot, grassiTot);
-  return { kcalTot, protTot, carbTot, grassiTot, dettagliNonDisponibili, manuale:false };
+  const kcalTot = kcalDaMacro(protTot, carbTot, grassiTot, polioTot);
+  return { kcalTot, protTot, carbTot, grassiTot, polioTot, dettagliNonDisponibili, manuale:false };
 }
 
 /* ============ GIORNO CON MACRO INSERITI A MANO ============
@@ -8181,8 +8206,9 @@ function renderCercaAlimento(){
     const carb = fmt1(p.carb100*fattore);
     // Kcal ricalcolate dai macro (kcalDaMacro), non dalla kcal dichiarata
     // dall'alimento: coerente col totale del giorno, che ora fa lo stesso.
-    const kcal = fmt1(kcalDaMacro(p.prot100*fattore, p.carb100*fattore, p.grassi100*fattore));
+    const kcal = fmt1(kcalDaMacro(p.prot100*fattore, p.carb100*fattore, p.grassi100*fattore, (p.polio100||0)*fattore));
     const grassi = fmt1(p.grassi100*fattore);
+    const polioDet = fmt1((p.polio100||0)*fattore);
     view.innerHTML = `
       <div class="card">
         <h3 style="margin-top:0;">${p.nome}</h3>
@@ -8204,6 +8230,7 @@ function renderCercaAlimento(){
           <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b id="fpCarb">${carb}g</b></span>
           <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b id="fpGrassi">${grassi}g</b></span>
         </div>
+        <p class="field-hint" id="fpPolioLine" style="margin:-8px 0 12px;${(p.polio100||0)>0?'':'display:none;'}">di cui polialcoli: <b id="fpPolio">${polioDet}g</b> (2,6 kcal/g)</p>
         <p style="font-size:13px;color:var(--text-dim);font-weight:700;margin:0 0 16px;" id="fpKcalLine">${kcal} kcal totali per ${g}g</p>
         <button class="toggle-guide" onclick="toggleMicroSearch()">💧🧪 Vitamine, minerali e acqua ▾</button>
         <div class="guide-body" id="micro-search-box">${microGridHtmlDaOFF(p.micro100||{}, p.acqua100, fattore)}</div>
@@ -8396,6 +8423,8 @@ function mappaProdottiOFF(lista){
         prot100: Math.round((p.nutriments['proteins_100g']||0)*10)/10,
         carb100: Math.round((p.nutriments['carbohydrates_100g']||0)*10)/10,
         grassi100: Math.round((p.nutriments['fat_100g']||0)*10)/10,
+        polio100: Math.round(Math.min(p.nutriments['polyols_100g']||0, p.nutriments['carbohydrates_100g']||0)*10)/10,
+        zuccheri100: p.nutriments['sugars_100g']!=null ? Math.round(p.nutriments['sugars_100g']*10)/10 : null,
         micro100, acqua100
       };
     });
@@ -8571,7 +8600,7 @@ function selezionaAlimentoPersonalizzato(i){
   const p = cache.alimentiPersonalizzati[i];
   ricercaAlimentoState.selezionato = {
     nome: p.nome, marca: '',
-    kcal100: p.kcal100, prot100: p.prot100, carb100: p.carb100, grassi100: p.grassi100,
+    kcal100: p.kcal100, prot100: p.prot100, carb100: p.carb100, grassi100: p.grassi100, polio100: p.polio100||0, zuccheri100: p.zuccheri100!=null?p.zuccheri100:null,
     micro100: { fibre: p.fibre100!=null ? p.fibre100 : null }, acqua100: null,
     fonte: p.fonte
   };
@@ -8690,6 +8719,11 @@ function renderCampiAlimentoCustom(){
         <div class="field"><label>Grassi totali (g)</label><input type="number" min="0" step="0.1" id="caGrassi"></div>
         <div class="field"><label>Fibre totali (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caFibre"></div>
       </div>
+      <div class="grid2">
+        <div class="field"><label>di cui zuccheri totali (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caZuc"></div>
+        <div class="field"><label>di cui polialcoli totali (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caPolio"></div>
+      </div>
+      <p class="field-hint" style="margin-top:-6px;">Zuccheri e polialcoli sono già compresi nei carboidrati. I polialcoli valgono 2,6 kcal/g invece di 4.</p>
       <p class="field-hint">Dopo il salvataggio si aprono gli ingredienti: se li aggiungi, i totali si calcolano da lì.</p>`;
     return;
   }
@@ -8706,7 +8740,12 @@ function renderCampiAlimentoCustom(){
       <div class="grid2">
         <div class="field"><label>Grassi totali (g)</label><input type="number" min="0" step="0.1" id="caGrassi"></div>
         <div class="field"><label>Fibre totali (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caFibre"></div>
-      </div>`;
+      </div>
+      <div class="grid2">
+        <div class="field"><label>di cui zuccheri totali (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caZuc"></div>
+        <div class="field"><label>di cui polialcoli totali (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caPolio"></div>
+      </div>
+      <p class="field-hint" style="margin-top:-6px;">Zuccheri e polialcoli sono già compresi nei carboidrati. I polialcoli valgono 2,6 kcal/g invece di 4.</p>`;
   } else {
     box.innerHTML = `
       <div class="grid2">
@@ -8716,7 +8755,12 @@ function renderCampiAlimentoCustom(){
       <div class="grid2">
         <div class="field"><label>Grassi per 100g</label><input type="number" min="0" step="0.1" id="caGrassi"></div>
         <div class="field"><label>Fibre per 100g (facoltativo)</label><input type="number" min="0" step="0.1" id="caFibre"></div>
-      </div>`;
+      </div>
+      <div class="grid2">
+        <div class="field"><label>di cui zuccheri per 100g (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caZuc"></div>
+        <div class="field"><label>di cui polialcoli per 100g (g, facoltativo)</label><input type="number" min="0" step="0.1" id="caPolio"></div>
+      </div>
+      <p class="field-hint" style="margin-top:-6px;">Zuccheri e polialcoli sono già compresi nei carboidrati. I polialcoli valgono 2,6 kcal/g invece di 4.</p>`;
   }
 }
 
@@ -8731,10 +8775,17 @@ async function salvaAlimentoCustom(){
   const grassi = Number(document.getElementById('caGrassi').value);
   const fibreRaw = document.getElementById('caFibre').value;
   const fibre = fibreRaw ? Number(fibreRaw) : null;
+  const zucRaw = document.getElementById('caZuc').value, polioRaw = document.getElementById('caPolio').value;
+  const zuccheri = zucRaw ? Number(zucRaw) : null;
+  const polio = polioRaw ? Number(polioRaw) : 0;
 
   if(!nome){ errBox.innerHTML = '<div class="error-banner">Dai un nome all\'alimento.</div>'; return; }
-  if([prot,carb,grassi].some(v=> isNaN(v) || v<0)){
+  if([prot,carb,grassi,polio].some(v=> isNaN(v) || v<0) || (zuccheri!=null && (isNaN(zuccheri) || zuccheri<0))){
     errBox.innerHTML = '<div class="error-banner">Controlla i valori numerici inseriti.</div>';
+    return;
+  }
+  if(polio > carb || (zuccheri||0) + polio > carb + 0.05){
+    errBox.innerHTML = '<div class="error-banner">Zuccheri e polialcoli sono "di cui" dei carboidrati: insieme non possono superarli.</div>';
     return;
   }
   if(!creaAlimentoFonte){
@@ -8750,8 +8801,8 @@ async function salvaAlimentoCustom(){
         nome,
         // Kcal ricalcolate dai macro (kcalDaMacro), coerenti col resto
         // dell'app: non si chiede un valore kcal separato da inserire.
-        kcal: kcalDaMacro(prot, carb, grassi),
-        prot, carb, grassi, fibre,
+        kcal: kcalDaMacro(prot, carb, grassi, polio),
+        prot, carb, grassi, fibre, polio, zuccheri,
         fonte: creaAlimentoFonte, creato: new Date().toISOString()
       };
       const ref = await aggiungiDocRapido(userCollection('ricettePersonalizzate'), payload);
@@ -8766,7 +8817,7 @@ async function salvaAlimentoCustom(){
     return;
   }
 
-  let kcal100, prot100, carb100, grassi100, fibre100;
+  let kcal100, prot100, carb100, grassi100, fibre100, polio100, zuccheri100;
   if(creaAlimentoModalita==='porzione'){
     const peso = Number(document.getElementById('caPeso').value);
     if(isNaN(peso) || peso<=0){
@@ -8779,13 +8830,15 @@ async function salvaAlimentoCustom(){
     carb100 = Math.round(carb*fattore*10)/10;
     grassi100 = Math.round(grassi*fattore*10)/10;
     fibre100 = fibre!=null ? Math.round(fibre*fattore*10)/10 : null;
+    polio100 = Math.round(polio*fattore*10)/10;
+    zuccheri100 = zuccheri!=null ? Math.round(zuccheri*fattore*10)/10 : null;
   } else {
-    prot100 = prot; carb100 = carb; grassi100 = grassi; fibre100 = fibre;
+    prot100 = prot; carb100 = carb; grassi100 = grassi; fibre100 = fibre; polio100 = polio; zuccheri100 = zuccheri;
   }
-  kcal100 = kcalDaMacro(prot100, carb100, grassi100);
+  kcal100 = kcalDaMacro(prot100, carb100, grassi100, polio100);
 
   try{
-    const payload = { nome, kcal100, prot100, carb100, grassi100, fibre100, fonte: creaAlimentoFonte, creato: new Date().toISOString() };
+    const payload = { nome, kcal100, prot100, carb100, grassi100, fibre100, polio100, zuccheri100, fonte: creaAlimentoFonte, creato: new Date().toISOString() };
     const ref = await aggiungiDocRapido(userCollection('alimentiPersonalizzati'), payload);
     cache.alimentiPersonalizzati.push({ id: ref.id, ...payload });
     setRoute({name:'cerca-alimento'});
@@ -8809,7 +8862,7 @@ function selezionaRicettaPersonalizzata(id){
   if(!r) return;
   ricercaAlimentoState.selezionato = {
     nome: r.nome, marca: '', isRicetta: true, ricettaId: r.id,
-    kcal: r.kcal, prot: r.prot, carb: r.carb, grassi: r.grassi,
+    kcal: r.kcal, prot: r.prot, carb: r.carb, grassi: r.grassi, polio: r.polio||0,
     // Copia degli ingredienti: le quantità si possono cambiare per questa
     // sola aggiunta senza toccare la ricetta salvata.
     ingredienti: (r.ingredienti||[]).map(x=>({...x})),
@@ -8825,15 +8878,16 @@ function selezionaRicettaPersonalizzata(id){
 /* Totali di una ricetta a partire dagli ingredienti (grammi x valori per
    100g). Le kcal sono sempre derivate dai macro (kcalDaMacro). */
 function totaliRicettaDaIngredienti(ingredienti){
-  let prot=0, carb=0, grassi=0;
+  let prot=0, carb=0, grassi=0, polio=0;
   (ingredienti||[]).forEach(i=>{
     const f = (Number(i.grammi)||0)/100;
     prot += (Number(i.prot100)||0)*f;
     carb += (Number(i.carb100)||0)*f;
     grassi += (Number(i.grassi100)||0)*f;
+    polio += (Number(i.polio100)||0)*f;
   });
-  prot = Math.round(prot*10)/10; carb = Math.round(carb*10)/10; grassi = Math.round(grassi*10)/10;
-  return { prot, carb, grassi, kcal: kcalDaMacro(prot, carb, grassi) };
+  prot = Math.round(prot*10)/10; carb = Math.round(carb*10)/10; grassi = Math.round(grassi*10)/10; polio = Math.round(polio*10)/10;
+  return { prot, carb, grassi, polio, kcal: kcalDaMacro(prot, carb, grassi, polio) };
 }
 
 // Cambio quantità di un ingrediente al momento di aggiungere la ricetta al
@@ -8843,7 +8897,7 @@ function aggiornaGrammiIngredienteRicetta(k, val){
   if(!p || !p.ingredienti || !p.ingredienti[k]) return;
   p.ingredienti[k].grammi = Math.max(0, Number(val)||0);
   const t = totaliRicettaDaIngredienti(p.ingredienti);
-  p.prot = t.prot; p.carb = t.carb; p.grassi = t.grassi; p.kcal = t.kcal;
+  p.prot = t.prot; p.carb = t.carb; p.grassi = t.grassi; p.polio = t.polio; p.kcal = t.kcal;
   const set = (id,txt)=>{ const el=document.getElementById(id); if(el) el.textContent = txt; };
   set('rcProt', fmt1(t.prot)+'g'); set('rcCarb', fmt1(t.carb)+'g'); set('rcGrassi', fmt1(t.grassi)+'g');
   set('rcKcal', fmt1(t.kcal)+' kcal totali');
@@ -8862,7 +8916,7 @@ function ricettaEdInit(id){
   ricettaEd = {
     id, nome: r.nome, fonte: r.fonte || null,
     ingredienti: (r.ingredienti||[]).map(x=>({...x})),
-    fisso: { prot:r.prot||0, carb:r.carb||0, grassi:r.grassi||0, kcal:r.kcal||0 },
+    fisso: { prot:r.prot||0, carb:r.carb||0, grassi:r.grassi||0, polio:r.polio||0, kcal:r.kcal||0 },
     query:'', loading:false, risultati:[], errore:null, manuale:false, salvando:false
   };
 }
@@ -8884,7 +8938,7 @@ function renderRicettaEditor(){
     return `<div class="extra-food-item" style="align-items:center;gap:8px;">
       <div class="efi-info" style="flex:1;min-width:0;">
         <div class="efi-n">${escHtml(i.nome)}${i.marca?` <span class="efi-brand">· ${escHtml(i.marca)}</span>`:''}</div>
-        <div class="efi-m" id="ingM${k}">${fmt1(kcalDaMacro(i.prot100*f,i.carb100*f,i.grassi100*f))} kcal · P ${fmt1(i.prot100*f)}g · C ${fmt1(i.carb100*f)}g · G ${fmt1(i.grassi100*f)}g</div>
+        <div class="efi-m" id="ingM${k}">${fmt1(kcalDaMacro(i.prot100*f,i.carb100*f,i.grassi100*f,(i.polio100||0)*f))} kcal · P ${fmt1(i.prot100*f)}g · C ${fmt1(i.carb100*f)}g${i.polio100?` (polialc. ${fmt1(i.polio100*f)}g)`:''} · G ${fmt1(i.grassi100*f)}g</div>
       </div>
       <input type="number" min="0" step="1" inputmode="decimal" value="${i.grammi}" aria-label="Grammi di ${escHtml(i.nome)}" style="width:76px;text-align:center;" oninput="ricettaEdGrammi(${k},this.value)"><span style="font-size:12px;color:var(--text-dim);">g</span>
       <button class="efi-remove" onclick="ricettaEdRimuovi(${k})" aria-label="Rimuovi ingrediente">✕</button>
@@ -8928,7 +8982,10 @@ function renderRicettaEditor(){
         <div class="field"><label>Proteine /100g</label><input type="number" min="0" step="0.1" id="reMP"></div>
         <div class="field"><label>Carboidrati /100g</label><input type="number" min="0" step="0.1" id="reMC"></div>
       </div>
-      <div class="field"><label>Grassi /100g</label><input type="number" min="0" step="0.1" id="reMF"></div>
+      <div class="grid2">
+        <div class="field"><label>Grassi /100g</label><input type="number" min="0" step="0.1" id="reMF"></div>
+        <div class="field"><label>di cui polialcoli /100g</label><input type="number" min="0" step="0.1" id="reMPo"></div>
+      </div>
       <button class="btn small" style="width:100%;" onclick="ricettaEdAggiungiManuale()">Aggiungi alla ricetta</button>
     </div>`:''}
   </div>
@@ -8945,29 +9002,29 @@ function ricettaEdGrammi(k,val){
   const i = ricettaEd.ingredienti[k]; if(!i) return;
   i.grammi = Math.max(0, Number(val)||0);
   const f=i.grammi/100, m=document.getElementById('ingM'+k);
-  if(m) m.textContent = `${fmt1(kcalDaMacro(i.prot100*f,i.carb100*f,i.grassi100*f))} kcal · P ${fmt1(i.prot100*f)}g · C ${fmt1(i.carb100*f)}g · G ${fmt1(i.grassi100*f)}g`;
+  if(m) m.textContent = `${fmt1(kcalDaMacro(i.prot100*f,i.carb100*f,i.grassi100*f,(i.polio100||0)*f))} kcal · P ${fmt1(i.prot100*f)}g · C ${fmt1(i.carb100*f)}g${i.polio100?` (polialc. ${fmt1(i.polio100*f)}g)`:''} · G ${fmt1(i.grassi100*f)}g`;
   ricettaEdAggiornaTotali();
 }
 function ricettaEdRimuovi(k){ ricettaEd.ingredienti.splice(k,1); renderRicettaEditor(); }
-function ricettaEdPush(nome, marca, p, c, g, grammi){
-  ricettaEd.ingredienti.push({ nome, marca: marca||'', grammi: grammi==null?100:grammi, prot100:Number(p)||0, carb100:Number(c)||0, grassi100:Number(g)||0 });
+function ricettaEdPush(nome, marca, p, c, g, grammi, po){
+  ricettaEd.ingredienti.push({ nome, marca: marca||'', grammi: grammi==null?100:grammi, prot100:Number(p)||0, carb100:Number(c)||0, grassi100:Number(g)||0, polio100:Math.min(Number(po)||0, Number(c)||0) });
   hapticaLieve && hapticaLieve();
   renderRicettaEditor();
 }
 function ricettaEdAggiungiCustom(id){
   const a = cache.alimentiPersonalizzati.find(x=>x.id===id); if(!a) return;
-  ricettaEdPush(a.nome,'',a.prot100,a.carb100,a.grassi100);
+  ricettaEdPush(a.nome,'',a.prot100,a.carb100,a.grassi100,null,a.polio100);
 }
 function ricettaEdAggiungiRisultato(i){
   const a = ricettaEd.risultati[i]; if(!a) return;
-  ricettaEdPush(a.nome,a.marca,a.prot100,a.carb100,a.grassi100);
+  ricettaEdPush(a.nome,a.marca,a.prot100,a.carb100,a.grassi100,null,a.polio100);
 }
 function ricettaEdAggiungiManuale(){
   const v=id=>document.getElementById(id).value;
   const nome=v('reMNome').trim(), g=Number(v('reMG'));
   if(!nome || isNaN(g) || g<=0){ document.getElementById('reError').innerHTML='<div class="error-banner">Inserisci nome e quantità dell\'ingrediente.</div>'; return; }
   ricettaEd.manuale=false;
-  ricettaEdPush(nome,'',v('reMP'),v('reMC'),v('reMF'),g);
+  ricettaEdPush(nome,'',v('reMP'),v('reMC'),v('reMF'),g,v('reMPo'));
 }
 async function ricettaEdCerca(){
   const input=document.getElementById('reCerca');
@@ -8987,7 +9044,7 @@ async function salvaRicettaEditor(){
   const nome=(e.nome||'').trim();
   if(!nome){ errBox.innerHTML='<div class="error-banner">Dai un nome alla ricetta.</div>'; return; }
   const t = ricettaEdTotali();
-  const upd = { nome, fonte: e.fonte || null, ingredienti: e.ingredienti, prot:t.prot, carb:t.carb, grassi:t.grassi, kcal: kcalDaMacro(t.prot,t.carb,t.grassi) };
+  const upd = { nome, fonte: e.fonte || null, ingredienti: e.ingredienti, prot:t.prot, carb:t.carb, grassi:t.grassi, polio:t.polio||0, kcal: kcalDaMacro(t.prot,t.carb,t.grassi,t.polio||0) };
   btn.disabled=true; btn.textContent='Salvataggio...';
   try{
     await attendiScrittura(userCollection('ricettePersonalizzate').doc(e.id).update(upd));
@@ -9010,7 +9067,9 @@ function aggiornaAnteprimaGrammi(){
   const prot = fmt1(p.prot100*fattore);
   const carb = fmt1(p.carb100*fattore);
   const grassi = fmt1(p.grassi100*fattore);
-  const kcal = fmt1(kcalDaMacro(p.prot100*fattore, p.carb100*fattore, p.grassi100*fattore));
+  const kcal = fmt1(kcalDaMacro(p.prot100*fattore, p.carb100*fattore, p.grassi100*fattore, (p.polio100||0)*fattore));
+  const polioEl = document.getElementById('fpPolio');
+  if(polioEl) polioEl.textContent = fmt1((p.polio100||0)*fattore)+'g';
   document.getElementById('fpProt').textContent = prot+'g';
   document.getElementById('fpCarb').textContent = carb+'g';
   document.getElementById('fpGrassi').textContent = grassi+'g';
@@ -9048,6 +9107,7 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
       prot: p.prot,
       carb: p.carb,
       grassi: p.grassi,
+      polio: p.polio||0,
       pasto: pastoIdx,
       fonte: fonteFinale
     };
@@ -9056,6 +9116,7 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
     const protV = round1(p.prot100*fattore);
     const carbV = round1(p.carb100*fattore);
     const grassiV = round1(p.grassi100*fattore);
+    const polioV = round1((p.polio100||0)*fattore);
     voce = {
       id: 'extra-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),
       nome: p.nome,
@@ -9064,16 +9125,18 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
       // Kcal ricalcolate dai macro (kcalDaMacro), non dalla kcal dichiarata
       // dall'alimento: così ogni voce, sommata, torna sempre esatta col totale
       // del giorno (vedi calcolaTotaliGiorno).
-      kcal: kcalDaMacro(protV, carbV, grassiV),
+      kcal: kcalDaMacro(protV, carbV, grassiV, polioV),
       prot: protV,
       carb: carbV,
       grassi: grassiV,
+      polio: polioV,
       // Valori per 100g dell'alimento originale: permettono di ricalcolare con
       // precisione i macro se in seguito si modifica la quantità (vedi
       // ricalcolaVoceExtraPerGrammi), senza perdere precisione a ogni modifica.
       prot100: p.prot100,
       carb100: p.carb100,
       grassi100: p.grassi100,
+      polio100: p.polio100||0,
       pasto: pastoIdx,
       fonte: fonteFinale
     };
@@ -9138,7 +9201,8 @@ function mostraAggiungiExtraRapidoOverlay(){
   const prot = round1(p.prot100*fattore);
   const carb = round1(p.carb100*fattore);
   const grassi = round1(p.grassi100*fattore);
-  const kcal = kcalDaMacro(prot, carb, grassi);
+  const polio = round1((p.polio100||0)*fattore);
+  const kcal = kcalDaMacro(prot, carb, grassi, polio);
   const pastoChipsHtml = DIETA_PIANO.pasti.map((pp,pi)=>
     `<div class="chip${pi===pastoIdx?' active':''}" onclick="sceglieCategoriaPastoExtraRapido(${pi})">${pp.icona} ${pp.nome}</div>`
   ).join('');
@@ -9167,6 +9231,7 @@ function mostraAggiungiExtraRapidoOverlay(){
       <span><span class="mb-dot" style="background:var(--accent-2);"></span>Carb. <b id="erCarb">${carb}g</b></span>
       <span><span class="mb-dot" style="background:var(--accent-3);"></span>Grassi <b id="erGrassi">${grassi}g</b></span>
     </div>
+    <p class="field-hint" id="erPolioLine" style="margin:-8px 0 12px;${(p.polio100||0)>0?'':'display:none;'}">di cui polialcoli: <b id="erPolio">${polio}g</b> (2,6 kcal/g)</p>
     <p style="font-size:13px;color:var(--text-dim);font-weight:700;margin:0 0 16px;" id="erKcalLine">${kcal} kcal totali per ${grammi}g</p>
     <button class="btn" onclick="confermaAggiungiExtraRapido()">Aggiungi a oggi</button>
   </div>`;
@@ -9195,10 +9260,12 @@ function aggiornaAnteprimaGrammiRapido(){
   const prot = round1(p.prot100*fattore);
   const carb = round1(p.carb100*fattore);
   const grassi = round1(p.grassi100*fattore);
+  const polio = round1((p.polio100||0)*fattore);
+  const pe = document.getElementById('erPolio'); if(pe) pe.textContent = polio+'g';
   document.getElementById('erProt').textContent = prot+'g';
   document.getElementById('erCarb').textContent = carb+'g';
   document.getElementById('erGrassi').textContent = grassi+'g';
-  document.getElementById('erKcalLine').textContent = kcalDaMacro(prot, carb, grassi)+' kcal totali per '+g+'g';
+  document.getElementById('erKcalLine').textContent = kcalDaMacro(prot, carb, grassi, polio)+' kcal totali per '+g+'g';
 }
 
 function confermaAggiungiExtraRapido(){
@@ -9251,11 +9318,11 @@ function registraAlimentoRecente(p, fonte){
     esistente.ultimoUso = Date.now();
     // Aggiorna anche i valori nutrizionali con quelli appena usati, nel caso
     // la scheda del prodotto sia cambiata nel frattempo (es. su Open Food Facts).
-    esistente.kcal100 = p.kcal100; esistente.prot100 = p.prot100; esistente.carb100 = p.carb100; esistente.grassi100 = p.grassi100;
+    esistente.kcal100 = p.kcal100; esistente.prot100 = p.prot100; esistente.carb100 = p.carb100; esistente.grassi100 = p.grassi100; esistente.polio100 = p.polio100||0; esistente.zuccheri100 = p.zuccheri100!=null?p.zuccheri100:null;
     esistente.micro100 = p.micro100||{}; esistente.acqua100 = (p.acqua100!=null?p.acqua100:null);
     esistente.fonte = fonteFinale;
   } else {
-    lista.push({ nome:p.nome, marca:p.marca||'', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100, micro100:p.micro100||{}, acqua100:(p.acqua100!=null?p.acqua100:null), fonte: fonteFinale, usoCount:1, ultimoUso: Date.now() });
+    lista.push({ nome:p.nome, marca:p.marca||'', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100, polio100:p.polio100||0, zuccheri100:(p.zuccheri100!=null?p.zuccheri100:null), micro100:p.micro100||{}, acqua100:(p.acqua100!=null?p.acqua100:null), fonte: fonteFinale, usoCount:1, ultimoUso: Date.now() });
   }
   lista.sort((a,b)=> (b.usoCount||1)-(a.usoCount||1) || (b.ultimoUso||0)-(a.ultimoUso||0));
   lista = lista.slice(0, MAX_ALIMENTI_RECENTI);
@@ -10456,7 +10523,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-10-22-serie-v1';
+const BUILD_ID = '2026-10-25-polialcoli-v3';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
