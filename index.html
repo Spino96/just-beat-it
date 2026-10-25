@@ -4377,6 +4377,32 @@ function renderBlocco3Anteprima(){
 /* Card in Dieta con il piano nutrizionale del Blocco 3: visibile in anteprima
    ma non attivo finché non parte il Blocco 3 (blocco3Attivo()). Le kcal si
    ricalcolano sempre dai macro (kcalDaMacro), come nel resto dell'app. */
+/* Card "Fasi del piano": elenco delle fasi con quella in corso evidenziata
+   (segue la data di oggi). Mostra target giornalieri riposo / pesi. */
+function renderFasiDieta(){
+  if(!blocco3Attivo()) return '';
+  const P = DIETA_PIANO_BLOCCO3, att = P.faseAttiva;
+  const riga = f=>{
+    const r = f.riposo, a = f.allenamento;
+    const k = t=>fmt1(t.kcal);
+    const corrente = f.id===att.id, passata = !corrente && f.da < att.da;
+    return `<div style="padding:10px 12px;border-radius:12px;margin-bottom:8px;border:1px solid ${corrente?'var(--accent)':'var(--border)'};background:${corrente?'rgba(57,255,148,.08)':'transparent'};opacity:${passata?.55:1};">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;">
+        <b style="font-size:14px;">${f.nome}</b>
+        <span style="font-size:11px;font-weight:800;color:${corrente?'var(--accent)':'var(--text-dim)'};">${corrente?'IN CORSO':(passata?'conclusa':'in arrivo')}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-dim);margin:2px 0 6px;">${f.dal} → ${f.al}</div>
+      <div style="font-size:12.5px;">🛋️ Riposo <b>${k(r)} kcal</b> · C ${r.carb}g &nbsp;|&nbsp; 🏋️ Pesi <b>${k(a)} kcal</b> · C ${a.carb}g</div>
+    </div>`;
+  };
+  return `<details class="card" style="margin-bottom:14px;"${''}>
+    <summary style="cursor:pointer;font-weight:800;font-size:15px;">📅 Fasi del piano · ${att.nome}</summary>
+    <div style="margin-top:12px;">${P.fasi.map(riga).join('')}
+      <p class="field-hint" style="margin:8px 0 0;">Proteine ${att.riposo.prot}g e grassi ${att.riposo.grassi}g fissi: cambiano solo i carboidrati. Il piano passa da solo alla fase successiva nel giorno indicato. Prossimo check: ${P.checkIn}.<br>Sicurezza: se la media settimanale del peso sale di oltre 0,5 kg in 2 settimane, o la vita di oltre 1 cm, si torna allo step precedente. Se calano forza e sonno o la fame è fuori controllo per più giorni, si sale di uno step.</p>
+    </div>
+  </details>`;
+}
+
 function renderBlocco3DietaAnteprima(){
   if(blocco3Attivo()) return '';
   if(!schedeAssegnateUtente().some(s=>BLOCCO3_SCHEDA_IDS.includes(s.id))) return '';
@@ -7002,40 +7028,44 @@ const DIETA_PIANO = {
    Giorni con solo sessione cardio (mercoledì, sabato) contano come riposo a
    livello calorico, per scelta esplicita dell'utente. */
 const DIETA_PIANO_BLOCCO3 = {
-  versione: 'v11-blocco3',
-  aggiornato: '18/10/2026',
+  versione: 'v12-mantenimento',
+  aggiornato: '25/10/2026',
   inizio: '05/10/2026',
-  fase: 'Ricomposizione corporea (verso ~12% di massa grassa) + Blocco 3 di allenamento',
-  // Due fasi, cambio automatico per data (nessun intervento a mano):
-  // - fase 1: dal 05/10 al 18/10/2026
-  // - fase 2: ufficialmente dal 19/10/2026, ma su richiesta dell'utente
-  //   attivata già dal 18/10/2026 (rivalutazione il 30/10/2026). Pavimento:
-  //   2000 / 2250 kcal, da qui non si scende più.
-  // Proteine e grassi fissi tutti i giorni: l'unica variabile fra riposo e
-  // pesi sono i carboidrati. kcal sempre derivate dai macro.
-  // "Riposo" = giorni senza pesi (solo cardio + addome, o riposo completo).
-  dataFase2: new Date(2026, 9, 18),
-  fase1: {
-    riposo:      { kcal:2170, prot:158, carb:245, grassi:62 },
-    allenamento: { kcal:2426, prot:158, carb:309, grassi:62 }
+  fase: 'Mantenimento a step (poi decisione: secondo taglio breve o massa pulita)',
+  // Fasi con cambio AUTOMATICO per data (nessun intervento a mano): vale
+  // l'ultima fase la cui data di inizio è già passata. Proteine fisse a
+  // 158 g, grassi fissi (62 g nel deficit, 63 g nel mantenimento): l'unica
+  // variabile sono i carboidrati. "Riposo" = giorni senza pesi (solo cardio +
+  // addome, o riposo completo). Le kcal si derivano sempre dai macro.
+  fasi: [
+    { id:'b3f1',  nome:'Blocco 3 · fase 1',          da:new Date(2026, 9, 5),   dal:'05/10', al:'18/10',
+      riposo:      { kcal:2170, prot:158, carb:245, grassi:62 },
+      allenamento: { kcal:2426, prot:158, carb:309, grassi:62 } },
+    { id:'b3f2',  nome:'Blocco 3 · fase 2',          da:new Date(2026, 9, 19),  dal:'19/10', al:'25/10',
+      riposo:      { kcal:2002, prot:158, carb:203, grassi:62 },
+      allenamento: { kcal:2250, prot:158, carb:265, grassi:62 } },
+    { id:'mant1', nome:'Mantenimento · step 1',      da:new Date(2026, 9, 26),  dal:'26/10', al:'29/10',
+      riposo:      { kcal:2300, prot:158, carb:275, grassi:63 },
+      allenamento: { kcal:2550, prot:158, carb:338, grassi:63 } },
+    { id:'mant2', nome:'Mantenimento · step 2',      da:new Date(2026, 9, 30),  dal:'30/10', al:'02/11',
+      riposo:      { kcal:2450, prot:158, carb:313, grassi:63 },
+      allenamento: { kcal:2700, prot:158, carb:375, grassi:63 } },
+    { id:'mant3', nome:'Mantenimento · step 3',      da:new Date(2026, 10, 3),  dal:'03/11', al:'check 08/11',
+      riposo:      { kcal:2600, prot:158, carb:350, grassi:63 },
+      allenamento: { kcal:2880, prot:158, carb:420, grassi:63 } }
+  ],
+  get faseAttiva(){
+    const ora = new Date();
+    let att = this.fasi[0];
+    this.fasi.forEach(f=>{ if(ora >= f.da) att = f; });
+    return att;
   },
-  fase2: {
-    riposo:      { kcal:2002, prot:158, carb:203, grassi:62 },
-    allenamento: { kcal:2250, prot:158, carb:265, grassi:62 }
-  },
-  get target(){ return new Date() >= this.dataFase2 ? this.fase2 : this.fase1; },
-  // Target di riserva: se compaiono forza in calo, sonno peggiore, stanchezza
-  // o fame fuori controllo per più giorni, si torna ai valori della fase 1.
-  // Emergenza ulteriore: 2270 / 2550 kcal (C 270 / 340 g). Non attivi di default.
-  fallback: {
-    riposo:      { kcal:2170, prot:158, carb:245, grassi:62 },
-    allenamento: { kcal:2426, prot:158, carb:309, grassi:62 }
-  },
-  emergenza: {
-    riposo:      { kcal:2270, prot:158, carb:270, grassi:62 },
-    allenamento: { kcal:2550, prot:158, carb:340, grassi:62 }
-  },
-  checkIn: '30/10/2026'
+  get target(){ return this.faseAttiva; },
+  // Regole di sicurezza del piano: se la media settimanale del peso sale di
+  // oltre 0,5 kg in 2 settimane, o la vita di oltre 1 cm, si torna allo step
+  // precedente. Se forza in calo, sonno peggiore o fame fuori controllo per
+  // più giorni, si alzano le kcal di uno step.
+  checkIn: '08/11/2026'
 };
 
 /* ============ MICRONUTRIENTI (vitamine, minerali, acqua) ============
@@ -7661,6 +7691,7 @@ function renderAlimentazione(){
     </div>
 
     ${renderBlocco3DietaAnteprima()}
+    ${renderFasiDieta()}
 
     <div class="tab-bar">
       <div class="tab-btn${dietaTab==='segna-pasto'?' active':''}" onclick="setDietaTab('segna-pasto')">🍽️ Segna pasto</div>
@@ -10523,7 +10554,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-10-25-polialcoli-v3';
+const BUILD_ID = '2026-10-25-mantenimento-v4';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
