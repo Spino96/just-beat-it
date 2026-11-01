@@ -2026,8 +2026,8 @@ const SCHEDE_DEFAULT = [
     nome: 'Blocco 3 — Torso Meccanico',
     periodo: '2 mesi · 4x/settimana (Torso/Arti) · Forza + Ipertrofia',
     durataSettimane: 8,
-    descrizione: 'Seduta pesante per petto e dorso: la panca è l\'esercizio principale. Riscaldamento prima di ogni Torso: cat-cow, affondo con rotazione toracica, poi 2-3 serie di avvicinamento sul primo esercizio.',
-    note: 'Ordine fisso delle sedute: Torso Meccanico, Arti Meccanico, Torso Metabolico, Arti Metabolico — se salti un giorno riprendi da quella che segue, senza recuperi doppi. RPE (sforzo a fine serie, 1-10): punta a 7-9, il 10 solo ogni tanto. Il range di ripetizioni è una bussola: scegli il carico che ti tiene nel range con tecnica pulita. Macchine: tieni sempre le stesse; se cambi macchina guarda l\'RPE, non i chili. Segna a ogni seduta carichi, ripetizioni, RPE e una riga sul sonno. Versione ridotta (turno lungo o meno di 5 ore di sonno): non saltare, mantieni gli esercizi principali e togli una serie agli isolamenti; se sei a pezzi fai solo gli esercizi 1 e 2. Niente scarico a metà blocco: checkpoint alla settimana 4 (RPE, carichi, costanza, sonno), scarico a fine blocco.',
+    descrizione: 'Seduta pesante per petto e dorso: la panca è l\'esercizio principale. Riscaldamento prima di ogni Torso: cat-cow, affondo con rotazione toracica, poi 2-3 serie di avvicinamento (serie leggere e progressive) sul primo esercizio.',
+    note: 'Ordine fisso: Torso Meccanico, Arti Meccanico, Torso Metabolico, Arti Metabolico — se salti un giorno riprendi da quella che segue, senza recuperi doppi. Le due sedute Meccaniche nei giorni in cui sei più fresco; tra due sedute Arti almeno un giorno. Blocco da lunedì 5 ottobre al 29 novembre, poi una settimana di scarico. Ripetizioni: il range è una bussola, scegli il carico che ti tiene nel range con tecnica pulita. RPE: cedimento tecnico su macchine, cavi, isolamenti e lat machine; sui multiarticolari (multipower, hack squat, stacco rumeno, hip thrust) fermati una ripetizione prima. Segna 10 solo se non ne avevi un\'altra. Macchine: tieni sempre le stesse; se cambi macchina guarda l\'RPE, non i chili. Leg curl sempre seduto. Carico: stesso peso su tutte le serie; le ripetizioni calano, è normale. Quando la prima serie supera il tetto del range, sali di peso alla seduta dopo. Tempo: discesa in 3" e 1" di pausa nel punto di massima contrazione (o di massimo allungamento su croci e pullover); dal 2 novembre su lat machine, rematori, pec fly, leg curl, leg extension, alzate laterali e spider curl. Recuperi: multiarticolari 2-2,5 minuti, isolamenti 60-90", superset 90" dopo la coppia. Drop set (a fine serie togli circa il 20% del carico e continui subito fino al cedimento, conta come una serie): dal 2 novembre solo sull\'ultima serie di pec fly (lunedì), leg extension (martedì) e alzate laterali ai cavi (giovedì); se il recupero peggiora, si sospendono. Braccia: bicipiti e tricipiti a 6 serie ciascuno a settimana (3 martedì, 3 venerdì), uno di allungamento e uno di accorciamento per muscolo. Segna a ogni seduta carichi, ripetizioni, RPE e una riga sul sonno. Versione ridotta (turno lungo o meno di 5 ore di sonno): non saltare, mantieni gli esercizi principali e togli una serie agli isolamenti; se sei a pezzi fai solo gli esercizi 1 e 2. Niente scarico a metà blocco: checkpoint lunedì 2 novembre (carichi, costanza, sonno; calorie ora in mantenimento a step). Se i carichi calano per due sedute di fila, il sonno va sotto le 6 ore, compaiono dolori articolari o cala la motivazione: prima si riduce il cedimento, poi si toglie volume o si anticipa lo scarico.',
     riscaldamento: [
       {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi/curvo al bancone', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
       {nome:'Affondo con rotazione toracica', serie:'5-6 per lato', note:'Apre il torace, utile prima di spinte e tirate', video:'https://www.youtube.com/watch?v=Boi2zLj_4_8'},
@@ -2036,7 +2036,7 @@ const SCHEDE_DEFAULT = [
     esercizi: [
       {
         nome:'Panca 15° al multipower', serieTarget:4, ripTarget:'5-6', recupero:150,
-        note:'Principale del giorno. Tieni 1-2 ripetizioni di riserva, RPE 9 al massimo.',
+        note:'Principale del giorno. Scapole indietro e giù, piedi a terra, fermi di sicurezza regolati. Discesa in 3" fino a sfiorare il petto, spingi senza bloccare i gomiti. Fermati 1 ripetizione prima del cedimento.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2048,7 +2048,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Chest Press piana (carico libero)', serieTarget:4, ripTarget:'6-8', recupero:120,
-        note:'Alternativa: pacco pesi Panatta.',
+        note:'Gomiti a circa 45° dal busto, spalle basse. Discesa in 3", spinta fluida. Cedimento tecnico nelle ultime serie. Alternativa: pacco pesi Panatta.',
         alternativa:'Chest Press a pacco pesi (Panatta)',
         video:'https://www.youtube.com/watch?v=6mWAqa41eKI',
         immagine:'https://wger.de/media/exercise-images/129/b263c968-e067-4750-916a-d8758a7df23e.webp',
@@ -2060,7 +2060,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Pec Fly (macchina dedicata)', serieTarget:3, ripTarget:'10-12', recupero:75,
-        note:'Se l\'RPE resta alto, gestisci con le ripetizioni e non col peso.',
+        note:'Gomiti leggermente flessi, apri fino a sentire il petto che si allunga e tieni 1"; chiudi stringendo 1". Ultima serie in drop set: arrivato al cedimento togli circa il 20% del carico e continua senza pausa fino al cedimento.',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=ybi3NPUK47M',
         immagine:'',
@@ -2072,7 +2072,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Lat Machine presa neutra', serieTarget:4, ripTarget:'6-8', recupero:120,
-        note:'Punto fermo collaudato.',
+        note:'Presa neutra, petto in fuori, tira con i gomiti verso i fianchi e stringi 1" in basso. Ritorno in 3" fino a braccia distese. Cedimento tecnico.',
         alternativa:'Pulldown con la corda',
         video:'https://www.youtube.com/watch?v=DTDvohtOxN0',
         immagine:'https://wger.de/media/exercise-images/1136/5778a8e9-c606-4843-89c8-9d9469eeb6e4.PNG',
@@ -2084,7 +2084,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Rematore (macchina, supporto al petto)', serieTarget:3, ripTarget:'8-10', recupero:90,
-        note:'Alternativa: Low Row (tirata diagonale).',
+        note:'Petto appoggiato, tira i gomiti dietro la schiena e stringi le scapole 1". Ritorno in 3". Cedimento tecnico. Alternativa: Low Row (tirata diagonale).',
         alternativa:'Low Row (tirata diagonale)',
         video:'',
         immagine:'',
@@ -2095,8 +2095,8 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Pullover (macchina Panatta Super Pullover)', serieTarget:2, ripTarget:'12-15', recupero:75,
-        note:'Chiude il dorso. RPE 8-9.',
+        nome:'Pullover (macchina Panatta Super Pullover)', serieTarget:3, ripTarget:'12-15', recupero:75,
+        note:'Chiude il dorso. Gomiti semi-flessi, scendi in 3" fino a sentire il dorso che si allunga, 1" di pausa in basso. Cedimento tecnico.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2108,7 +2108,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Lento avanti al multipower', serieTarget:3, ripTarget:'6-8', recupero:120,
-        note:'NUOVO. Parti leggero e trova carico e posizione della panca. RPE 8, 2 ripetizioni di riserva. Se senti fastidio alla spalla, fermati.',
+        note:'Multipower con panca a 60°, fermi di sicurezza regolati. Discesa in 3" fino all\'altezza del mento, gomiti leggermente avanti. Fermati 1 ripetizione prima del cedimento. Se senti fastidio alla spalla, fermati.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2119,8 +2119,8 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Alzate laterali (macchina Panatta a pacco pesi)', serieTarget:3, ripTarget:'12', recupero:75,
-        note:'Parti da circa 20-25 kg. RPE 8-9.',
+        nome:'Alzate laterali (macchina Panatta a pacco pesi)', serieTarget:4, ripTarget:'12', recupero:75,
+        note:'Gomiti leggermente flessi, sali fino all\'altezza delle spalle senza alzarle verso le orecchie. Discesa in 3". Cedimento tecnico.',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=jTRbSoPm9uQ',
         immagine:'',
@@ -2132,7 +2132,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Rear Delt (reverse fly)', serieTarget:3, ripTarget:'15', recupero:75,
-        note:'Parti da circa 10-12,5 kg. RPE 8-9.',
+        note:'Reverse fly: busto fermo, apri le braccia indietro e stringi le scapole 1". Ritorno in 3". Cedimento tecnico.',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=phNhRhn7EOI',
         immagine:'',
@@ -2151,7 +2151,7 @@ const SCHEDE_DEFAULT = [
     nome: 'Blocco 3 — Arti Meccanico',
     periodo: '2 mesi · 4x/settimana (Torso/Arti) · Forza + Ipertrofia',
     durataSettimane: 8,
-    descrizione: 'Seduta pesante per gambe e glutei: l\'hack squat è l\'esercizio principale. Tra due sedute Arti lascia almeno un giorno.',
+    descrizione: 'Seduta pesante per gambe e glutei: l\'hack squat è l\'esercizio principale. Riscaldamento: cat-cow, leg swings, caviglia contro muro, rotazioni anca, hip hinge e ponte glutei a corpo libero. Tra due sedute Arti lascia almeno un giorno. Il martedì tieni i recuperi dei multiarticolari a 2 minuti per restare nei 90 minuti.',
     note: 'Ordine fisso delle sedute: Torso Meccanico, Arti Meccanico, Torso Metabolico, Arti Metabolico — se salti un giorno riprendi da quella che segue, senza recuperi doppi. RPE (sforzo a fine serie, 1-10): punta a 7-9, il 10 solo ogni tanto. Il range di ripetizioni è una bussola: scegli il carico che ti tiene nel range con tecnica pulita. Macchine: tieni sempre le stesse; se cambi macchina guarda l\'RPE, non i chili. Segna a ogni seduta carichi, ripetizioni, RPE e una riga sul sonno. Versione ridotta (turno lungo o meno di 5 ore di sonno): non saltare, mantieni gli esercizi principali e togli una serie agli isolamenti; se sei a pezzi fai solo gli esercizi 1 e 2. Niente scarico a metà blocco: checkpoint alla settimana 4 (RPE, carichi, costanza, sonno), scarico a fine blocco.',
     riscaldamento: [
       {nome:'Cat-cow', serie:'8-10 ripetizioni', note:'Mobilizza la colonna dopo ore in piedi', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
@@ -2164,7 +2164,7 @@ const SCHEDE_DEFAULT = [
     esercizi: [
       {
         nome:'Hack Squat', serieTarget:4, ripTarget:'6-8', recupero:150,
-        note:'Principale gambe. Le prime due settimane parti prudente.',
+        note:'Principale gambe. Schiena e bacino appoggiati, piedi a media larghezza. Discesa in 3" fino a cosce parallele o poco sotto, spingi senza bloccare le ginocchia. Fermati 1 ripetizione prima del cedimento.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2176,7 +2176,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Glute Leg Press', serieTarget:3, ripTarget:'8-10', recupero:120,
-        note:'NUOVO. Piedi alti e larghi sulla pedana per spostare il lavoro sui glutei. Se senti il ginocchio, riduci la profondità.',
+        note:'Piedi alti e larghi sulla pedana per spostare il lavoro sui glutei. Discesa in 3", spingi con i talloni. Se senti il ginocchio, riduci la profondità.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2188,7 +2188,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Leg Extension', serieTarget:3, ripTarget:'12', recupero:75,
-        note:'Separato, non in superset.',
+        note:'Separato, non in superset. Schiena appoggiata, stringi i quadricipiti 1" in alto, discesa in 3". Ultima serie in drop set: arrivato al cedimento togli circa il 20% del carico e continua senza pausa fino al cedimento.',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=wRSr98kKUsg',
         immagine:'',
@@ -2200,7 +2200,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Stacchi rumeni (RDL)', serieTarget:4, ripTarget:'8-10', recupero:120,
-        note:'Schiena neutra = limite tecnico. Se la schiena perde la posizione, fermati alla terza serie.',
+        note:'Schiena neutra = limite tecnico. Bacino indietro, gambe quasi tese, scendi lungo le gambe fino a sentire i femorali che si allungano. Fermati 1 ripetizione prima del cedimento; se la schiena perde la posizione, fermati.',
         alternativa:'Hip hinge a corpo libero',
         video:'https://www.youtube.com/watch?v=avFCLVJB0xs',
         immagine:'',
@@ -2224,7 +2224,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Hip Thrust (macchina Panatta)', serieTarget:4, ripTarget:'6-8', recupero:120,
-        note:'Punto fermo collaudato.',
+        note:'Schiena appoggiata, spingi con i talloni e stringi i glutei 1" in alto. Discesa in 3". Fermati 1 ripetizione prima del cedimento.',
         alternativa:'Ponte glutei a corpo libero',
         video:'https://www.youtube.com/watch?v=nME5wVVCfc4',
         immagine:'https://wger.de/media/exercise-images/1642/a81ad922-caf5-47f8-99b4-640cb0717436.webp',
@@ -2235,32 +2235,8 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Bicep curl (bilanciere EZ, in piedi)', serieTarget:3, ripTarget:'10-12', recupero:5, superset:'ss2',
-        note:'Niente slancio. In superset con il Tricep pushdown: nessuna pausa tra i due.',
-        alternativa:'—',
-        video:'',
-        immagine:'',
-        guida:{
-          muscoli:'Bicipite brachiale, avambraccio.',
-          esecuzione:'In piedi, bilanciere EZ con presa poco più larga delle spalle. Fletti i gomiti portando il bilanciere verso il petto mantenendoli fermi lungo i fianchi, poi scendi con controllo.',
-          errori:'Senza appoggio alla schiena è facile slanciare con il busto per aiutarsi: se succede, il peso è troppo alto.'
-        }
-      },
-      {
-        nome:'Tricep pushdown (sbarra piegata)', serieTarget:3, ripTarget:'10-12', recupero:90, superset:'ss2',
-        note:'Presa fissa. Recupero dopo la coppia.',
-        alternativa:'—',
-        video:'',
-        immagine:'',
-        guida:{
-          muscoli:'Tricipite brachiale.',
-          esecuzione:'In piedi davanti al cavo alto, gomiti fissi vicino al busto, impugna la sbarra piegata con presa prona. Spingi verso il basso estendendo il gomito, poi torna con controllo senza bloccare l\'articolazione.',
-          errori:'Non muovere i gomiti in avanti/indietro durante il movimento, non usare il peso del corpo per spingere.'
-        }
-      },
-      {
         nome:'Calf raise in piedi', serieTarget:3, ripTarget:'15-20', recupero:60,
-        note:'Primo stimolo polpacci della settimana.',
+        note:'Primo stimolo polpacci della settimana. Scendi in 3" fino in fondo con 1" di pausa, sali sulla punta e stringi 1" in alto. Cedimento tecnico.',
         alternativa:'—',
         video:'https://www.youtube.com/watch?v=zfDcdL06LxI',
         immagine:'',
@@ -2268,6 +2244,30 @@ const SCHEDE_DEFAULT = [
           muscoli:'Polpacci (gastrocnemio e soleo).',
           esecuzione:'In piedi, punte dei piedi su un rialzo o alla macchina dedicata. Sali sulle punte il più possibile, poi scendi lasciando allungare bene il polpaccio.',
           errori:'Non rimbalzare a fine corsa: cerca l\'escursione completa, salita piena e discesa fino ad allungare il polpaccio.'
+        }
+      },
+      {
+        nome:'Spider curl (panca inclinata 45-60°)', serieTarget:3, ripTarget:'10-12', recupero:5, superset:'ss2',
+        note:'Accorciamento. Panca inclinata a 45-60°, petto appoggiato, braccia verticali, bilanciere EZ o manubri. Discesa in 3" fino a quasi distendere, stringi 1" in alto, gomiti fermi. In superset con l\'estensione tricipiti: nessuna pausa tra i due.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Bicipiti (lavoro in accorciamento), brachiale.',
+          esecuzione:'Petto appoggiato sullo schienale inclinato a 45-60°, braccia che pendono verticali, bilanciere EZ o manubri. Sali piegando i gomiti senza muoverli, stringi 1" in alto, poi scendi in 3" fino a quasi distendere.',
+          errori:'Niente slancio e niente spinta del busto: i gomiti restano fermi e perpendicolari al pavimento.'
+        }
+      },
+      {
+        nome:'Estensione tricipiti sopra la testa (cavo, corda)', serieTarget:3, ripTarget:'10-12', recupero:90, superset:'ss2',
+        note:'Allungamento: gomiti puntati in avanti e fermi vicino alle orecchie, scendi in 3" fino a sentire il tricipite che si allunga, poi estendi completamente. Recupero dopo la coppia. Se senti la spalla, passa al French press da sdraiato.',
+        alternativa:'French press da sdraiato',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Tricipiti, in particolare il capo lungo.',
+          esecuzione:'Cavo regolato in basso o alto con la corda, schiena al cavo o di profilo, gomiti puntati in avanti vicino alle orecchie. Estendi completamente le braccia sopra la testa, poi torna in 3" fino a sentire l\'allungamento.',
+          errori:'Non allargare i gomiti e non inarcare la schiena. Se senti la spalla, usa il French press da sdraiato.'
         }
       }
     ]
@@ -2289,7 +2289,7 @@ const SCHEDE_DEFAULT = [
     esercizi: [
       {
         nome:'Spinte panca 30° (manubri)', serieTarget:3, ripTarget:'15-12-10', recupero:90,
-        note:'Sali di carico a ogni serie. RPE 8-9.',
+        note:'Stesso peso su tutte le serie. Manubri ai lati del petto, gomiti a circa 45°, discesa in 3", spingi senza battere i manubri. Cedimento tecnico.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2301,7 +2301,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Inclined Chest Press (macchina guidata)', serieTarget:3, ripTarget:'10', recupero:90,
-        note:'Carico più basso del solito. RPE 8-9.',
+        note:'Schiena appoggiata, spalle basse, discesa in 3", spingi senza bloccare i gomiti. Cedimento tecnico.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2312,8 +2312,8 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Croci ai cavi dal basso', serieTarget:2, ripTarget:'12', recupero:75,
-        note:'Petto alto, movimento controllato.',
+        nome:'Croci ai cavi dal basso', serieTarget:3, ripTarget:'12', recupero:75,
+        note:'Petto alto, movimento controllato. Cavi dal basso verso l\'alto, gomiti leggermente flessi, stringi 1" in alto, ritorno in 3". Cedimento tecnico.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2325,7 +2325,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'High Row Impulse', serieTarget:4, ripTarget:'10-12', recupero:90,
-        note:'Tirata alta, gomiti larghi: lavora anche il deltoide posteriore.',
+        note:'Tirata alta, gomiti larghi: lavora anche il deltoide posteriore. Stringi le scapole 1", ritorno in 3". Cedimento tecnico.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2337,7 +2337,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Pullover alla corda', serieTarget:3, ripTarget:'12-15', recupero:75,
-        note:'Focus dorsale, gomiti semi-flessi.',
+        note:'Focus dorsale, gomiti semi-flessi. Braccia quasi tese, porta la corda verso le cosce, stringi il dorso 1", ritorno in 3".',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2349,7 +2349,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Shoulder Press sdraiato', serieTarget:3, ripTarget:'10', recupero:90,
-        note:'RPE 8. Se senti fastidio alla spalla, fermati.',
+        note:'Schiena appoggiata, discesa in 3" fino a sfiorare le spalle, spingi senza bloccare i gomiti. Fermati 1 ripetizione prima del cedimento. Se senti fastidio alla spalla, fermati.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2361,7 +2361,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Alzate laterali ai cavi', serieTarget:4, ripTarget:'12', recupero:75,
-        note:'NUOVO. Carico leggero: segnalo a parte da quello della macchina. RPE 8-9.',
+        note:'Cavo basso, gomito leggermente flesso, sali fino all\'altezza della spalla, discesa in 3". Ultima serie in drop set: arrivato al cedimento togli circa il 20% del carico e continua senza pausa fino al cedimento.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2373,7 +2373,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Deltoidi posteriori ai cavi', serieTarget:3, ripTarget:'12-15', recupero:75,
-        note:'RPE 8-9.',
+        note:'Braccia quasi tese, apri indietro stringendo le scapole 1", ritorno in 3". Cedimento tecnico.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2405,7 +2405,7 @@ const SCHEDE_DEFAULT = [
     esercizi: [
       {
         nome:'Leg Press 45°', serieTarget:3, ripTarget:'12-15', recupero:90,
-        note:'Secondo stimolo quadricipiti della settimana.',
+        note:'Secondo stimolo quadricipiti della settimana. Piedi a media larghezza, discesa in 3", spingi senza bloccare le ginocchia. Cedimento tecnico.',
         alternativa:'Squat a corpo libero',
         video:'https://www.youtube.com/watch?v=z-6O7fi2uJA',
         immagine:'https://wger.de/media/exercise-images/371/d2136f96-3a43-4d4c-9944-1919c4ca1ce1.webp',
@@ -2417,7 +2417,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Bulgarian Squat (macchina)', serieTarget:3, ripTarget:'8-10 per gamba', recupero:90,
-        note:'Stesso carico e stesse ripetizioni su entrambe le gambe.',
+        note:'Parti sempre dalla gamba sinistra, la più debole: sull\'altra gamba fai lo stesso numero di ripetizioni. Discesa in 3", busto stabile.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2429,7 +2429,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Hip Thrust Kneeling (Impulse)', serieTarget:3, ripTarget:'12-15', recupero:90,
-        note:'Seconda variante glutei. Se la macchina manca, se ne sceglie un\'altra.',
+        note:'Seconda variante glutei. Stringi i glutei 1" in alto, discesa in 3". Cedimento tecnico. Se la macchina manca, se ne sceglie un\'altra.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2441,7 +2441,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Hyperextension (macchina)', serieTarget:3, ripTarget:'12-15', recupero:75,
-        note:'Focus glutei.',
+        note:'Focus glutei: stringi i glutei in alto senza iperestendere la schiena. Discesa in 3". Cedimento tecnico.',
         alternativa:'Superman a terra',
         video:'https://www.youtube.com/watch?v=fe6mAfwLlK0',
         immagine:'',
@@ -2453,7 +2453,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Abduttore', serieTarget:3, ripTarget:'15-20', recupero:60,
-        note:'Articolazione tollerante.',
+        note:'Articolazione tollerante: busto appoggiato, apri in modo fluido e tieni 1" in apertura. Cedimento tecnico.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2465,7 +2465,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Adduttore', serieTarget:3, ripTarget:'15-20', recupero:60,
-        note:'Articolazione tollerante.',
+        note:'Articolazione tollerante: chiudi in modo fluido e tieni 1" in chiusura. Cedimento tecnico.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2477,7 +2477,7 @@ const SCHEDE_DEFAULT = [
       },
       {
         nome:'Calf seduto', serieTarget:3, ripTarget:'12-15', recupero:60,
-        note:'Lavora il soleo e completa il calf raise in piedi del martedì. RPE 9.',
+        note:'Lavora il soleo e completa il calf raise in piedi del martedì. Scendi in 3" con 1" di pausa in basso, sali e stringi 1" in alto. Cedimento tecnico.',
         alternativa:'—',
         video:'',
         immagine:'',
@@ -2488,8 +2488,8 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Bicep curl (panca inclinata 30°)', serieTarget:2, ripTarget:'12-15', recupero:5, superset:'ss4',
-        note:'In superset con il Tricep pushdown: nessuna pausa tra i due.',
+        nome:'Bicep curl (panca inclinata 30°)', serieTarget:3, ripTarget:'12-15', recupero:5, superset:'ss4',
+        note:'Allungamento: panca inclinata a 30°, braccia che pendono dietro il busto, discesa in 3" fino a distendere, gomiti fermi. In superset con il Tricep pushdown: nessuna pausa tra i due.',
         alternativa:'panca Scott/preacher curl',
         video:'https://www.youtube.com/watch?v=DCe8f6vMe9A',
         immagine:'',
@@ -2500,8 +2500,8 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Tricep pushdown (corda)', serieTarget:2, ripTarget:'12-15', recupero:90, superset:'ss4',
-        note:'Seconda esposizione braccia. Recupero dopo la coppia.',
+        nome:'Tricep pushdown (corda)', serieTarget:3, ripTarget:'12-15', recupero:90, superset:'ss4',
+        note:'Accorciamento: pushdown con la corda, gomiti fermi ai fianchi, estendi completamente, ritorno in 3". Recupero dopo la coppia.',
         alternativa:'Tricep pushdown con barra dritta',
         video:'https://www.youtube.com/watch?v=d-ySLTHUgQA',
         immagine:'',
@@ -4472,7 +4472,7 @@ function cardioBlocco3(){ return blocco3Sbloccato(); }
 
 function cardioObiettivo(){
   return cardioBlocco3()
-    ? { ms:30*60*1000, etichetta:'30 min', intro:"Obiettivo: 30 minuti sul tapis roulant. Intensità: test del parlato — riesci a dire una frase di 8-10 parole senza fiatone. A 9 km/h si corre, non si cammina: se non parli comodamente scendi a 7,5-8 km/h. Poi l'addome, sempre dopo il cardio.", hint:'Test del parlato: una frase di 8-10 parole senza fiatone.' }
+    ? { ms:15*60*1000, etichetta:'12-15 min', intro:"Obiettivo: 12-15 minuti di camminata inclinata (o corda) dopo i pesi; mercoledì e sabato, se hai tempo, puoi farne 25-30. Intensità: test del parlato — riesci a dire una frase di 8-10 parole senza fiatone. A 9 km/h si corre, non si cammina: se non parli comodamente scendi a 7,5-8 km/h o cammina in salita a passo svelto. Se sei stanco accorcia a 20-25 minuti a passo tranquillo; il mercoledì puoi usare la cyclette. L'addome sempre dopo il cardio, mai prima.", hint:'Test del parlato: una frase di 8-10 parole senza fiatone.' }
     : { ms:22.5*60*1000, etichetta:'20-25 min', intro:"Obiettivo: 20-25 minuti continui in Zona 2 — riesci a parlare a frasi intere ma non a cantare.", hint:'Zona 2: riesci a parlare a frasi intere ma non a cantare.' };
 }
 
@@ -10554,7 +10554,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-10-25-mantenimento-v4';
+const BUILD_ID = '2026-11-02-blocco3-v5';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
