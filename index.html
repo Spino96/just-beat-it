@@ -1469,6 +1469,76 @@
   .success-banner{background:linear-gradient(135deg,#3dffa022,#19c27a11);border:1px solid #3dffa055;border-radius:18px;}
   .confirm-box,.sheet-box{background:linear-gradient(180deg,#171b2a,#10131c);border:1px solid #2f3658;border-radius:28px;}
   .app-credit span{color:var(--sa);}
+
+  /* ===== Unilaterale + tecniche d'intensità ===== */
+  .side-lbl{display:block;font-size:9px;font-weight:900;letter-spacing:.5px;color:var(--text-dim);margin-top:1px;}
+  .set-row-dx{margin-top:-4px;}
+  .tec-sel{max-width:150px;font-size:12px;font-weight:800;padding:6px 8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text-dim);}
+  .tec-sel.on{background:linear-gradient(135deg,#ff9d4d,#ff6b3d);color:#1a0d00;border-color:transparent;}
+  .tec-panel{margin:2px 0 12px 28px;padding:10px 12px;border-radius:12px;border:1px solid #ff9d4d;background:rgba(255,157,77,.08);}
+  .tec-t{font-weight:900;font-size:13px;color:#ffb066;}
+  .tec-sost{font-weight:600;font-size:11px;color:var(--text-dim);margin-left:4px;}
+  .tec-h{font-size:12px;color:var(--text-dim);margin:4px 0 8px;line-height:1.5;}
+  .tec-f{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+  .tec-l{font-size:12px;font-weight:700;}
+  .tec-w{font-size:12px;color:var(--danger);margin-top:8px;font-weight:700;}
+  .tec-f input{background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:8px 4px;font-size:14px;font-weight:700;}
+  .set-row > span .side-lbl{display:inline;font-size:8px;margin-left:1px;}
+  /* ===== Dettaglio seduta (storico) ===== */
+  .sd-hero{padding:18px 16px 16px;border-radius:22px;margin-bottom:14px;color:var(--sfg,#fff);
+    background:linear-gradient(135deg,var(--sa,#5b8cff),var(--sb,#3a4fe0));box-shadow:0 10px 28px -12px var(--sa,#5b8cff);}
+  .sd-date{font-size:12px;font-weight:700;opacity:.85;text-transform:capitalize;}
+  .sd-title{font-size:22px;font-weight:900;line-height:1.15;margin:4px 0 14px;}
+  .sd-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .sd-stat{background:rgba(0,0,0,.2);border-radius:14px;padding:9px 4px;text-align:center;}
+  .sd-stat b{display:block;font-size:16px;font-weight:900;line-height:1.1;}
+  .sd-stat b small{font-size:11px;font-weight:700;opacity:.7;}
+  .sd-stat span{display:block;font-size:9.5px;font-weight:700;opacity:.8;margin-top:3px;text-transform:uppercase;letter-spacing:.4px;}
+  .sd-tag-row{margin-top:10px;}
+  .sd-diet{margin-top:10px;font-size:12px;opacity:.92;line-height:1.5;}
+  .sd-ex{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:14px;margin-bottom:12px;}
+  .sd-ex-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;}
+  .sd-ex-n{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-weight:900;font-size:14px;
+    background:linear-gradient(135deg,var(--sa,#5b8cff),var(--sb,#3a4fe0));color:var(--sfg,#fff);}
+  .sd-ex-info{min-width:0;flex:1;}
+  .sd-ex-name{font-size:16px;font-weight:800;line-height:1.25;}
+  .sd-ex-sub{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;}
+  .sd-pill{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;background:var(--panel-2);color:var(--text-dim);border:1px solid var(--border);}
+  .sd-pill.uni{color:var(--sa,#5b8cff);}
+  .sd-pill.tec{background:rgba(255,157,77,.16);color:#ffb066;border-color:rgba(255,157,77,.4);}
+  .sd-count{font-size:11px;font-weight:700;color:var(--text-dim);}
+  .sd-delta{font-size:11px;font-weight:800;}
+  .sd-delta.up{color:#39ff94;} .sd-delta.down{color:#ff8a8a;} .sd-delta.eq{color:var(--text-dim);}
+  .sd-sets{display:flex;flex-direction:column;gap:6px;}
+  .sd-set{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;background:var(--panel-2);border:1px solid transparent;}
+  .sd-set.done{border-color:color-mix(in srgb,var(--sa,#5b8cff) 30%,transparent);}
+  .sd-set.top{background:color-mix(in srgb,var(--sa,#5b8cff) 14%,var(--panel-2));border-color:var(--sa,#5b8cff);}
+  .sd-set.empty{opacity:.45;}
+  .sd-set.skip{opacity:.5;}
+  .sd-skip{font-size:12.5px;font-style:italic;color:var(--text-dim);}
+  .sd-sn{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900;background:var(--panel);color:var(--text-dim);}
+  .sd-vals{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+  .sd-side{display:flex;align-items:baseline;gap:6px;}
+  .sd-lato{width:18px;font-size:9px;font-weight:900;color:var(--text-dim);letter-spacing:.4px;}
+  .sd-w{font-size:17px;font-weight:900;font-family:var(--mono);}
+  .sd-w small{font-size:11px;font-weight:700;color:var(--text-dim);margin-left:2px;}
+  .sd-x{font-size:12px;color:var(--text-dim);}
+  .sd-r{font-size:17px;font-weight:900;font-family:var(--mono);}
+  .sd-end{display:flex;align-items:center;gap:8px;flex:none;}
+  .sd-rpe{font-size:11px;font-weight:900;padding:4px 8px;border-radius:10px;}
+  .sd-rpe.r7{background:rgba(57,255,148,.16);color:#39ff94;}
+  .sd-rpe.r8{background:rgba(255,214,10,.16);color:#ffd60a;}
+  .sd-rpe.r9{background:rgba(255,157,77,.18);color:#ffa14d;}
+  .sd-rpe.r10{background:rgba(255,84,112,.18);color:#ff6b86;}
+  .sd-ok{width:20px;text-align:center;font-weight:900;color:#39ff94;}
+  .sd-tec{margin:-2px 0 2px 42px;font-size:12px;font-weight:700;color:#ffb066;}
+  .sd-note{margin-top:10px;font-size:12.5px;color:var(--text-dim);line-height:1.5;}
+  /* ===== Modifica ingredienti ricetta nel pasto ===== */
+  .rp-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .rp-n{flex:1;min-width:0;font-size:14px;font-weight:700;}
+  .rp-m{font-size:11px;font-weight:600;color:var(--text-dim);margin-top:2px;}
+  .rp-row input{width:78px;text-align:center;background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 4px;font-size:15px;font-weight:800;}
+  .rp-g{font-size:12px;color:var(--text-dim);}
 </style>
 </head>
 <body>
@@ -2512,6 +2582,393 @@ const SCHEDE_DEFAULT = [
         }
       }
     ]
+  },
+  {
+    id: 'massa1',
+    gruppo: 'massa',
+    frequenzaSettimanale: 4,
+    nome: 'Massa — Torso A',
+    periodo: 'Massa lenta · 4x/settimana · 80-90 minuti',
+    durataSettimane: null,
+    descrizione: 'Torso A (18 serie): panca, dorsali unilaterali, lento avanti, rematore, laterali e addome. Prima dei torsi circa 4 minuti di mobilità dinamica, poi le serie di avvicinamento.',
+    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 17-18 serie per seduta (circa 70 a settimana), 80-90 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 20 serie, spalle 13 (7 spinte verticali, 6 laterali), petto 8, dorsali 6, schiena media e trapezi 5, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Massimo 2 a seduta: se i carichi della seduta dopo calano, toglierne una. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
+    riscaldamento: [
+      {nome:'Circonduzioni delle spalle', serie:'10 avanti + 10 indietro', note:'Braccia lungo il corpo, parti con cerchi piccoli e allargali.'},
+      {nome:'Gatto-mucca in quadrupedia', serie:'8-10 ripetizioni', note:'Muovi tutta la colonna lentamente, senza forzare.', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
+      {nome:'Rotazioni toraciche in quadrupedia', serie:'8 per lato', note:'Mano dietro la testa, ruota e apri il gomito verso l\'alto. Ruota il busto, non il bacino.'},
+      {nome:'Scapular pulldown alla lat machine', serie:'10 ripetizioni', note:'Braccia tese, carico leggero: abbassi e avvicini le scapole senza piegare i gomiti.'},
+      {nome:'Serie di avvicinamento', serie:'2-3 serie', note:'Sul primo esercizio di ogni muscolo: 50% x 8-10, 70% x 6, 90% x 2-3, con 30 secondi tra una e l\'altra. Niente stretching statico prima. Se hai poco tempo, salta la mobilità prima delle serie di avvicinamento.'}
+    ],
+    esercizi: [
+      {
+        nome:'Panca 15° al multipower', serieTarget:3, ripTarget:'5-8', recupero:180,
+        note:'Scapole addotte e depresse, piedi saldi, gomiti a circa 45-60° dal busto. Scendi in 1-2 secondi fino a sfiorare il petto, fermo di mezzo secondo, spingi esplosivo. Lascia 1 ripetizione in riserva.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Pettorali (fascio alto-medio), spalle anteriori e tricipiti (secondari).',
+          esecuzione:'Scapole addotte e depresse, piedi saldi, gomiti a circa 45-60° dal busto. Scendi in 1-2 secondi fino a sfiorare il petto, fermo di mezzo secondo, spingi esplosivo. Lascia 1 ripetizione in riserva.',
+          errori:'Non rimbalzare sul petto e non inarcare la zona lombare. Niente tecniche d\'intensità su questo esercizio.'
+        }
+      },
+      {
+        nome:'Lat machine unilaterale (un braccio alla volta)', serieTarget:3, ripTarget:'8-12 per braccio', recupero:150,
+        unilaterale:true,
+        note:'Maniglia singola: fai la serie con un braccio e poi con l\'altro, il recupero parte dopo il secondo. Parti dal lato più debole (il sinistro). Busto fermo, petto in fuori, schiena neutra. Porta il gomito verso il bacino senza tirare con la mano, fermo di mezzo secondo in allungamento. Non serve portare il braccio del tutto in alto.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Gran dorsale, romboidi, bicipiti (secondari).',
+          esecuzione:'Maniglia singola: fai la serie con un braccio e poi con l\'altro, il recupero parte dopo il secondo. Parti dal lato più debole (il sinistro). Busto fermo, petto in fuori, schiena neutra. Porta il gomito verso il bacino senza tirare con la mano, fermo di mezzo secondo in allungamento. Non serve portare il braccio del tutto in alto.',
+          errori:'Non ruotare il busto e non tirare con la mano: guida il movimento col gomito.'
+        }
+      },
+      {
+        nome:'Lento avanti al multipower', serieTarget:4, ripTarget:'6-10', recupero:180,
+        note:'Schiena appoggiata, glutei fermi, non inarcare la zona lombare. Scendi controllato fino a poco sotto il mento, fermo di mezzo secondo, spingi senza rimbalzo. Lascia 1 ripetizione in riserva.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoidi (anteriori e mediali), tricipiti.',
+          esecuzione:'Schiena appoggiata, glutei fermi, non inarcare la zona lombare. Scendi controllato fino a poco sotto il mento, fermo di mezzo secondo, spingi senza rimbalzo. Lascia 1 ripetizione in riserva.',
+          errori:'Non inarcare la schiena e non rimbalzare in basso. Se senti fastidio alla spalla, fermati. Niente tecniche d\'intensità.'
+        }
+      },
+      {
+        nome:'Rematore con supporto al petto', serieTarget:2, ripTarget:'8-12', recupero:120,
+        note:'Petto appoggiato. In allungamento lascia le scapole andare in avanti, poi tira avvicinandole, con i gomiti a 45-60° dal busto. Fermo di mezzo secondo in allungamento.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Dorsali, romboidi, trapezio medio.',
+          esecuzione:'Petto appoggiato. In allungamento lascia le scapole andare in avanti, poi tira avvicinandole, con i gomiti a 45-60° dal busto. Fermo di mezzo secondo in allungamento.',
+          errori:'Non staccare il petto dal supporto e non slanciare.'
+        }
+      },
+      {
+        nome:'Alzate laterali al cavo basso', serieTarget:3, ripTarget:'10-15', recupero:90,
+        tecnicaUltima:'parziali',
+        note:'Il cavo passa davanti al corpo, gomito leggermente piegato, sali fino all\'altezza della spalla guidando con il gomito e non con la mano. Scendi controllato mantenendo tensione. Ultima serie: parziali in allungamento.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoide mediale.',
+          esecuzione:'Il cavo passa davanti al corpo, gomito leggermente piegato, sali fino all\'altezza della spalla guidando con il gomito e non con la mano. Scendi controllato mantenendo tensione. Ultima serie: parziali in allungamento.',
+          errori:'Niente slancio del busto e non salire oltre l\'altezza delle spalle.'
+        }
+      },
+      {
+        nome:'Crunch machine', serieTarget:3, ripTarget:'10-15', recupero:90,
+        note:'Regola il sedile e i piedi. Arrotonda la schiena avvicinando le costole al bacino, non spingere con le gambe e non tirare con le braccia. Espira in contrazione, risali controllato fino ad allungare bene l\'addome.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Retto dell\'addome.',
+          esecuzione:'Regola il sedile e i piedi. Arrotonda la schiena avvicinando le costole al bacino, non spingere con le gambe e non tirare con le braccia. Espira in contrazione, risali controllato fino ad allungare bene l\'addome.',
+          errori:'Non tirare con le braccia e non spingere con le gambe.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'massa2',
+    gruppo: 'massa',
+    frequenzaSettimanale: 4,
+    nome: 'Massa — Gambe A + braccia',
+    periodo: 'Massa lenta · 4x/settimana · 80-90 minuti',
+    durataSettimane: null,
+    descrizione: 'Gambe A + braccia (17 serie): hack squat, stacco rumeno, leg curl, polpacci e jump set tricipiti/bicipiti. Prima delle gambe circa 5 minuti di mobilità dinamica, poi le serie di avvicinamento.',
+    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 17-18 serie per seduta (circa 70 a settimana), 80-90 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 20 serie, spalle 13 (7 spinte verticali, 6 laterali), petto 8, dorsali 6, schiena media e trapezi 5, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Massimo 2 a seduta: se i carichi della seduta dopo calano, toglierne una. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
+    riscaldamento: [
+      {nome:'Circonduzioni delle anche', serie:'8 per lato', note:'In piedi, appoggiati a un sostegno: il ginocchio alto disegna un cerchio, il bacino resta fermo.'},
+      {nome:'Leg swing avanti-indietro e laterali', serie:'10 per lato per direzione', note:'Ampiezza crescente, senza slanciare con forza.'},
+      {nome:'Squat a corpo libero con pausa in basso', serie:'8-10 ripetizioni', note:'Scendi il più possibile, 2 secondi in basso, schiena neutra.'},
+      {nome:'Affondo con rotazione del busto', serie:'5 per lato', note:'Ruota verso la gamba avanti, tronco alto.', video:'https://www.youtube.com/watch?v=Boi2zLj_4_8'},
+      {nome:'Ginocchia al muro (mobilità caviglia)', serie:'10 per lato', note:'Tallone a terra, spingi il ginocchio in avanti oltre le dita del piede.'},
+      {nome:'Serie di avvicinamento', serie:'2-3 serie', note:'Sul primo esercizio di ogni muscolo: 50% x 8-10, 70% x 6, 90% x 2-3, con 30 secondi tra una e l\'altra. Foam roller solo se senti rigidità (30-60" sulla zona che ti si ferma).'}
+    ],
+    esercizi: [
+      {
+        nome:'Hack squat', serieTarget:3, ripTarget:'5-9', recupero:210,
+        note:'Schiena appoggiata, piedi a metà piattaforma. Scendi in 2 secondi quanto la mobilità permette senza staccare il bacino, fermo di mezzo secondo, spingi esplosivo senza bloccare le ginocchia. Lascia 1 ripetizione in riserva.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Quadricipiti, glutei.',
+          esecuzione:'Schiena appoggiata, piedi a metà piattaforma. Scendi in 2 secondi quanto la mobilità permette senza staccare il bacino, fermo di mezzo secondo, spingi esplosivo senza bloccare le ginocchia. Lascia 1 ripetizione in riserva.',
+          errori:'Non staccare il bacino e non bloccare le ginocchia in alto. Niente tecniche d\'intensità.'
+        }
+      },
+      {
+        nome:'Stacco rumeno', serieTarget:3, ripTarget:'6-10', recupero:180,
+        note:'Gambe quasi tese, bacino indietro, schiena neutra e barra vicina alle gambe. Scendi in 2 secondi fino a sentire i femorali allungati, fermo di mezzo secondo, risali spingendo il bacino in avanti. Lascia 1 ripetizione in riserva.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Femorali, glutei, lombari.',
+          esecuzione:'Gambe quasi tese, bacino indietro, schiena neutra e barra vicina alle gambe. Scendi in 2 secondi fino a sentire i femorali allungati, fermo di mezzo secondo, risali spingendo il bacino in avanti. Lascia 1 ripetizione in riserva.',
+          errori:'Schiena neutra = limite tecnico: se perde la posizione, fermati. Niente tecniche d\'intensità.'
+        }
+      },
+      {
+        nome:'Leg curl seduto', serieTarget:2, ripTarget:'8-12', recupero:120,
+        note:'Schienale regolato con il ginocchio allineato al perno. Tira con i femorali senza sollevare il bacino, ritorna controllato fino al massimo allungamento con fermo di mezzo secondo.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Femorali.',
+          esecuzione:'Schienale regolato con il ginocchio allineato al perno. Tira con i femorali senza sollevare il bacino, ritorna controllato fino al massimo allungamento con fermo di mezzo secondo.',
+          errori:'Non sollevare il bacino. Se il fastidio dietro il ginocchio torna, salta l\'esercizio.'
+        }
+      },
+      {
+        nome:'Polpacci in piedi', serieTarget:3, ripTarget:'8-12', recupero:120,
+        note:'Ginocchia estese, carico importante. Scendi fino al massimo allungamento con fermo di almeno mezzo secondo, poi sali sulla punta senza rimbalzare. Recuperi abbondanti.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Gastrocnemio (polpacci).',
+          esecuzione:'Ginocchia estese, carico importante. Scendi fino al massimo allungamento con fermo di almeno mezzo secondo, poi sali sulla punta senza rimbalzare. Recuperi abbondanti.',
+          errori:'Non rimbalzare in basso e non accorciare la corsa.'
+        }
+      },
+      {
+        nome:'Tricipiti overhead al cavo', serieTarget:3, ripTarget:'8-12', recupero:90,
+        superset:'js1', jump:true, tecnicaUltima:'drop',
+        note:'Gomiti vicino alla testa e fermi, spalle ferme. Scendi fino a un buon allungamento con fermo di mezzo secondo, poi estendi. Alterna con i curl (jump set). Ultima serie: drop set.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Tricipiti, in particolare il capo lungo.',
+          esecuzione:'Gomiti vicino alla testa e fermi, spalle ferme. Scendi fino a un buon allungamento con fermo di mezzo secondo, poi estendi. Alterna con i curl (jump set). Ultima serie: drop set.',
+          errori:'Non allargare i gomiti e non inarcare la schiena.'
+        }
+      },
+      {
+        nome:'Curl in piedi (bilanciere EZ o manubri)', serieTarget:3, ripTarget:'8-12', recupero:90,
+        superset:'js1', jump:true, tecnicaUltima:'restpause',
+        note:'Gomiti vicino ai fianchi e fermi, schiena ferma e senza slancio. Sali senza portare i gomiti in avanti, scendi controllato in 1-2 secondi quasi fino all\'estensione, con fermo di mezzo secondo in basso. Alterna con i tricipiti (jump set). Ultima serie: rest-pause.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Bicipiti, brachiale.',
+          esecuzione:'Gomiti vicino ai fianchi e fermi, schiena ferma e senza slancio. Sali senza portare i gomiti in avanti, scendi controllato in 1-2 secondi quasi fino all\'estensione, con fermo di mezzo secondo in basso. Alterna con i tricipiti (jump set). Ultima serie: rest-pause.',
+          errori:'Niente slancio del busto e gomiti fermi ai fianchi.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'massa3',
+    gruppo: 'massa',
+    frequenzaSettimanale: 4,
+    nome: 'Massa — Torso B',
+    periodo: 'Massa lenta · 4x/settimana · 80-90 minuti',
+    durataSettimane: null,
+    descrizione: 'Torso B (17 serie): chest press inclinata, pulley, spinte verticali, low row, pec deck e laterali. Prima dei torsi circa 4 minuti di mobilità dinamica, poi le serie di avvicinamento.',
+    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 17-18 serie per seduta (circa 70 a settimana), 80-90 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 20 serie, spalle 13 (7 spinte verticali, 6 laterali), petto 8, dorsali 6, schiena media e trapezi 5, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Massimo 2 a seduta: se i carichi della seduta dopo calano, toglierne una. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
+    riscaldamento: [
+      {nome:'Circonduzioni delle spalle', serie:'10 avanti + 10 indietro', note:'Braccia lungo il corpo, parti con cerchi piccoli e allargali.'},
+      {nome:'Gatto-mucca in quadrupedia', serie:'8-10 ripetizioni', note:'Muovi tutta la colonna lentamente, senza forzare.', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
+      {nome:'Rotazioni toraciche in quadrupedia', serie:'8 per lato', note:'Mano dietro la testa, ruota e apri il gomito verso l\'alto. Ruota il busto, non il bacino.'},
+      {nome:'Scapular pulldown alla lat machine', serie:'10 ripetizioni', note:'Braccia tese, carico leggero: abbassi e avvicini le scapole senza piegare i gomiti.'},
+      {nome:'Serie di avvicinamento', serie:'2-3 serie', note:'Sul primo esercizio di ogni muscolo: 50% x 8-10, 70% x 6, 90% x 2-3, con 30 secondi tra una e l\'altra. Niente stretching statico prima. Se hai poco tempo, salta la mobilità prima delle serie di avvicinamento.'}
+    ],
+    esercizi: [
+      {
+        nome:'Chest press inclinata guidata', serieTarget:3, ripTarget:'6-10', recupero:180,
+        note:'Regola il sedile con le maniglie a livello della parte alta del petto, scapole addotte e schiena appoggiata. Scendi in 1-2 secondi fino a un buon allungamento, fermo di mezzo secondo, spingi esplosivo.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Pettorali (fascio alto), spalle anteriori, tricipiti.',
+          esecuzione:'Regola il sedile con le maniglie a livello della parte alta del petto, scapole addotte e schiena appoggiata. Scendi in 1-2 secondi fino a un buon allungamento, fermo di mezzo secondo, spingi esplosivo.',
+          errori:'Non staccare la schiena e non far collassare le spalle in avanti.'
+        }
+      },
+      {
+        nome:'Pulley col triangolo', serieTarget:3, ripTarget:'8-12', recupero:150,
+        note:'Busto fermo e petto in fuori, schiena neutra. Tira i gomiti verso il bacino, senza dondolare. In allungamento lascia le scapole andare in avanti con fermo di mezzo secondo.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Dorsali, romboidi, bicipiti (secondari).',
+          esecuzione:'Busto fermo e petto in fuori, schiena neutra. Tira i gomiti verso il bacino, senza dondolare. In allungamento lascia le scapole andare in avanti con fermo di mezzo secondo.',
+          errori:'Niente dondolio del busto.'
+        }
+      },
+      {
+        nome:'Spinte verticali con manubri (panca 60-75°)', serieTarget:3, ripTarget:'6-10', recupero:180,
+        note:'Manubri all\'altezza delle spalle, spingi in alto e leggermente avanti. Scendi controllato fino al livello del mento, senza rimbalzo e senza inarcare la zona lombare. Lascia 1 ripetizione in riserva.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoidi (anteriori e mediali), tricipiti.',
+          esecuzione:'Manubri all\'altezza delle spalle, spingi in alto e leggermente avanti. Scendi controllato fino al livello del mento, senza rimbalzo e senza inarcare la zona lombare. Lascia 1 ripetizione in riserva.',
+          errori:'Non inarcare la schiena e non rimbalzare in basso.'
+        }
+      },
+      {
+        nome:'Low row (macchina con appoggio o manubri su panca inclinata)', serieTarget:3, ripTarget:'8-12', recupero:120,
+        note:'Petto appoggiato. In allungamento lascia le scapole andare in avanti, poi tira avvicinandole e alzando leggermente le spalle a fine corsa, con i gomiti larghi e obliqui verso l\'alto per i fasci alti del trapezio.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Trapezio medio e alto, romboidi, dorsali.',
+          esecuzione:'Petto appoggiato. In allungamento lascia le scapole andare in avanti, poi tira avvicinandole e alzando leggermente le spalle a fine corsa, con i gomiti larghi e obliqui verso l\'alto per i fasci alti del trapezio.',
+          errori:'Non staccare il petto dal supporto.'
+        }
+      },
+      {
+        nome:'Pec deck', serieTarget:2, ripTarget:'10-15', recupero:90,
+        tecnicaUltima:'drop',
+        note:'Schienale regolato con i gomiti all\'altezza delle spalle, scapole addotte. Apri fino a un buon allungamento senza portare i gomiti troppo indietro, chiudi senza battere i pesi. Ultima serie: drop set.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Pettorali.',
+          esecuzione:'Schienale regolato con i gomiti all\'altezza delle spalle, scapole addotte. Apri fino a un buon allungamento senza portare i gomiti troppo indietro, chiudi senza battere i pesi. Ultima serie: drop set.',
+          errori:'Non portare i gomiti troppo indietro e non battere i pesi.'
+        }
+      },
+      {
+        nome:'Alzate laterali con manubri', serieTarget:3, ripTarget:'10-15', recupero:90,
+        tecnicaUltima:'drop',
+        note:'Busto leggermente inclinato in avanti, gomiti leggermente piegati. Sali fino all\'altezza delle spalle (non oltre) guidando con i gomiti, senza slancio, scendi controllato. Ultima serie: drop set.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoide mediale.',
+          esecuzione:'Busto leggermente inclinato in avanti, gomiti leggermente piegati. Sali fino all\'altezza delle spalle (non oltre) guidando con i gomiti, senza slancio, scendi controllato. Ultima serie: drop set.',
+          errori:'Niente slancio e non salire oltre l\'altezza delle spalle.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'massa4',
+    gruppo: 'massa',
+    frequenzaSettimanale: 4,
+    nome: 'Massa — Gambe B + braccia',
+    periodo: 'Massa lenta · 4x/settimana · 80-90 minuti',
+    durataSettimane: null,
+    descrizione: 'Gambe B + braccia (18 serie): leg press, leg extension, leg curl, adductor, jump set pushdown/curl e crunch. Prima delle gambe circa 5 minuti di mobilità dinamica, poi le serie di avvicinamento.',
+    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 17-18 serie per seduta (circa 70 a settimana), 80-90 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 20 serie, spalle 13 (7 spinte verticali, 6 laterali), petto 8, dorsali 6, schiena media e trapezi 5, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Massimo 2 a seduta: se i carichi della seduta dopo calano, toglierne una. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
+    riscaldamento: [
+      {nome:'Circonduzioni delle anche', serie:'8 per lato', note:'In piedi, appoggiati a un sostegno: il ginocchio alto disegna un cerchio, il bacino resta fermo.'},
+      {nome:'Leg swing avanti-indietro e laterali', serie:'10 per lato per direzione', note:'Ampiezza crescente, senza slanciare con forza.'},
+      {nome:'Squat a corpo libero con pausa in basso', serie:'8-10 ripetizioni', note:'Scendi il più possibile, 2 secondi in basso, schiena neutra.'},
+      {nome:'Affondo con rotazione del busto', serie:'5 per lato', note:'Ruota verso la gamba avanti, tronco alto.', video:'https://www.youtube.com/watch?v=Boi2zLj_4_8'},
+      {nome:'Ginocchia al muro (mobilità caviglia)', serie:'10 per lato', note:'Tallone a terra, spingi il ginocchio in avanti oltre le dita del piede.'},
+      {nome:'Serie di avvicinamento', serie:'2-3 serie', note:'Sul primo esercizio di ogni muscolo: 50% x 8-10, 70% x 6, 90% x 2-3, con 30 secondi tra una e l\'altra. Foam roller solo se senti rigidità (30-60" sulla zona che ti si ferma).'}
+    ],
+    esercizi: [
+      {
+        nome:'Leg press 45°', serieTarget:3, ripTarget:'5-9', recupero:210,
+        note:'Piedi a larghezza spalle, medio-bassi. Scendi in 2 secondi quanto la mobilità permette senza staccare il bacino e senza arrotondare la zona lombare, fermo di mezzo secondo, spingi esplosivo senza bloccare le ginocchia. Lascia 1 ripetizione in riserva.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Quadricipiti, glutei.',
+          esecuzione:'Piedi a larghezza spalle, medio-bassi. Scendi in 2 secondi quanto la mobilità permette senza staccare il bacino e senza arrotondare la zona lombare, fermo di mezzo secondo, spingi esplosivo senza bloccare le ginocchia. Lascia 1 ripetizione in riserva.',
+          errori:'Non staccare il bacino e non bloccare le ginocchia. Niente tecniche d\'intensità.'
+        }
+      },
+      {
+        nome:'Leg extension', serieTarget:2, ripTarget:'10-15', recupero:120,
+        tecnicaUltima:'drop',
+        note:'Schienale regolato con il ginocchio allineato al perno. Estendi completamente, scendi controllato in 2 secondi fino a un buon allungamento con fermo di mezzo secondo, senza far cadere il peso. Ultima serie: drop set.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Quadricipiti.',
+          esecuzione:'Schienale regolato con il ginocchio allineato al perno. Estendi completamente, scendi controllato in 2 secondi fino a un buon allungamento con fermo di mezzo secondo, senza far cadere il peso. Ultima serie: drop set.',
+          errori:'Non far cadere il peso in discesa.'
+        }
+      },
+      {
+        nome:'Leg curl sdraiato', serieTarget:2, ripTarget:'8-12', recupero:120,
+        note:'Anche premute sulla panca, senza sollevare il bacino. Tira con i femorali e ritorna controllato fino a quasi l\'estensione completa.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Femorali.',
+          esecuzione:'Anche premute sulla panca, senza sollevare il bacino. Tira con i femorali e ritorna controllato fino a quasi l\'estensione completa.',
+          errori:'Non sollevare il bacino.'
+        }
+      },
+      {
+        nome:'Adductor machine', serieTarget:2, ripTarget:'10-15', recupero:90,
+        note:'Schiena appoggiata. Parti da un\'apertura comoda ma ampia (allungamento) con fermo di mezzo secondo, poi chiudi controllato.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Adduttori.',
+          esecuzione:'Schiena appoggiata. Parti da un\'apertura comoda ma ampia (allungamento) con fermo di mezzo secondo, poi chiudi controllato.',
+          errori:'Non partire da un\'apertura che dia fastidio all\'inguine.'
+        }
+      },
+      {
+        nome:'Pushdown con la corda', serieTarget:3, ripTarget:'8-12', recupero:90,
+        superset:'js2', jump:true,
+        note:'Gomiti vicino ai fianchi e fermi, busto fermo. Estendi aprendo leggermente la corda in basso, risali controllato fino a circa 90° di gomito. Alterna con i curl (jump set).',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Tricipiti.',
+          esecuzione:'Gomiti vicino ai fianchi e fermi, busto fermo. Estendi aprendo leggermente la corda in basso, risali controllato fino a circa 90° di gomito. Alterna con i curl (jump set).',
+          errori:'Gomiti fermi ai fianchi e busto fermo.'
+        }
+      },
+      {
+        nome:'Curl con manubri sui cuscinetti della lat machine', serieTarget:3, ripTarget:'8-12', recupero:90,
+        superset:'js2', jump:true, tecnicaUltima:'parziali',
+        note:'Seduto al contrario, gomiti appoggiati ai cuscinetti e busto inclinato un po\' indietro, così parti con il bicipite allungato. Gomiti fermi, scendi controllato fino a un buon allungamento (fermo di mezzo secondo, senza lasciar cadere il peso), sali senza staccare i gomiti. Più ti inclini indietro, più il carico lavora in allungamento. Alterna con i pushdown (jump set). Ultima serie: parziali in allungamento.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Bicipiti (in allungamento).',
+          esecuzione:'Seduto al contrario, gomiti appoggiati ai cuscinetti e busto inclinato un po\' indietro, così parti con il bicipite allungato. Gomiti fermi, scendi controllato fino a un buon allungamento (fermo di mezzo secondo, senza lasciar cadere il peso), sali senza staccare i gomiti. Più ti inclini indietro, più il carico lavora in allungamento. Alterna con i pushdown (jump set). Ultima serie: parziali in allungamento.',
+          errori:'Non staccare i gomiti dai cuscinetti e non lasciar cadere il peso in basso.'
+        }
+      },
+      {
+        nome:'Crunch machine', serieTarget:3, ripTarget:'10-15', recupero:90,
+        note:'Regola il sedile e i piedi. Arrotonda la schiena avvicinando le costole al bacino, non spingere con le gambe e non tirare con le braccia. Espira in contrazione, risali controllato fino ad allungare bene l\'addome.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Retto dell\'addome.',
+          esecuzione:'Regola il sedile e i piedi. Arrotonda la schiena avvicinando le costole al bacino, non spingere con le gambe e non tirare con le braccia. Espira in contrazione, risali controllato fino ad allungare bene l\'addome.',
+          errori:'Non tirare con le braccia e non spingere con le gambe.'
+        }
+      }
+    ]
   }
 ];
 
@@ -2581,11 +3038,13 @@ const PROSSIMI_BLOCCHI = [];
    allenamento del Blocco 3 (non quando il Blocco 3 si sblocca). */
 const BLOCCO3_SCHEDA_IDS = ['blocco3a','blocco3b','blocco3c','blocco3d'];
 const BLOCCO3_SEDUTE_SBLOCCO = 12;
+/* Piano di massa (dal 03/11/2026): sostituisce il Blocco 3. Sempre disponibile. */
+const MASSA_SCHEDA_IDS = ['massa1','massa2','massa3','massa4'];
 
 /* Gruppi di schede chiusi a mano (blocco concluso senza aspettare la scadenza
    a calendario): trattati da schedaScaduta() come "passati", non più
    avviabili. Chiudere il Blocco 2 sblocca anche il Blocco 3. */
-const BLOCCHI_CHIUSI = ['blocco2'];
+const BLOCCHI_CHIUSI = ['blocco2','blocco3'];
 
 function blocco3Sbloccato(){
   return BLOCCHI_CHIUSI.includes('blocco2') || sessioniGruppo('blocco2').length >= BLOCCO3_SEDUTE_SBLOCCO;
@@ -2596,7 +3055,7 @@ function blocco3Sbloccato(){
    esplicitamente, "il primo giorno del Blocco 3" che fa scattare il nuovo
    piano alimentare — non lo sblocco in sé, non una data di calendario. */
 function blocco3Attivo(){
-  return BLOCCO3_SCHEDA_IDS.some(id => !!blocchiIniziati[id]);
+  return BLOCCO3_SCHEDA_IDS.concat(MASSA_SCHEDA_IDS).some(id => !!blocchiIniziati[id]);
 }
 
 /* Catalogo schede reale, caricato da Firestore (collection "schede").
@@ -2626,7 +3085,7 @@ async function caricaCatalogoSchede(){
   // Il Blocco 3 vive nel codice (SCHEDE_DEFAULT) e prevale sempre su quanto
   // eventualmente salvato su Firestore: così ogni aggiornamento della scheda
   // arriva con l'app, senza dover rilanciare script dalla console.
-  BLOCCO3_SCHEDA_IDS.forEach(id=>{
+  BLOCCO3_SCHEDA_IDS.concat(MASSA_SCHEDA_IDS).forEach(id=>{
     const def = SCHEDE_DEFAULT.find(x=>x.id===id);
     if(!def) return;
     const idx = SCHEDE.findIndex(x=>x.id===id);
@@ -2850,6 +3309,8 @@ let recuperiPersonalizzati = {};
 /* Serie e ripetizioni personalizzate per esercizio (chiave = nome nella scheda),
    salvate sul profilo come i recuperi. */
 let serieRipPersonalizzate = {};
+/* Esercizi eseguiti un lato alla volta (nome scheda -> true/false), scelti dall'utente. */
+let unilateraliPersonalizzati = {};
 function serieEsercizio(e){
   const v = serieRipPersonalizzate[e.nome];
   return (v && Number.isInteger(v.serie) && v.serie>=1 && v.serie<=12) ? v.serie : e.serieTarget;
@@ -3039,6 +3500,7 @@ async function checkProfilo(){
   blocchiIniziati = data.blocchiIniziati || {};
   recuperiPersonalizzati = data.recuperiPersonalizzati || {};
   serieRipPersonalizzate = data.serieRipPersonalizzate || {};
+  unilateraliPersonalizzati = data.unilateraliPersonalizzati || {};
   // Normalizza il formato: versioni precedenti salvavano una singola stringa
   // per esercizio, ora è un array (più alternative possibili tra cui scegliere).
   const raw = data.alternativeSalvate || {};
@@ -3197,6 +3659,7 @@ async function registrati(){
     blocchiIniziati = {};
     recuperiPersonalizzati = {};
     serieRipPersonalizzate = {};
+    unilateraliPersonalizzati = {};
     alternativeSalvate = {};
     document.getElementById('registerScreen').style.display = 'none';
     await avviaApp();
@@ -3433,6 +3896,78 @@ async function modificaQuantitaAlimentoExtraGiorno(giornoId, alimentoId){
   ricalcolaVoceExtraPerGrammi(voce, nuoviGrammi);
   salvaGiornoDietaLog(giornoId, g);
   renderDiario();
+}
+
+/* Ingredienti di una ricetta segnata in un pasto: quelli salvati sulla voce; per
+   le voci più vecchie (senza ingredienti) si ripiega sulla ricetta salvata con lo
+   stesso id o nome. Ritorna null se la ricetta non ha ingredienti modificabili. */
+function ingredientiVoceRicetta(voce){
+  if(voce.ingredienti && voce.ingredienti.length) return voce.ingredienti.map(x=>({...x}));
+  const r = (cache.ricettePersonalizzate||[]).find(x=> (voce.ricettaId && x.id===voce.ricettaId) || x.nome===voce.nome);
+  return (r && r.ingredienti && r.ingredienti.length) ? r.ingredienti.map(x=>({...x})) : null;
+}
+function btnModificaVoce(a, giornoId, renderFnName){
+  if(!a.isRicetta){
+    return giornoId
+      ? `<button class="diario-mini-btn" onclick="event.stopPropagation();modificaQuantitaAlimentoExtraGiorno('${giornoId}','${a.id}')" title="Modifica quantità">✏️</button>`
+      : `<button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}'${renderFnName?', '+renderFnName:''})" aria-label="Modifica quantità">✏️</button>`;
+  }
+  if(!ingredientiVoceRicetta(a)) return '';
+  return giornoId
+    ? `<button class="diario-mini-btn" onclick="event.stopPropagation();modificaIngredientiRicettaPasto('${a.id}','${giornoId}')" title="Modifica ingredienti">✏️</button>`
+    : `<button class="efi-edit" onclick="modificaIngredientiRicettaPasto('${a.id}', null${renderFnName?', '+renderFnName:''})" aria-label="Modifica ingredienti">✏️</button>`;
+}
+function modificaIngredientiRicettaPasto(id, giornoId, renderFn){
+  let voce, giorno = null;
+  if(giornoId){
+    giorno = cache.dietaLog.find(d=>d.id===giornoId);
+    voce = giorno && (giorno.alimentiExtra||[]).find(a=>a.id===id);
+  } else {
+    voce = (cache.dietaLogOggi.alimentiExtra||[]).find(a=>a.id===id);
+  }
+  if(!voce) return;
+  const ing = ingredientiVoceRicetta(voce);
+  if(!ing) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.id = 'ricPastoOverlay';
+  const riga = (i,k)=>`<div class="rp-row">
+      <div class="rp-n">${escHtml(i.nome)}${i.marca?` <span class="efi-brand">· ${escHtml(i.marca)}</span>`:''}<div class="rp-m" id="rpM${k}"></div></div>
+      <input type="number" min="0" step="1" inputmode="decimal" value="${i.grammi}" aria-label="Grammi di ${escHtml(i.nome)}" data-k="${k}"><span class="rp-g">g</span>
+    </div>`;
+  overlay.innerHTML = `<div class="confirm-box" style="max-height:86vh;display:flex;flex-direction:column;">
+    <p class="confirm-msg" style="margin-bottom:2px;">🍲 ${escHtml(voce.nome)}</p>
+    <p class="field-hint" style="text-align:center;margin:0 0 10px;">Cambia le quantità solo per questo pasto: la ricetta salvata non cambia.</p>
+    <div style="overflow:auto;flex:1;min-height:0;">${ing.map(riga).join('')}</div>
+    <p style="font-size:13px;font-weight:800;text-align:center;margin:12px 0 4px;" id="rpTot"></p>
+    <div class="confirm-actions"><button class="btn secondary" id="rpAnnulla">Annulla</button><button class="btn" id="rpSalva">Salva</button></div>
+  </div>`;
+  document.body.appendChild(overlay);
+  const aggiorna = ()=>{
+    ing.forEach((i,k)=>{
+      const f=(Number(i.grammi)||0)/100, m=overlay.querySelector('#rpM'+k);
+      if(m) m.textContent = `${fmt1(kcalDaMacro(i.prot100*f,i.carb100*f,i.grassi100*f,(i.polio100||0)*f))} kcal · P ${fmt1(i.prot100*f)} · C ${fmt1(i.carb100*f)} · G ${fmt1(i.grassi100*f)}`;
+    });
+    const t = totaliRicettaDaIngredienti(ing);
+    overlay.querySelector('#rpTot').textContent = `Totale: ${fmt1(t.kcal)} kcal · P ${fmt1(t.prot)}g · C ${fmt1(t.carb)}g · G ${fmt1(t.grassi)}g`;
+  };
+  overlay.querySelectorAll('input[data-k]').forEach(inp=> inp.addEventListener('input',()=>{
+    ing[Number(inp.dataset.k)].grammi = Math.max(0, Number(inp.value)||0);
+    aggiorna();
+  }));
+  aggiorna();
+  const chiudi = ()=> overlay.remove();
+  overlay.querySelector('#rpAnnulla').onclick = chiudi;
+  overlay.addEventListener('click', ev=>{ if(ev.target===overlay) chiudi(); });
+  overlay.querySelector('#rpSalva').onclick = ()=>{
+    const t = totaliRicettaDaIngredienti(ing);
+    voce.ingredienti = ing;
+    voce.prot = t.prot; voce.carb = t.carb; voce.grassi = t.grassi; voce.polio = t.polio||0;
+    voce.kcal = kcalDaMacro(t.prot, t.carb, t.grassi, t.polio||0);
+    chiudi(); hapticaLieve();
+    if(giorno){ salvaGiornoDietaLog(giornoId, giorno); renderDiario(); }
+    else { salvaDietaLogOggi(); (renderFn || renderAlimentazione)(); }
+  };
 }
 
 function rimuoviAlimentoExtraCore(id){
@@ -4271,7 +4806,7 @@ function renderAllenamentoList(){
   // Card cardio: una per ogni gruppo con info dedicate (Blocco 2 e, dal suo
   // sblocco, anche Blocco 3) effettivamente presente tra le schede mostrate.
   [CARDIO_INFO, CARDIO_INFO_BLOCCO3].forEach(info=>{
-    if(!gruppiMostrati.has(info.gruppo)) return;
+    if(!gruppiMostrati.has(info.gruppo) && !(info.gruppo==='blocco3' && gruppiMostrati.has('massa'))) return;
     const righeHtml = info.righe.map(r=>`<div class="cardio-row"><b>${r.label}</b><span>${r.testo}</span></div>`).join('');
     const fatteSettimana = cardioSessioniUltimi7Giorni();
     html += `<p class="section-label">Cardio</p><div class="cardio-card">
@@ -4282,7 +4817,7 @@ function renderAllenamentoList(){
           <span class="cardio-freq">${fatteSettimana>0 ? `${fatteSettimana} fatta${fatteSettimana===1?'':'e'} negli ultimi 7 giorni` : info.frequenza}</span>
         </div>
       </div>
-      <button class="btn" style="margin-bottom:8px;" onclick="avviaSessioneCardio()">${info.gruppo==='blocco3' ? '▶ Avvia cardio e addome' : '▶ Avvia sessione cardio'}</button>
+      <button class="btn" style="margin-bottom:8px;" onclick="avviaSessioneCardio()">${info.gruppo==='blocco3' ? '▶ Avvia cardio' : '▶ Avvia sessione cardio'}</button>
       <button class="cardio-toggle" onclick="toggleCardioEspansa()">${cardioEspansa ? '– Nascondi dettagli' : '+ Come funziona'}</button>
       ${cardioEspansa ? `
         <div class="cardio-rows">${righeHtml}</div>
@@ -4360,8 +4895,8 @@ function renderBlocco3Anteprima(){
     if(sc.descrizione) html += `<p class="scheda-desc" style="margin-top:0;">${sc.descrizione}</p>`;
     sc.esercizi.forEach(e=>{
       const alt = (e.alternativa && e.alternativa!=='—') ? ` · alt.: ${e.alternativa}` : '';
-      html += `<div class="anteprima-ex"><b>${e.superset?'🔗 ':''}${e.nome}</b>
-        <div class="am">${serieEsercizio(e)} x ${ripEsercizio(e)}${e.superset?' · superset':` · recupero ${fmtRecupero(recuperoEsercizio(e))}`}${alt}</div>
+      html += `<div class="anteprima-ex"><b>${e.superset?(e.jump?'🔁 ':'🔗 '):''}${e.nome}</b>
+        <div class="am">${serieEsercizio(e)} x ${ripEsercizio(e)}${e.superset?(e.jump?' · jump set':' · superset'):` · recupero ${fmtRecupero(recuperoEsercizio(e))}`}${alt}</div>
         ${e.note ? `<div class="an">${e.note}</div>` : ''}</div>`;
     });
     html += `</div>`;
@@ -4398,7 +4933,7 @@ function renderFasiDieta(){
   return `<details class="card" style="margin-bottom:14px;"${''}>
     <summary style="cursor:pointer;font-weight:800;font-size:15px;">📅 Fasi del piano · ${att.nome}</summary>
     <div style="margin-top:12px;">${P.fasi.map(riga).join('')}
-      <p class="field-hint" style="margin:8px 0 0;">Proteine ${att.riposo.prot}g e grassi ${att.riposo.grassi}g fissi: cambiano solo i carboidrati. Il piano passa da solo alla fase successiva nel giorno indicato. Prossimo check: ${P.checkIn}.<br>Sicurezza: se la media settimanale del peso sale di oltre 0,5 kg in 2 settimane, o la vita di oltre 1 cm, si torna allo step precedente. Se calano forza e sonno o la fame è fuori controllo per più giorni, si sale di uno step.</p>
+      <p class="field-hint" style="margin:8px 0 0;">Proteine ${att.riposo.prot}g e grassi ${att.riposo.grassi}g fissi: cambiano solo i carboidrati. Il piano passa da solo alla fase successiva nel giorno indicato.<br>${att.note ? att.note : 'Prossimo check: '+P.checkIn+'. Sicurezza: se la media settimanale del peso sale di oltre 0,5 kg in 2 settimane, o la vita di oltre 1 cm, si torna allo step precedente.'}</p>
     </div>
   </details>`;
 }
@@ -4684,6 +5219,81 @@ function renderSessioneCardio(){
   }
 }
 
+function unilateraleEsercizio(e){
+  const v = unilateraliPersonalizzati[e.nome];
+  return typeof v==='boolean' ? v : !!e.unilaterale;
+}
+function salvaUnilateraliPersonalizzati(){
+  attendiScrittura(db.collection('users').doc(currentUid).set({ unilateraliPersonalizzati }, { mergeFields:['unilateraliPersonalizzati'] }));
+}
+function toggleUnilaterale(ei){
+  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const e = scheda.esercizi[ei];
+  const draft = sessionDraft.esercizi[ei];
+  draft.unilaterale = !draft.unilaterale;
+  if(draft.unilaterale === !!e.unilaterale) delete unilateraliPersonalizzati[e.nome];
+  else unilateraliPersonalizzati[e.nome] = draft.unilaterale;
+  salvaUnilateraliPersonalizzati();
+  hapticaLieve();
+  renderSessionePreservandoScroll();
+}
+
+/* ============ TECNICHE D'INTENSITÀ ============
+   Si applicano a una singola serie (di solito l'ultima di un isolamento) e la
+   sostituiscono, non si aggiungono. Piano: massimo 2 per seduta, mai su hack,
+   leg press, stacco rumeno, panca e lento (qui sono avvisi, non blocchi). */
+const TECNICHE = {
+  drop:     { label:'Drop set',               icona:'⬇️', hint:'A cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa. Una sola riduzione.' },
+  restpause:{ label:'Rest-pause',             icona:'⏸', hint:'A cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni.' },
+  parziali: { label:'Parziali in allungamento', icona:'↕️', hint:'A cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato.' }
+};
+const TECNICHE_MAX_SEDUTA = 2;
+const TECNICHE_SCONSIGLIATE_RE = /hack|leg press|rumeno|lento avanti|panca 15|^panca/i;
+function contaTecnicheSessione(){
+  if(!sessionDraft) return 0;
+  return sessionDraft.esercizi.reduce((n,e)=> n + e.sets.filter(s=>s.tecnica && !s.saltata).length, 0);
+}
+function setTecnica(ei, si, val){
+  sessionDraft.esercizi[ei].sets[si].tecnica = val || '';
+  hapticaLieve();
+  aggiornaProgressoSessione();
+  renderSessionePreservandoScroll();
+}
+function avviaPausaRestPause(){ startRestTimer(20); }
+/* Riga di riepilogo di una serie (storico, "ultima volta"): include lato destro e tecnica. */
+function descriviSerie(s, uni){
+  const base = uni
+    ? `SX ${s.peso||'—'}kg×${s.rip||'—'} · DX ${s.pesoDx||'—'}kg×${s.ripDx||'—'}`
+    : `${s.peso}kg${s.rip?` × ${s.rip}`:''}`;
+  let tec = '';
+  if(s.tecnica==='drop') tec = ` ⚡Drop${s.pesoDrop?` ${s.pesoDrop}kg`:''}${s.ripDrop?`×${s.ripDrop}`:''}`;
+  else if(s.tecnica==='restpause') tec = ` ⚡Rest-pause${s.ripRP?` +${s.ripRP}`:''}`;
+  else if(s.tecnica==='parziali') tec = ` ⚡Parziali${s.ripParz?` +${s.ripParz}`:''}`;
+  return base + tec;
+}
+function tecnicaPanelHtml(ei, si, set, nome){
+  const t = TECNICHE[set.tecnica]; if(!t) return '';
+  const sconsigliata = TECNICHE_SCONSIGLIATE_RE.test(nome||'');
+  const troppe = contaTecnicheSessione() > TECNICHE_MAX_SEDUTA;
+  const campo = (field, ph, w)=>`<input type="${field==='pesoDrop'?'number':'text'}" inputmode="${field==='pesoDrop'?'decimal':'numeric'}" ${field==='pesoDrop'?'min="0" max="500" step="0.5"':'pattern="[0-9]*"'} placeholder="${ph}" value="${set[field]??''}" style="width:${w}px;text-align:center;" oninput="updateSet(${ei},${si},'${field}',this.value)">`;
+  const suggerito = (set.peso && !isNaN(parseFloat(set.peso))) ? Math.round(parseFloat(set.peso)*0.75*2)/2 : '';
+  let corpo = '';
+  if(set.tecnica==='drop'){
+    corpo = `<span class="tec-l">Dopo la riduzione:</span> ${campo('pesoDrop', suggerito?('~'+suggerito):'kg', 70)} <span class="tec-l">kg ×</span> ${campo('ripDrop','rip',56)}`;
+  } else if(set.tecnica==='restpause'){
+    corpo = `<span class="tec-l">Rip dopo la pausa:</span> ${campo('ripRP','3-5',56)} <button type="button" class="set-mini-btn" onclick="avviaPausaRestPause()">⏱ Pausa 20"</button>`;
+  } else {
+    corpo = `<span class="tec-l">Rip parziali:</span> ${campo('ripParz','4-6',56)}`;
+  }
+  return `<div class="tec-panel" id="tecp-${ei}-${si}">
+    <div class="tec-t">${t.icona} ${t.label} <span class="tec-sost">sostituisce questa serie</span></div>
+    <div class="tec-h">${t.hint}</div>
+    <div class="tec-f">${corpo}</div>
+    ${sconsigliata ? `<div class="tec-w">⚠️ Il piano sconsiglia le tecniche d'intensità su questo esercizio.</div>` : ''}
+    ${troppe ? `<div class="tec-w">⚠️ Hai già ${contaTecnicheSessione()} tecniche in questa seduta: il piano ne prevede al massimo ${TECNICHE_MAX_SEDUTA}.</div>` : ''}
+  </div>`;
+}
+
 function avviaSessione(schedaId){
   const scheda = SCHEDE.find(s=>s.id===schedaId);
   if(!blocchiIniziati[schedaId]){
@@ -4695,12 +5305,17 @@ function avviaSessione(schedaId){
     schedaNome: scheda.nome,
     iniziata: new Date().toISOString(),
     warmDone: scheda.riscaldamento.map(()=>false),
-    esercizi: scheda.esercizi.map(e=>({
-      nome: e.nome,
-      usaAlternativa: false,
-      noteUtente: '',
-      sets: Array.from({length:serieEsercizio(e)}, ()=>({peso:'', rip:'', fatta:false, rpe:null, saltata:false}))
-    }))
+    esercizi: scheda.esercizi.map(e=>{
+      const n = serieEsercizio(e);
+      return {
+        nome: e.nome,
+        usaAlternativa: false,
+        noteUtente: '',
+        unilaterale: unilateraleEsercizio(e),
+        sets: Array.from({length:n}, (_,i)=>({peso:'', rip:'', fatta:false, rpe:null, saltata:false,
+          tecnica: (e.tecnicaUltima && i===n-1) ? e.tecnicaUltima : ''}))
+      };
+    })
   };
   setRoute({name:'sessione'});
 }
@@ -4901,6 +5516,10 @@ function usaValoriUltimaVolta(ei){
     if(!draft.sets[si]) return;
     if(s.peso!=='' && s.peso!=null) draft.sets[si].peso = s.peso;
     if(s.rip!=='' && s.rip!=null) draft.sets[si].rip = s.rip;
+    if(draft.unilaterale){
+      if(s.pesoDx!=='' && s.pesoDx!=null) draft.sets[si].pesoDx = s.pesoDx;
+      if(s.ripDx!=='' && s.ripDx!=null) draft.sets[si].ripDx = s.ripDx;
+    }
   });
   hapticaLieve();
   renderSessionePreservandoScroll();
@@ -4954,8 +5573,7 @@ function refreshLocks(){
   const unita = unitaSessione(scheda);
   const nuovi = sessionDraft.esercizi.map((_,ei)=>{
     const uIdx = unita.findIndex(u=>u.indici.includes(ei));
-    if(uIdx<=0) return false;
-    return unita.slice(0, uIdx).some(u=>!unitaCompletata(u));
+    return false; // sblocco sequenziale rimosso
   });
   const precedenti = sessionDraft._locks || [];
   const cambiati = nuovi.length !== precedenti.length || nuovi.some((v,i)=>v!==precedenti[i]);
@@ -4981,7 +5599,8 @@ function aggiornaProgressoSessione(){
   if(!box) return;
   const lbl = box.querySelector('.bp-label');
   const fill = box.querySelector('.bp-fill');
-  if(lbl) lbl.textContent = `${ok} di ${tot} esercizi completati`;
+  const nt = contaTecnicheSessione();
+  if(lbl) lbl.textContent = `${ok} di ${tot} esercizi completati${nt?` · ⚡ ${nt}/${TECNICHE_MAX_SEDUTA} tecniche`:''}`;
   if(fill) fill.style.width = (tot ? Math.round(ok/tot*100) : 0) + '%';
 }
 
@@ -5144,7 +5763,7 @@ function renderEsercizioBloccato(e, bannerText){
 function renderUnitaSupersetBloccata(scheda, u){
   const nomi = u.indici.map(ei=> scheda.esercizi[ei].nome).join(' + ');
   let html = `<div class="superset-group locked-ex">
-    <div class="superset-label">🔗 Superset · ${nomi}</div>`;
+    <div class="superset-label">${scheda.esercizi[u.indici[0]].jump ? '🔁 Jump set' : '🔗 Superset'} · ${nomi}</div>`;
   u.indici.forEach(ei=> html += renderEsercizioBloccato(scheda.esercizi[ei], null));
   html += `<div class="lock-banner">🔒 Completa tutte le serie (segnate e valutate con RPE, o saltate) dell'unità precedente per sbloccare questo gruppo</div>
   </div>`;
@@ -5158,27 +5777,29 @@ function renderUnitaSupersetBloccata(scheda, u){
 function renderEsercizioCard(scheda, ei, supersetTag){
   const e = scheda.esercizi[ei];
   const draft = sessionDraft.esercizi[ei];
+  const uni = !!draft.unilaterale;
   const usaAlt = !!draft.usaAlternativa;
   const nomeAttivo = draft.nome || e.nome;
   const suggerimento = suggerimentoProgressione(nomeAttivo, e.ripTarget);
 
   let html = `<div class="exercise-card">`;
   if(supersetTag){
-    html += `<div class="superset-tag">🔗 ${supersetTag}</div>`;
+    html += `<div class="superset-tag">${supersetTag==='Jump set'?'🔁':'🔗'} ${supersetTag}</div>`;
   }
   html += `<div class="ex-head">
       ${(!usaAlt && e.immagine) ? `<div class="ex-thumb"><img src="${e.immagine}" alt="${e.nome}" loading="lazy"></div>` : ''}
       <div class="ex-head-info">
         <h3>${nomeAttivo}${usaAlt ? ' <span class="alt-tag">alternativa</span>' : ''}</h3>
-        <div class="ex-meta" style="margin-bottom:0;"><button type="button" class="rec-chip${serieRipPersonalizzate[e.nome]?' custom':''}" onclick="apriModificaSerie(${ei})" aria-label="Modifica serie e ripetizioni">${serieEsercizio(e)} x ${escHtml(ripEsercizio(e))} ✎</button> <button type="button" class="rec-chip${recuperiPersonalizzati[e.nome]!=null?' custom':''}" onclick="apriModificaRecupero(${ei})" aria-label="Modifica il tempo di recupero">⏱ ${fmtRecupero(recuperoEsercizio(e))} ✎</button></div>
+        <div class="ex-meta" style="margin-bottom:0;"><button type="button" class="rec-chip${serieRipPersonalizzate[e.nome]?' custom':''}" onclick="apriModificaSerie(${ei})" aria-label="Modifica serie e ripetizioni">${serieEsercizio(e)} x ${escHtml(ripEsercizio(e))} ✎</button> <button type="button" class="rec-chip${recuperiPersonalizzati[e.nome]!=null?' custom':''}" onclick="apriModificaRecupero(${ei})" aria-label="Modifica il tempo di recupero">⏱ ${fmtRecupero(recuperoEsercizio(e))} ✎</button> <button type="button" class="rec-chip${uni?' custom':''}" onclick="toggleUnilaterale(${ei})" aria-label="Esegui un lato alla volta">↔ Unilaterale${uni?' ✓':''}</button></div>
       </div>
     </div>`;
   const ultimaVolta = datiUltimaSessione(nomeAttivo);
   if(ultimaVolta){
     const dataLbl = new Date(ultimaVolta.data).toLocaleDateString('it-IT',{day:'numeric',month:'short'});
-    const setsConPeso = ultimaVolta.sets.filter(s=> s.peso!=='' && s.peso!=null);
+    const uniUV = !!(ultimaVolta.sets.some(s=>s.pesoDx!=null && s.pesoDx!==''));
+    const setsConPeso = ultimaVolta.sets.filter(s=> (s.peso!=='' && s.peso!=null) || (s.pesoDx!=='' && s.pesoDx!=null));
     const setsHtml = setsConPeso.length
-      ? `<div class="pst-sets">${setsConPeso.map(s=>`<span class="pst-set">${s.peso}kg${s.rip?` × ${s.rip}`:''}</span>`).join('')}</div>`
+      ? `<div class="pst-sets">${setsConPeso.map(s=>`<span class="pst-set">${descriviSerie(s, uniUV)}</span>`).join('')}</div>`
       : '';
     html += `<div class="prev-session-tip">
       <span class="pst-label">🕐 Ultima volta</span> (${dataLbl})${!setsConPeso.length ? ': nessun peso registrato' : ''}
@@ -5188,6 +5809,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
     </div>`;
   }
   html += `<p class="rpe-legend">RPE per ogni serie: 6 = leggero · 8 = a 2 rip dal cedimento · 10 = cedimento totale</p>`;
+  if(uni) html += `<p class="rpe-legend" style="margin-top:-6px;">↔ Un lato alla volta: riga <b>SX</b> (lato debole, si parte da qui) e riga <b>DX</b>. Il recupero parte quando spunti la serie, dopo entrambi i lati.</p>`;
   draft.sets.forEach((set,si)=>{
     const isExtra = si >= serieEsercizio(e);
     if(set.saltata){
@@ -5200,7 +5822,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
     }
     const rpeMissing = set.fatta && set.rpe==null;
     html += `<div class="set-row${rpeMissing ? ' rpe-missing' : ''}" id="setrow-${ei}-${si}">
-      <span>${si+1}</span>
+      <span>${si+1}${uni?'<small class="side-lbl">SX</small>':''}</span>
       <div class="peso-stepper">
         <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},-1.25)" aria-label="Togli peso">–</button>
         <input type="number" inputmode="decimal" min="0" max="500" placeholder="kg" id="peso-${ei}-${si}" value="${set.peso}" oninput="updateSet(${ei},${si},'peso',this.value)">
@@ -5213,11 +5835,28 @@ function renderEsercizioCard(scheda, ei, supersetTag){
       </select>
       <input type="checkbox" ${set.fatta?'checked':''} onchange="markSetDone(${ei},${si},${recuperoEsercizio(e)},this.checked,this)">
     </div>`;
+    if(uni){
+      html += `<div class="set-row set-row-dx" id="setdx-${ei}-${si}">
+        <span><small class="side-lbl">DX</small></span>
+        <div class="peso-stepper">
+          <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},-1.25,'pesoDx')" aria-label="Togli peso destro">–</button>
+          <input type="number" inputmode="decimal" min="0" max="500" placeholder="kg" id="pesodx-${ei}-${si}" value="${set.pesoDx??''}" oninput="updateSet(${ei},${si},'pesoDx',this.value)">
+          <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},1.25,'pesoDx')" aria-label="Aggiungi peso destro">+</button>
+        </div>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" placeholder="rip / sec" value="${set.ripDx??''}" oninput="updateSet(${ei},${si},'ripDx',this.value)">
+        <span></span><span></span>
+      </div>`;
+    }
     html += `<div class="set-row-actions" id="setact-${ei}-${si}">
       ${rpeMissing ? `<span class="set-row-hint">⚠️ Segna l'RPE per completare questa serie</span>` : ''}
       <button type="button" class="set-mini-btn" onclick="saltaSet(${ei},${si})">⏭ Salta serie</button>
+      <select class="tec-sel${set.tecnica?' on':''}" onchange="setTecnica(${ei},${si},this.value)" aria-label="Tecnica d'intensità">
+        <option value="">⚡ Tecnica</option>
+        ${Object.keys(TECNICHE).map(k=>`<option value="${k}" ${set.tecnica===k?'selected':''}>${TECNICHE[k].label}</option>`).join('')}
+      </select>
       ${isExtra ? `<button type="button" class="set-mini-btn" onclick="rimuoviSet(${ei},${si})">🗑 Rimuovi</button>` : ''}
     </div>`;
+    if(set.tecnica) html += tecnicaPanelHtml(ei, si, set, nomeAttivo);
   });
   html += `<button type="button" class="btn small secondary add-set-btn" style="margin-top:10px;" onclick="aggiungiSet(${ei})">+ Aggiungi serie</button>`;
   html += `<div class="note-box">${usaAlt ? `Stai facendo l'alternativa al posto di <b>${e.nome}</b>. ${e.note}` : e.note}</div>`;
@@ -5293,14 +5932,14 @@ function renderSessione(){
 
   const unita = unitaSessione(scheda);
   unita.forEach((u, uIdx)=>{
-    const bloccata = uIdx>0 && unita.slice(0, uIdx).some(prev=>!unitaCompletata(prev));
+    const bloccata = false; // nessun blocco: gli esercizi si possono fare in qualsiasi ordine
     if(u.tipo==='superset'){
       if(bloccata){
         html += renderUnitaSupersetBloccata(scheda, u);
       } else {
         html += `<div class="superset-group">
-          <div class="superset-label">🔗 Superset · alterna liberamente questi esercizi</div>`;
-        u.indici.forEach(ei=> html += renderEsercizioCard(scheda, ei, 'Superset'));
+          <div class="superset-label">${scheda.esercizi[u.indici[0]].jump ? '🔁 Jump set · alterna una serie per esercizio' : '🔗 Superset · alterna liberamente questi esercizi'}</div>`;
+        u.indici.forEach(ei=> html += renderEsercizioCard(scheda, ei, scheda.esercizi[ei].jump ? 'Jump set' : 'Superset'));
         html += `</div>`;
       }
     } else {
@@ -5318,7 +5957,7 @@ function renderSessione(){
   // vedi entrambi insieme in fondo, invece di dover risalire per il conteggio.
   html += `<div class="finish-bar">
     <div class="finish-bar-progress" id="sessionProgress">
-      <p class="bp-label">${completatiEsercizi} di ${totaleEsercizi} esercizi completati</p>
+      <p class="bp-label">${completatiEsercizi} di ${totaleEsercizi} esercizi completati${contaTecnicheSessione()?` · ⚡ ${contaTecnicheSessione()}/${TECNICHE_MAX_SEDUTA} tecniche`:''}</p>
       <div class="bp-bar"><div class="bp-fill" style="width:${pctSessione}%"></div></div>
     </div>
     <button class="btn" id="finishBtn" onclick="terminaSessione()">Termina e salva allenamento</button>
@@ -5338,13 +5977,14 @@ function updateSet(ei,si,field,val){
 
 /* Stepper +/- sul peso: incrementi di 1.25kg, il taglio dischi piu' comune in
    sala pesi, per evitare la tastiera numerica del telefono a meta' serie. */
-function adjustPeso(ei, si, delta){
+function adjustPeso(ei, si, delta, campo){
+  const f = campo || 'peso';
   const set = sessionDraft.esercizi[ei].sets[si];
-  const attuale = parseFloat(set.peso) || 0;
+  const attuale = parseFloat(set[f]) || 0;
   let nuovo = Math.round((attuale + delta) * 4) / 4;
   if(nuovo < 0) nuovo = 0;
-  set.peso = nuovo;
-  const input = document.getElementById(`peso-${ei}-${si}`);
+  set[f] = nuovo;
+  const input = document.getElementById(`${f==='peso'?'peso':'pesodx'}-${ei}-${si}`);
   if(input) input.value = nuovo;
 }
 
@@ -5770,13 +6410,13 @@ function csvEscape(v){
 function esportaCSV(){
   const righe = [];
   righe.push('=== ALLENAMENTI ===');
-  righe.push(['Data','Scheda','Esercizio','Serie','Peso (kg)','Rip','Completata','RPE','Note'].join(','));
+  righe.push(['Data','Scheda','Esercizio','Serie','Peso (kg)','Rip','Completata','RPE','Note','Unilaterale','Peso DX (kg)','Rip DX','Tecnica','Dettaglio tecnica'].join(','));
   cache.sessioni.slice().sort((a,b)=> new Date(a.data)-new Date(b.data)).forEach(s=>{
     const data = new Date(s.data).toLocaleDateString('it-IT');
     s.esercizi.forEach(e=>{
       e.sets.forEach((set,i)=>{
         const rpeVal = set.rpe!=null ? set.rpe : (e.rpe||'');
-        righe.push([data, csvEscape(s.schedaNome), csvEscape(e.nome), i+1, set.peso||'', csvEscape(set.rip||''), set.fatta?'si':'no', rpeVal, csvEscape(e.noteUtente||'')].join(','));
+        righe.push([data, csvEscape(s.schedaNome), csvEscape(e.nome), i+1, set.peso||'', csvEscape(set.rip||''), set.fatta?'si':'no', rpeVal, csvEscape(e.noteUtente||''), e.unilaterale?'si':'', set.pesoDx||'', csvEscape(set.ripDx||''), csvEscape(set.tecnica||''), csvEscape(set.tecnica==='drop' ? [set.pesoDrop?set.pesoDrop+'kg':'', set.ripDrop?'x'+set.ripDrop:''].join('') : set.tecnica==='restpause' ? (set.ripRP?'+'+set.ripRP+' rip':'') : set.tecnica==='parziali' ? (set.ripParz?'+'+set.ripParz+' parziali':'') : '')].join(','));
       });
     });
   });
@@ -5802,10 +6442,10 @@ function esportaCSV(){
   });
   righe.push('');
   righe.push('=== MISURE ===');
-  righe.push(['Data','Peso','Vita','Petto','Fianchi','Collo','Braccio Dx','Braccio Sx','Coscia Dx','Coscia Sx','% Massa grassa stimata'].join(','));
+  righe.push(['Data','Peso','Vita','Petto','Fianchi','Collo','Braccio Dx','Braccio Sx','Coscia Dx','Coscia Sx','% Massa grassa stimata','Note'].join(','));
   cache.misure.slice().sort((a,b)=> new Date(a.data)-new Date(b.data)).forEach(m=>{
     const bf = stimaMassaGrassa(m);
-    righe.push([new Date(m.data).toLocaleDateString('it-IT'), m.peso||'', m.vita||'', m.petto||'', m.fianchi||'', m.collo||'', m.braccioDx||'', m.braccioSx||'', m.cosciaDx||'', m.cosciaSx||'', bf!=null?bf.toFixed(1):''].join(','));
+    righe.push([new Date(m.data).toLocaleDateString('it-IT'), m.peso||'', m.vita||'', m.petto||'', m.fianchi||'', m.collo||'', m.braccioDx||'', m.braccioSx||'', m.cosciaDx||'', m.cosciaSx||'', bf!=null?bf.toFixed(1):'', csvEscape(m.note||'')].join(','));
   });
   const csv = '﻿' + righe.join('\n');
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
@@ -5988,6 +6628,7 @@ function renderStoricoMisure(){
             ${deltaHtml}
             ${m.vita ? `<span class="misura-pill">📏 vita ${m.vita}cm</span>` : ''}
           </div>
+          ${m.note ? `<div class="field-hint" style="margin:4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">📝 ${escHtml(m.note)}</div>` : ''}
         </div>
         <span class="misura-chevron">›</span>
       </div>
@@ -6087,9 +6728,12 @@ function calcolaValoreEsercizio(sessione, nomeEsercizio, metrica){
     if(rpes.length) return rpes.reduce((a,b)=>a+b,0)/rpes.length;
     return (e.rpe!=null) ? e.rpe : null; // sessioni salvate prima dell'RPE per serie
   }
-  const validi = e.sets
-    .map(x=>({peso:parseFloat(x.peso), rip:parseInt(x.rip)}))
-    .filter(x=>!isNaN(x.peso) && !isNaN(x.rip) && x.rip>0);
+  const validi = [];
+  (e.sets||[]).forEach(x=>{
+    validi.push({peso:parseFloat(x.peso), rip:parseInt(x.rip)});
+    if(x.pesoDx!=null && x.pesoDx!=='') validi.push({peso:parseFloat(x.pesoDx), rip:parseInt(x.ripDx)});
+  });
+  for(let i=validi.length-1;i>=0;i--){ const x=validi[i]; if(isNaN(x.peso) || isNaN(x.rip) || !(x.rip>0)) validi.splice(i,1); }
   if(!validi.length) return null;
   if(metrica==='pesoMax') return Math.max(...validi.map(x=>x.peso));
   if(metrica==='volume') return validi.reduce((sum,x)=> sum + x.peso*x.rip, 0);
@@ -6452,32 +7096,112 @@ function renderProgressiDetail(){
   if(!s){ setRoute({name:'storico-allenamento'}); return; }
   pageTitle.textContent = s.schedaNome;
   const d = new Date(s.data);
-  let html = '';
-  if(route.justSaved){
-    html += `<div class="success-banner">Modifiche salvate ✅</div>`;
-  }
-  html += `<p style="color:var(--text-dim);font-size:13px;">${d.toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long', year:'numeric'})}</p>`;
+  const num = v=>{ const n = parseFloat(v); return isNaN(n) ? null : n; };
+  // Riepilogo della seduta
+  let serieFatte = 0, serieTot = 0, volume = 0, rpeSomma = 0, rpeN = 0, tecniche = 0;
   s.esercizi.forEach(e=>{
-    html += `<div class="exercise-card"><h3>${e.nome}</h3>`;
-    const haRpePerSerie = (e.sets||[]).some(s=>s.rpe!=null);
-    e.sets.forEach((set,i)=>{
-      html += `<div style="display:flex;gap:10px;font-size:13.5px;padding:5px 0;color:var(--text-dim);">
-        <span style="width:20px;">${i+1}</span>
-        <span style="flex:1;">${set.peso ? set.peso+' kg' : '—'}</span>
-        <span style="flex:1;">${set.rip ? set.rip+' rip' : '—'}</span>
-        <span style="width:50px;text-align:right;">${set.rpe!=null ? 'RPE '+set.rpe : '—'}</span>
-        <span>${set.fatta?'✅':'—'}</span>
-      </div>`;
+    (e.sets||[]).forEach(set=>{
+      serieTot++;
+      if(set.fatta) serieFatte++;
+      if(set.tecnica && !set.saltata) tecniche++;
+      if(set.rpe!=null && !isNaN(set.rpe)){ rpeSomma += Number(set.rpe); rpeN++; }
+      [[set.peso,set.rip],[set.pesoDx,set.ripDx]].forEach(([pk,rp])=>{
+        const w = num(pk), r = parseInt(rp);
+        if(w!=null && !isNaN(r) && r>0) volume += w*r;
+      });
     });
-    if(!haRpePerSerie && e.rpe){
-      html += `<p style="margin:8px 0 0;font-size:12.5px;color:var(--text-dim);">RPE: <b style="color:var(--text);">${e.rpe}</b></p>`;
+  });
+  const rpeMedio = rpeN ? (rpeSomma/rpeN) : null;
+  const rpeCls = v => v==null ? '' : (v>=10 ? 'r10' : v>=9 ? 'r9' : v>=8 ? 'r8' : 'r7');
+  const fmtVol = v => v>=1000 ? (Math.round(v/100)/10).toLocaleString('it-IT')+' t' : Math.round(v)+' kg';
+  // Seduta precedente con lo stesso esercizio (per il confronto sul carico massimo)
+  const precedenti = cache.sessioni.filter(x=>new Date(x.data) < d).sort((x,y)=>new Date(y.data)-new Date(x.data));
+  const pesoMaxEs = ex => {
+    const v = [];
+    (ex.sets||[]).forEach(st=>{ const w=num(st.peso); if(w!=null && st.fatta) v.push(w); const w2=num(st.pesoDx); if(w2!=null && st.fatta) v.push(w2); });
+    return v.length ? Math.max(...v) : null;
+  };
+  let html = '';
+  if(route.justSaved) html += `<div class="success-banner">Modifiche salvate ✅</div>`;
+  html += `<div class="sd-hero">
+    <div class="sd-date">${d.toLocaleDateString('it-IT',{weekday:'long', day:'numeric', month:'long', year:'numeric'})} · ${d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</div>
+    <div class="sd-title">${escHtml(s.schedaNome)}</div>
+    <div class="sd-stats">
+      <div class="sd-stat"><b>${s.esercizi.length}</b><span>esercizi</span></div>
+      <div class="sd-stat"><b>${serieFatte}<small>/${serieTot}</small></b><span>serie fatte</span></div>
+      <div class="sd-stat"><b>${volume ? fmtVol(volume) : '—'}</b><span>volume</span></div>
+      <div class="sd-stat"><b>${rpeMedio!=null ? (Math.round(rpeMedio*10)/10).toString().replace('.',',') : '—'}</b><span>RPE medio</span></div>
+    </div>
+    ${tecniche ? `<div class="sd-tag-row"><span class="sd-pill tec">⚡ ${tecniche} ${tecniche===1?'tecnica':'tecniche'} d'intensità</span></div>` : ''}
+    ${s.dietaOggi ? `<div class="sd-diet">🍽️ Quel giorno hai mangiato <b>${s.dietaOggi.kcal} kcal</b> · P ${s.dietaOggi.prot}g · C ${s.dietaOggi.carb}g · G ${s.dietaOggi.grassi}g</div>` : ''}
+  </div>`;
+
+  s.esercizi.forEach((e,idx)=>{
+    const sets = e.sets||[];
+    const uni = !!e.unilaterale;
+    const gruppo = gruppoMuscolareEsercizio(e.nome);
+    const fatte = sets.filter(x=>x.fatta).length;
+    // Serie "top": peso più alto tra quelle fatte
+    let topIdx = -1, topW = -1;
+    sets.forEach((st,i)=>{ const w=num(st.peso); if(st.fatta && w!=null && w>topW){ topW=w; topIdx=i; } });
+    const pesoMax = pesoMaxEs(e);
+    let confronto = '';
+    for(const pr of precedenti){
+      const ep = trovaEsInSessione(pr, e.nome);
+      if(ep){
+        const pm = pesoMaxEs(ep);
+        if(pm!=null && pesoMax!=null){
+          const diff = Math.round((pesoMax-pm)*100)/100;
+          confronto = diff>0 ? `<span class="sd-delta up">▲ +${diff} kg vs ultima volta</span>`
+                    : diff<0 ? `<span class="sd-delta down">▼ ${diff} kg vs ultima volta</span>`
+                    : `<span class="sd-delta eq">= come l'ultima volta</span>`;
+        }
+        break;
+      }
     }
-    if(e.noteUtente){
-      html += `<p style="margin:8px 0 0;font-size:12.5px;color:var(--text-dim);"><b style="color:var(--text);">Note:</b> ${e.noteUtente}</p>`;
-    }
+    const haRpePerSerie = sets.some(x=>x.rpe!=null);
+    html += `<div class="sd-ex">
+      <div class="sd-ex-head">
+        <div class="sd-ex-n">${idx+1}</div>
+        <div class="sd-ex-info">
+          <div class="sd-ex-name">${escHtml(e.nome)}</div>
+          <div class="sd-ex-sub"><span class="sd-pill">${gruppo}</span>${uni?'<span class="sd-pill uni">↔ unilaterale</span>':''}<span class="sd-count">${fatte}/${sets.length} serie</span>${confronto}</div>
+        </div>
+      </div>
+      <div class="sd-sets">`;
+    sets.forEach((st,i)=>{
+      if(st.saltata){
+        html += `<div class="sd-set skip"><span class="sd-sn">${i+1}</span><span class="sd-skip">Serie saltata</span></div>`;
+        return;
+      }
+      const vuota = !st.peso && !st.rip && !st.fatta;
+      const isTop = i===topIdx && sets.filter(x=>x.fatta).length>1;
+      const rpe = st.rpe!=null ? Number(st.rpe) : null;
+      const lato = (lbl, peso, rip)=>`<div class="sd-side">${uni?`<small class="sd-lato">${lbl}</small>`:''}<span class="sd-w">${peso?peso:'—'}<small>kg</small></span><span class="sd-x">×</span><span class="sd-r">${rip?rip:'—'}</span></div>`;
+      html += `<div class="sd-set${st.fatta?' done':''}${vuota?' empty':''}${isTop?' top':''}">
+        <span class="sd-sn">${i+1}</span>
+        <div class="sd-vals">${lato('SX', st.peso, st.rip)}${uni ? lato('DX', st.pesoDx, st.ripDx) : ''}</div>
+        <div class="sd-end">
+          ${isTop ? '<span class="sd-top" title="Carico più alto">🏆</span>' : ''}
+          ${rpe!=null ? `<span class="sd-rpe ${rpeCls(rpe)}">RPE ${rpe}</span>` : ''}
+          <span class="sd-ok">${st.fatta?'✓':''}</span>
+        </div>
+      </div>`;
+      if(st.tecnica){
+        const t = TECNICHE[st.tecnica];
+        let det = '';
+        if(st.tecnica==='drop') det = `${st.pesoDrop?st.pesoDrop+' kg':''}${st.ripDrop?` × ${st.ripDrop}`:''}`.trim();
+        else if(st.tecnica==='restpause') det = st.ripRP ? `+${st.ripRP} rip dopo la pausa` : '';
+        else if(st.tecnica==='parziali') det = st.ripParz ? `+${st.ripParz} parziali` : '';
+        html += `<div class="sd-tec">⚡ ${t?t.label:st.tecnica}${det?` · <b>${det}</b>`:''}</div>`;
+      }
+    });
+    html += `</div>`;
+    if(!haRpePerSerie && e.rpe) html += `<div class="sd-note">RPE: <b>${e.rpe}</b></div>`;
+    if(e.noteUtente) html += `<div class="sd-note">📝 ${escHtml(e.noteUtente)}</div>`;
     html += `</div>`;
   });
-  html += `<div style="display:flex;gap:10px;">
+  html += `<div style="display:flex;gap:10px;margin-top:6px;">
     <button class="btn secondary" style="flex:1;" onclick="setRoute({name:'sessione-modifica', id:'${s.id}'})">✏️ Modifica</button>
     <button class="btn secondary" style="flex:1;" onclick="eliminaSessione('${s.id}')">Elimina</button>
   </div>`;
@@ -6531,6 +7255,14 @@ function renderSessioneModificaHTML(){
         </select>
         <input type="checkbox" ${set.fatta?'checked':''} onchange="updateSetModifica(${ei},${si},'fatta',this.checked)">
       </div>`;
+      if(e.unilaterale){
+        html += `<div class="set-row">
+          <span><small class="side-lbl">DX</small></span>
+          <input type="number" inputmode="decimal" min="0" max="500" placeholder="peso kg DX" value="${set.pesoDx??''}" oninput="updateSetModifica(${ei},${si},'pesoDx',this.value)">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" placeholder="rip DX" value="${set.ripDx??''}" oninput="updateSetModifica(${ei},${si},'ripDx',this.value)">
+          <span></span><span></span>
+        </div>`;
+      }
     });
     html += `<button type="button" class="btn small secondary add-set-btn" style="margin-top:10px;" onclick="aggiungiSetModifica(${ei})">+ Aggiungi serie</button>`;
     html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio" oninput="updateNotaEsercizioModifica(${ei}, this.value)">${e.noteUtente||''}</textarea>`;
@@ -7028,10 +7760,10 @@ const DIETA_PIANO = {
    Giorni con solo sessione cardio (mercoledì, sabato) contano come riposo a
    livello calorico, per scelta esplicita dell'utente. */
 const DIETA_PIANO_BLOCCO3 = {
-  versione: 'v12-mantenimento',
-  aggiornato: '25/10/2026',
+  versione: 'v13-massa',
+  aggiornato: '02/11/2026',
   inizio: '05/10/2026',
-  fase: 'Mantenimento a step (poi decisione: secondo taglio breve o massa pulita)',
+  fase: 'Massa lenta (+0,7-1 kg al mese)',
   // Fasi con cambio AUTOMATICO per data (nessun intervento a mano): vale
   // l'ultima fase la cui data di inizio è già passata. Proteine fisse a
   // 158 g, grassi fissi (62 g nel deficit, 63 g nel mantenimento): l'unica
@@ -7050,9 +7782,10 @@ const DIETA_PIANO_BLOCCO3 = {
     { id:'mant2', nome:'Mantenimento · step 2',      da:new Date(2026, 9, 30),  dal:'30/10', al:'02/11',
       riposo:      { kcal:2450, prot:158, carb:313, grassi:63 },
       allenamento: { kcal:2700, prot:158, carb:375, grassi:63 } },
-    { id:'mant3', nome:'Mantenimento · step 3',      da:new Date(2026, 10, 3),  dal:'03/11', al:'check 08/11',
-      riposo:      { kcal:2600, prot:158, carb:350, grassi:63 },
-      allenamento: { kcal:2880, prot:158, carb:420, grassi:63 } }
+    { id:'massa',  nome:'Massa lenta',                da:new Date(2026, 10, 3),  dal:'03/11', al:'in corso',
+      note:'Target di massa lenta (circa +0,7-1 kg al mese): TDEE stimato ~2600 kcal + circa 220 kcal (+8%). Media settimanale ~2821 kcal (4 giorni di pesi, 3 di riposo). Carboidrati = (kcal − 1270) / 4. Pesati ogni mattina a digiuno e valuta la media settimanale, dalla seconda settimana (nei primi giorni salgono 0,5-1 kg tra acqua e glicogeno). +0,35-0,5 kg ogni 2 settimane: perfetto, non cambiare nulla. Meno di +0,2 kg in 2 settimane: aggiungi 150 kcal, soprattutto carboidrati. Più di +0,5 kg a settimana per 2 settimane: togli 150 kcal. Se in 4-6 settimane la vita sale di 2-3 cm e il peso corre oltre 1,5 kg al mese, togli 100-150 kcal. Quando mangi fuori scrivi una stima prudente verso l\'alto, mai zero (un pasto da ristorante vale 900-1200 kcal). Misure ogni 2 settimane a digiuno (vita, petto, braccia, cosce) e foto con stessa luce e pose.',
+      riposo:      { kcal:2650, prot:160, carb:345, grassi:70 },
+      allenamento: { kcal:2950, prot:160, carb:420, grassi:70 } }
   ],
   get faseAttiva(){
     const ora = new Date();
@@ -7067,6 +7800,7 @@ const DIETA_PIANO_BLOCCO3 = {
   // più giorni, si alzano le kcal di uno step.
   checkIn: '08/11/2026'
 };
+
 
 /* ============ MICRONUTRIENTI (vitamine, minerali, acqua) ============
    Valori indicativi per 100g, presi da tabelle nutrizionali standard
@@ -7593,7 +8327,7 @@ function renderAlimentazione(){
             <div class="efi-m">${a.isRicetta?'1 porzione':`${a.grammi}g`} · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
           </div>
           <div class="efi-actions">
-            ${a.isRicetta?'':`<button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}')" aria-label="Modifica quantità">✏️</button>`}
+            ${btnModificaVoce(a)}
             <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
           </div>
         </div>`).join('')}</div>` : '';
@@ -7620,7 +8354,7 @@ function renderAlimentazione(){
             <div class="efi-m">${a.isRicetta?'1 porzione':`${a.grammi}g`} · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
           </div>
           <div class="efi-actions">
-            ${a.isRicetta?'':`<button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}')" aria-label="Modifica quantità">✏️</button>`}
+            ${btnModificaVoce(a)}
             <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
           </div>
         </div>`).join('')}</div>
@@ -8145,7 +8879,7 @@ function renderDiario(){
         .filter(s=> integratoriFatti[s.nome])
         .map(s=>`<div class="micro-row"><span>${s.icona} ${s.nome}</span><b>✅</b></div>`).join('');
 
-      const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.isRicetta?'1 porzione':`${a.grammi}g`})<span class="diario-item-actions">${a.isRicetta?'':`<button class="diario-mini-btn" onclick="event.stopPropagation();modificaQuantitaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Modifica quantità">✏️</button>`}<button class="diario-mini-btn" onclick="event.stopPropagation();confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${fmt1(a.kcal)} kcal</b></div>`).join('');
+      const extraRighe = alimentiExtra.map(a=>`<div class="micro-row"><span>${a.nome}${a.marca?` · ${a.marca}`:''} (${a.isRicetta?'1 porzione':`${a.grammi}g`})<span class="diario-item-actions">${btnModificaVoce(a, g.id)}<button class="diario-mini-btn" onclick="event.stopPropagation();confermaEliminaAlimentoExtraGiorno('${g.id}','${a.id}')" title="Rimuovi dal diario">🗑️</button></span></span><b>${fmt1(a.kcal)} kcal</b></div>`).join('');
 
       corpoHtml = `${pastiRighe || '<p style="margin:0 0 8px;color:var(--text-dim);font-size:12.5px;">Nessun pasto segnato.</p>'}
         ${integrRighe}
@@ -8375,7 +9109,7 @@ function renderCercaAlimento(){
             <div class="efi-m">${a.isRicetta?'1 porzione':`${a.grammi}g`} · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g · ${DIETA_PIANO.pasti[a.pasto] ? DIETA_PIANO.pasti[a.pasto].nome : ''}</div>
           </div>
           <div class="efi-actions">
-            ${a.isRicetta?'':`<button class="efi-edit" onclick="modificaQuantitaAlimentoExtra('${a.id}', renderCercaAlimento)" aria-label="Modifica quantità">✏️</button>`}
+            ${btnModificaVoce(a, null, 'renderCercaAlimento')}
             <button class="efi-remove" onclick="rimuoviAlimentoDaSessioneRicerca('${a.id}')" aria-label="Rimuovi">✕</button>
           </div>
         </div>`).join('')}</div>
@@ -9134,6 +9868,8 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
       marca: '',
       grammi: null,
       isRicetta: true,
+      ricettaId: p.ricettaId || null,
+      ingredienti: (p.ingredienti||[]).map(x=>({...x})),
       kcal: p.kcal,
       prot: p.prot,
       carb: p.carb,
@@ -9479,6 +10215,10 @@ function renderMisure(){
       <label>Peso (kg)</label><input type="number" step="0.1" id="mPeso">
       <p class="field-hint">Pesati a digiuno, appena sveglio, prima di mangiare o bere.</p>
     </div>
+    <div class="field">
+      <label>📝 Note (facoltative)</label>
+      <textarea id="mNote" rows="2" maxlength="500" placeholder="Es. sonno scarso, ciclo, ritenzione, dopo cena fuori..." style="width:100%;resize:vertical;font:inherit;"></textarea>
+    </div>
     <button class="btn" id="saveMisuraBtnRapido" onclick="salvaMisura()">⚡ Salva solo il peso</button>
 
     <button class="toggle-guide" style="margin-top:18px;" onclick="toggleMisuraCompleta()">Misurazione completa (circonferenze, foto) ▾</button>
@@ -9628,6 +10368,7 @@ async function salvaMisura(){
   const braccioSx = document.getElementById('mBraccioSx').value;
   const cosciaDx = document.getElementById('mCosciaDx').value;
   const cosciaSx = document.getElementById('mCosciaSx').value;
+  const note = (document.getElementById('mNote').value || '').trim();
   // Ci sono due pulsanti di salvataggio (peso rapido in cima e misurazione
   // completa in fondo alla sezione a comparsa): li gestiamo entrambi qui,
   // qualunque sia stato quello cliccato, cosi' l'utente vede lo stato di
@@ -9680,6 +10421,7 @@ async function salvaMisura(){
       braccioSx: braccioSx ? Number(braccioSx) : null,
       cosciaDx: cosciaDx ? Number(cosciaDx) : null,
       cosciaSx: cosciaSx ? Number(cosciaSx) : null,
+      note,
       fotoThumb
     };
     const ref = await aggiungiDocRapido(userCollection('misure'), payload);
@@ -9763,6 +10505,7 @@ function renderMisuraDetail(){
     <h3 style="margin-top:0;font-size:15px;">📋 Valori registrati</h3>
     ${righe || `<p class="empty" style="padding:10px 0;">Nessun valore numerico per questa rilevazione.</p>`}
   </div>
+  ${m.note ? `<div class="card"><h3 style="margin-top:0;font-size:15px;">📝 Note</h3><p style="margin:0;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escHtml(m.note)}</p></div>` : ''}
   ${asimmetrieHtml}
   <div class="card">
     <h3 style="margin-top:0;font-size:15px;">⚖️ Stima massa grassa</h3>
@@ -9865,6 +10608,10 @@ function renderMisuraModifica(){
       <div class="field"><label>Coscia Sx (cm)</label><input type="number" step="0.5" id="mmCosciaSx" value="${m.cosciaSx??''}"></div>
     </div>
     <div class="field">
+      <label>📝 Note</label>
+      <textarea id="mmNote" rows="3" maxlength="500" style="width:100%;resize:vertical;font:inherit;">${escHtml(m.note||'')}</textarea>
+    </div>
+    <div class="field">
       <label>Foto progressi (fino a 4)</label>
       <p class="field-hint" style="margin-top:-2px;">Tocca una foto per sostituirla, la ✕ per rimuoverla, oppure aggiungi quelle mancanti.</p>
       <div class="photo-slots" id="mmPhotoSlots">${spinnerHtml('Carico le foto...')}</div>
@@ -9952,6 +10699,7 @@ async function salvaModificaMisura(id){
   const braccioSx = document.getElementById('mmBraccioSx').value;
   const cosciaDx = document.getElementById('mmCosciaDx').value;
   const cosciaSx = document.getElementById('mmCosciaSx').value;
+  const note = (document.getElementById('mmNote').value || '').trim();
   const btn = document.getElementById('saveMisuraModBtn');
   const errBox = document.getElementById('misuraModError');
   errBox.innerHTML = '';
@@ -10014,6 +10762,7 @@ async function salvaModificaMisura(id){
       braccioSx: braccioSx ? Number(braccioSx) : null,
       cosciaDx: cosciaDx ? Number(cosciaDx) : null,
       cosciaSx: cosciaSx ? Number(cosciaSx) : null,
+      note,
       fotoThumb
     };
     if(clearLegacyFoto) payload.foto = firebase.firestore.FieldValue.delete();
@@ -10554,7 +11303,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-02-blocco3-v6';
+const BUILD_ID = '2026-11-03-massa-v13';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
