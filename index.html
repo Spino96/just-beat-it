@@ -5253,8 +5253,46 @@ function contaTecnicheSessione(){
   if(!sessionDraft) return 0;
   return sessionDraft.esercizi.reduce((n,e)=> n + e.sets.filter(s=>s.tecnica && !s.saltata).length, 0);
 }
+/* Drop set: il peso dopo la riduzione si calcola da solo dal peso della serie
+   (riduzione 20/25/30%, default 25%, arrotondata a 0,5 kg). Si aggiorna finché
+   non lo correggi a mano; la percentuale scelta viene ricordata. */
+function dropPctPreferita(){
+  try{ const v = parseInt(localStorage.getItem('dropPct'),10); if([20,25,30].includes(v)) return v; }catch(e){}
+  return 25;
+}
+function calcolaPesoDrop(set){
+  const base = parseFloat(String(set.peso).replace(',','.'));
+  if(!base || isNaN(base) || base<=0) return '';
+  const pct = set.dropPct || dropPctPreferita();
+  return Math.max(0.5, Math.round(base*(1-pct/100)*2)/2);
+}
+function aggiornaDropAuto(ei, si){
+  const set = sessionDraft.esercizi[ei].sets[si];
+  if(set.tecnica!=='drop') return;
+  // Quando cambia il peso della serie il drop si ricalcola SEMPRE, anche se
+  // lo avevi corretto a mano prima: la correzione vale solo finché il peso
+  // della serie resta quello.
+  set.pesoDropManuale = false;
+  const c = calcolaPesoDrop(set);
+  if(c==='') return;
+  set.pesoDrop = c;
+  const inp = document.getElementById(`drop-${ei}-${si}`);
+  if(inp) inp.value = set.pesoDrop;
+  const h = document.getElementById(`drophint-${ei}-${si}`);
+  if(h) h.textContent = `Calcolato in automatico: ${set.peso} kg −${set.dropPct || dropPctPreferita()}%.`;
+}
+function setDropPct(ei, si, pct){
+  const set = sessionDraft.esercizi[ei].sets[si];
+  set.dropPct = pct;
+  set.pesoDropManuale = false;
+  try{ localStorage.setItem('dropPct', String(pct)); }catch(e){}
+  hapticaLieve();
+  set.pesoDrop = calcolaPesoDrop(set);
+  renderSessionePreservandoScroll();
+}
 function setTecnica(ei, si, val){
   sessionDraft.esercizi[ei].sets[si].tecnica = val || '';
+  if(val==='drop'){ const st = sessionDraft.esercizi[ei].sets[si]; if(!st.pesoDropManuale) st.pesoDrop = calcolaPesoDrop(st); }
   hapticaLieve();
   aggiornaProgressoSessione();
   renderSessionePreservandoScroll();
@@ -5276,10 +5314,14 @@ function tecnicaPanelHtml(ei, si, set, nome){
   const sconsigliata = TECNICHE_SCONSIGLIATE_RE.test(nome||'');
   const troppe = contaTecnicheSessione() > TECNICHE_MAX_SEDUTA;
   const campo = (field, ph, w)=>`<input type="${field==='pesoDrop'?'number':'text'}" inputmode="${field==='pesoDrop'?'decimal':'numeric'}" ${field==='pesoDrop'?'min="0" max="500" step="0.5"':'pattern="[0-9]*"'} placeholder="${ph}" value="${set[field]??''}" style="width:${w}px;text-align:center;" oninput="updateSet(${ei},${si},'${field}',this.value)">`;
-  const suggerito = (set.peso && !isNaN(parseFloat(set.peso))) ? Math.round(parseFloat(set.peso)*0.75*2)/2 : '';
   let corpo = '';
   if(set.tecnica==='drop'){
-    corpo = `<span class="tec-l">Dopo la riduzione:</span> ${campo('pesoDrop', suggerito?('~'+suggerito):'kg', 70)} <span class="tec-l">kg ×</span> ${campo('ripDrop','rip',56)}`;
+    if(!set.pesoDropManuale){ const c = calcolaPesoDrop(set); if(c!=='') set.pesoDrop = c; }
+    const pct = set.dropPct || dropPctPreferita();
+    const chips = [20,25,30].map(v=>`<button type="button" class="set-mini-btn${v===pct?' on':''}" style="${v===pct?'background:var(--accent);color:#fff;':''}" onclick="setDropPct(${ei},${si},${v})">−${v}%</button>`).join(' ');
+    const campoDrop = `<input type="number" inputmode="decimal" min="0" max="500" step="0.5" id="drop-${ei}-${si}" placeholder="kg" value="${set.pesoDrop??''}" style="width:70px;text-align:center;" oninput="updateSet(${ei},${si},'pesoDrop',this.value)">`;
+    corpo = `<div style="width:100%;margin-bottom:6px;">${chips}</div><span class="tec-l">Dopo la riduzione:</span> ${campoDrop} <span class="tec-l">kg ×</span> ${campo('ripDrop','rip',56)}
+      <div class="tec-h" id="drophint-${ei}-${si}" style="margin-top:6px;">${set.pesoDropManuale ? 'Peso modificato a mano. Se cambi il peso della serie o tocchi una percentuale, si ricalcola.' : (set.peso ? `Calcolato in automatico: ${set.peso} kg −${pct}%.` : 'Inserisci il peso della serie: il drop si calcola da solo.')}</div>`;
   } else if(set.tecnica==='restpause'){
     corpo = `<span class="tec-l">Rip dopo la pausa:</span> ${campo('ripRP','3-5',56)} <button type="button" class="set-mini-btn" onclick="avviaPausaRestPause()">⏱ Pausa 20"</button>`;
   } else {
@@ -5972,7 +6014,10 @@ function toggleGuide(ei){
 }
 
 function updateSet(ei,si,field,val){
-  sessionDraft.esercizi[ei].sets[si][field] = val;
+  const st = sessionDraft.esercizi[ei].sets[si];
+  st[field] = val;
+  if(field==='peso') aggiornaDropAuto(ei, si);
+  else if(field==='pesoDrop'){ st.pesoDropManuale = String(val).trim()!==''; if(!st.pesoDropManuale){ st.pesoDrop = calcolaPesoDrop(st); } }
 }
 
 /* Stepper +/- sul peso: incrementi di 1.25kg, il taglio dischi piu' comune in
@@ -5986,6 +6031,7 @@ function adjustPeso(ei, si, delta, campo){
   set[f] = nuovo;
   const input = document.getElementById(`${f==='peso'?'peso':'pesodx'}-${ei}-${si}`);
   if(input) input.value = nuovo;
+  if(f==='peso') aggiornaDropAuto(ei, si);
 }
 
 /* Foglio per cambiare il recupero di un esercizio: preset rapidi + secondi
@@ -11303,7 +11349,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-03-massa-v13';
+const BUILD_ID = '2026-11-03-drop-v14';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
