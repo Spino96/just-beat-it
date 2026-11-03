@@ -1127,6 +1127,8 @@
   .sheet-handle{width:38px;height:4px;border-radius:3px;background:var(--border);margin:2px auto 14px;}
   .sheet-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px;}
   .sheet-title{font-size:16px;font-weight:900;}
+  .ex-tools{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px;}
+  .ex-tools .set-mini-btn[disabled]{opacity:.35;pointer-events:none;}
   .sheet-close{
     flex-shrink:0;width:30px;height:30px;border-radius:50%;border:1px solid var(--border);
     background:var(--panel-2);color:var(--text-dim);font-size:13px;cursor:pointer;
@@ -5219,6 +5221,153 @@ function renderSessioneCardio(){
   }
 }
 
+
+/* ============ AGGIUNGERE E SPOSTARE ESERCIZI NELLA SEDUTA ============
+   La scheda resta quella del piano; la seduta ha la sua lista di esercizi
+   (sessionDraft.defs) che si può allungare e riordinare senza toccare la
+   scheda. Gli esercizi aggiunti valgono solo per questa seduta. */
+function schedaSessione(){
+  const base = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  if(!sessionDraft.defs) sessionDraft.defs = base.esercizi.slice();
+  return Object.assign({}, base, { esercizi: sessionDraft.defs });
+}
+function nuovoDraftEsercizio(def){
+  const n = serieEsercizio(def);
+  return {
+    nome: def.nome, usaAlternativa:false, noteUtente:'', unilaterale: unilateraleEsercizio(def),
+    aggiunto: !!def.aggiunto,
+    sets: Array.from({length:n}, ()=>({peso:'', rip:'', fatta:false, rpe:null, saltata:false, tecnica:''}))
+  };
+}
+function eserciziNoti(){
+  const mappa = {};
+  SCHEDE.forEach(sc=> sc.esercizi.forEach(e=>{ const k = e.nome.trim().toLowerCase(); if(!mappa[k]) mappa[k] = e; }));
+  return mappa;
+}
+function posizioniInserimento(){
+  // Indici dopo i quali si può inserire. Dentro a un superset/jump set non si
+  // inserisce: si va prima o dopo il gruppo.
+  const defs = sessionDraft.defs;
+  const out = [{ pos:0, label:"All'inizio (prima di tutto)" }];
+  defs.forEach((e,i)=>{
+    const prossimo = defs[i+1];
+    if(e.superset && prossimo && prossimo.superset===e.superset) return;
+    out.push({ pos:i+1, label:'Dopo: '+(sessionDraft.esercizi[i].nome || e.nome) });
+  });
+  return out;
+}
+function apriAggiungiEsercizio(dopoEi){
+  if(document.getElementById('addExOverlay')) return;
+  const noti = eserciziNoti();
+  const posizioni = posizioniInserimento();
+  let selPos = (dopoEi==null) ? posizioni[posizioni.length-1].pos : (()=>{
+    // dopo l'esercizio indicato (o dopo la fine del suo gruppo)
+    let i = dopoEi; const d = sessionDraft.defs;
+    while(d[i] && d[i].superset && d[i+1] && d[i+1].superset===d[i].superset) i++;
+    return i+1;
+  })();
+  let n = 3;
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.id = 'addExOverlay';
+  overlay.innerHTML = `<div class="confirm-box" style="max-height:88vh;overflow:auto;">
+    <p class="confirm-msg" style="margin-bottom:4px;">➕ Aggiungi esercizio</p>
+    <p class="field-hint" style="text-align:center;margin:0 0 12px;">Vale solo per questa seduta.</p>
+    <div class="field" style="margin-bottom:12px;"><label>Nome (scegli dall'elenco o scrivi il tuo)</label>
+      <input type="text" id="addExNome" list="addExLista" maxlength="60" autocomplete="off" placeholder="Es. Alzate laterali ai cavi">
+      <datalist id="addExLista">${Object.values(noti).map(e=>`<option value="${escHtml(e.nome)}"></option>`).join('')}</datalist>
+    </div>
+    <div class="field" style="margin-bottom:12px;"><label>Numero di serie</label>
+      <div class="peso-stepper" style="justify-content:center;gap:14px;">
+        <button type="button" class="stepper-btn" id="addExMeno" style="width:44px;height:44px;font-size:22px;">–</button>
+        <span id="addExN" style="font-size:26px;font-weight:900;min-width:40px;text-align:center;">${n}</span>
+        <button type="button" class="stepper-btn" id="addExPiu" style="width:44px;height:44px;font-size:22px;">+</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Ripetizioni</label><input type="text" id="addExRip" maxlength="12" value="8-12" style="text-align:center;"></div>
+      <div class="field"><label>Recupero</label>
+        <select id="addExRec">${[30,45,60,90,120,150,180,240].map(v=>`<option value="${v}" ${v===90?'selected':''}>${fmtRecupero(v)}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px;"><label>Posizione</label>
+      <select id="addExPos">${posizioni.map(o=>`<option value="${o.pos}" ${o.pos===selPos?'selected':''}>${escHtml(o.label)}</option>`).join('')}</select>
+    </div>
+    <div id="addExErr" class="field-hint" style="color:var(--danger);text-align:center;"></div>
+    <div class="confirm-actions" style="flex-wrap:wrap;">
+      <button class="btn secondary" id="addExAnnulla">Annulla</button>
+      <button class="btn" id="addExOk">Aggiungi</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  const $ = id=> overlay.querySelector(id);
+  const nomeIn = $('#addExNome');
+  // Scegliendo un esercizio noto si precompilano serie, ripetizioni e recupero della scheda.
+  nomeIn.addEventListener('input', ()=>{
+    const e = noti[nomeIn.value.trim().toLowerCase()];
+    if(e){ n = serieEsercizio(e); $('#addExN').textContent = n; $('#addExRip').value = ripEsercizio(e); $('#addExRec').value = String(recuperoEsercizio(e)); 
+      if(!Array.from($('#addExRec').options).some(o=>o.value===String(recuperoEsercizio(e)))){ const o = document.createElement('option'); o.value = String(recuperoEsercizio(e)); o.textContent = fmtRecupero(recuperoEsercizio(e)); $('#addExRec').appendChild(o); $('#addExRec').value = o.value; } }
+  });
+  $('#addExMeno').onclick = ()=>{ if(n>1){ n--; $('#addExN').textContent = n; } };
+  $('#addExPiu').onclick = ()=>{ if(n<12){ n++; $('#addExN').textContent = n; } };
+  const chiudi = ()=> overlay.remove();
+  $('#addExAnnulla').onclick = chiudi;
+  overlay.addEventListener('click', ev=>{ if(ev.target===overlay) chiudi(); });
+  $('#addExOk').onclick = ()=>{
+    const nome = nomeIn.value.trim();
+    if(!nome){ $('#addExErr').textContent = 'Scrivi o scegli il nome dell\'esercizio.'; return; }
+    const rip = $('#addExRip').value.trim() || '8-12';
+    const rec = parseInt($('#addExRec').value,10) || 90;
+    const pos = parseInt($('#addExPos').value,10);
+    chiudi();
+    inserisciEsercizio(nome, n, rip, rec, pos, noti[nome.toLowerCase()]);
+  };
+}
+function inserisciEsercizio(nome, serie, rip, recupero, pos, base){
+  const def = base ? Object.assign({}, base) : {
+    nome, note:'Esercizio aggiunto da te durante la seduta.', alternativa:'—', video:'', immagine:'',
+    guida:{ muscoli:'—', esecuzione:'Esercizio aggiunto da te durante la seduta.', errori:'—' }
+  };
+  // Pensato per esercizi singoli: niente superset/jump e niente tecnica preimpostata.
+  delete def.superset; delete def.jump; delete def.tecnicaUltima;
+  def.serieTarget = serie; def.ripTarget = rip; def.recupero = recupero; def.aggiunto = true;
+  const draft = nuovoDraftEsercizio(def);
+  // Le serie scelte qui contano, anche se in passato avevi personalizzato questo esercizio.
+  draft.sets = Array.from({length:serie}, ()=>({peso:'', rip:'', fatta:false, rpe:null, saltata:false, tecnica:''}));
+  sessionDraft.defs.splice(pos, 0, def);
+  sessionDraft.esercizi.splice(pos, 0, draft);
+  hapticaMedia();
+  renderSessionePreservandoScroll();
+  scrollAEsercizio(pos);
+}
+function scrollAEsercizio(ei){
+  setTimeout(()=>{ const el = document.getElementById('excard-'+ei); if(el) el.scrollIntoView({behavior:'smooth', block:'center'}); }, 60);
+}
+function spostaEsercizio(ei, dir){
+  const un = unitaSessione(schedaSessione());
+  const ui = un.findIndex(u=>u.indici.includes(ei));
+  const uj = ui + dir;
+  if(ui<0 || uj<0 || uj>=un.length) return;
+  const tgt = un[uj].indici;
+  let pos = dir<0 ? Math.min.apply(null,tgt) : Math.max.apply(null,tgt)+1;
+  const def = sessionDraft.defs.splice(ei,1)[0];
+  const ex = sessionDraft.esercizi.splice(ei,1)[0];
+  if(ei<pos) pos--;
+  sessionDraft.defs.splice(pos,0,def);
+  sessionDraft.esercizi.splice(pos,0,ex);
+  hapticaLieve();
+  renderSessionePreservandoScroll();
+  scrollAEsercizio(pos);
+}
+async function rimuoviEsercizioAggiunto(ei){
+  const ex = sessionDraft.esercizi[ei];
+  const fatte = ex.sets.some(x=>x.fatta);
+  if(!(await mostraConferma(fatte ? 'Questo esercizio ha serie già segnate: rimuoverlo le cancella. Procedere?' : 'Rimuovere questo esercizio dalla seduta?'))) return;
+  sessionDraft.defs.splice(ei,1);
+  sessionDraft.esercizi.splice(ei,1);
+  renderSessionePreservandoScroll();
+}
+
 function unilateraleEsercizio(e){
   const v = unilateraliPersonalizzati[e.nome];
   return typeof v==='boolean' ? v : !!e.unilaterale;
@@ -5227,7 +5376,7 @@ function salvaUnilateraliPersonalizzati(){
   attendiScrittura(db.collection('users').doc(currentUid).set({ unilateraliPersonalizzati }, { mergeFields:['unilateraliPersonalizzati'] }));
 }
 function toggleUnilaterale(ei){
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const e = scheda.esercizi[ei];
   const draft = sessionDraft.esercizi[ei];
   draft.unilaterale = !draft.unilaterale;
@@ -5343,6 +5492,7 @@ function avviaSessione(schedaId){
     db.collection('users').doc(currentUid).set({ blocchiIniziati }, { merge:true }).catch(()=>{});
   }
   sessionDraft = {
+    defs: scheda.esercizi.slice(),
     schedaId,
     schedaNome: scheda.nome,
     iniziata: new Date().toISOString(),
@@ -5414,7 +5564,7 @@ function escapeAttr(s){
 
 function renderAlternativeSheetBody(){
   const ei = alternativaSheetEi;
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const e = scheda.esercizi[ei];
   const draft = sessionDraft.esercizi[ei];
   const salvate = alternativeSalvate[e.nome] || [];
@@ -5467,7 +5617,7 @@ function tornaAOriginaleSheet(){
 
 async function aggiungiNuovaAlternativa(){
   const ei = alternativaSheetEi;
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const e = scheda.esercizi[ei];
   const testo = await mostraModificaAlternativaOverlay(e.nome, '');
   if(testo===null) return;
@@ -5479,7 +5629,7 @@ async function aggiungiNuovaAlternativa(){
 
 function eliminaAlternativaSalvata(nome){
   const ei = alternativaSheetEi;
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const e = scheda.esercizi[ei];
   const draft = sessionDraft.esercizi[ei];
   if(alternativeSalvate[e.nome]){
@@ -5510,7 +5660,7 @@ function aggiungiSet(ei){
    quelle previste dalla scheda (si >= serieTarget): le serie "ufficiali"
    della scheda non si tolgono da qui, al massimo si saltano (vedi sotto). */
 function rimuoviSet(ei, si){
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const target = serieEsercizio(scheda.esercizi[ei]);
   if(si < target) return;
   sessionDraft.esercizi[ei].sets.splice(si, 1);
@@ -5537,7 +5687,7 @@ function annullaSaltoSet(ei, si){
    l'esercizio risulta completato e il successivo si sblocca. Le serie già
    segnate come fatte restano intatte. */
 async function saltaEsercizioConferma(ei){
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const nome = sessionDraft.esercizi[ei].nome || scheda.esercizi[ei].nome;
   if(!(await mostraConferma(`Saltare del tutto "${nome}"? Le serie non ancora segnate verranno marcate come saltate.`, 'danger'))) return;
   sessionDraft.esercizi[ei].sets.forEach(s=>{ if(!s.fatta) s.saltata = true; });
@@ -5550,7 +5700,7 @@ async function saltaEsercizioConferma(ei){
    serie per serie, come sempre. */
 function usaValoriUltimaVolta(ei){
   const draft = sessionDraft.esercizi[ei];
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const nomeAttivo = draft.nome || scheda.esercizi[ei].nome;
   const ultima = datiUltimaSessione(nomeAttivo);
   if(!ultima) return;
@@ -5611,7 +5761,7 @@ function unitaCompletata(u){
 }
 
 function refreshLocks(){
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const unita = unitaSessione(scheda);
   const nuovi = sessionDraft.esercizi.map((_,ei)=>{
     const uIdx = unita.findIndex(u=>u.indici.includes(ei));
@@ -5633,7 +5783,7 @@ function refreshLocks(){
    completati e la barra di avanzamento. */
 function aggiornaProgressoSessione(){
   if(!sessionDraft) return;
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   if(!scheda) return;
   const tot = scheda.esercizi.length;
   const ok = scheda.esercizi.reduce((n,_,i)=> n + (esercizioCompletato(i) ? 1 : 0), 0);
@@ -5824,7 +5974,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
   const nomeAttivo = draft.nome || e.nome;
   const suggerimento = suggerimentoProgressione(nomeAttivo, e.ripTarget);
 
-  let html = `<div class="exercise-card">`;
+  let html = `<div class="exercise-card" id="excard-${ei}">`;
   if(supersetTag){
     html += `<div class="superset-tag">${supersetTag==='Jump set'?'🔁':'🔗'} ${supersetTag}</div>`;
   }
@@ -5835,6 +5985,17 @@ function renderEsercizioCard(scheda, ei, supersetTag){
         <div class="ex-meta" style="margin-bottom:0;"><button type="button" class="rec-chip${serieRipPersonalizzate[e.nome]?' custom':''}" onclick="apriModificaSerie(${ei})" aria-label="Modifica serie e ripetizioni">${serieEsercizio(e)} x ${escHtml(ripEsercizio(e))} ✎</button> <button type="button" class="rec-chip${recuperiPersonalizzati[e.nome]!=null?' custom':''}" onclick="apriModificaRecupero(${ei})" aria-label="Modifica il tempo di recupero">⏱ ${fmtRecupero(recuperoEsercizio(e))} ✎</button> <button type="button" class="rec-chip${uni?' custom':''}" onclick="toggleUnilaterale(${ei})" aria-label="Esegui un lato alla volta">↔ Unilaterale${uni?' ✓':''}</button></div>
       </div>
     </div>`;
+  {
+    const nUn = unitaSessione(scheda).length;
+    const uIdx = unitaSessione(scheda).findIndex(u=>u.indici.includes(ei));
+    const mobile = !e.superset;
+    html += `<div class="ex-tools">
+      ${mobile ? `<button type="button" class="set-mini-btn" ${uIdx<=0?'disabled':''} onclick="spostaEsercizio(${ei},-1)" aria-label="Sposta su">▲ Su</button>
+      <button type="button" class="set-mini-btn" ${uIdx>=nUn-1?'disabled':''} onclick="spostaEsercizio(${ei},1)" aria-label="Sposta giù">▼ Giù</button>` : ''}
+      <button type="button" class="set-mini-btn" onclick="apriAggiungiEsercizio(${ei})">➕ Aggiungi sotto</button>
+      ${draft.aggiunto ? `<button type="button" class="set-mini-btn" onclick="rimuoviEsercizioAggiunto(${ei})">🗑 Rimuovi</button>` : ''}
+    </div>`;
+  }
   const ultimaVolta = datiUltimaSessione(nomeAttivo);
   if(ultimaVolta){
     const dataLbl = new Date(ultimaVolta.data).toLocaleDateString('it-IT',{day:'numeric',month:'short'});
@@ -5931,7 +6092,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
 }
 
 function renderSessione(){
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   pageTitle.textContent = scheda.nome;
 
   if(!sessionTimerHandle){
@@ -5992,6 +6153,7 @@ function renderSessione(){
     }
   });
 
+  html += `<button type="button" class="btn secondary" style="width:100%;margin-top:6px;" onclick="apriAggiungiEsercizio()">➕ Aggiungi un esercizio</button>`;
   html += `<div class="ex-attrib">Immagini illustrative degli esercizi: <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a> (CC BY-SA)</div>`;
   html += `<div style="height:120px;"></div>`;
   // Il contatore "X di Y esercizi completati" ora sta attaccato al bottone
@@ -6038,7 +6200,7 @@ function adjustPeso(ei, si, delta, campo){
    liberi, "Ripristina" torna al valore della scheda. Il valore resta salvato
    per le sedute future (recuperiPersonalizzati sul profilo). */
 function apriModificaRecupero(ei){
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const e = scheda.esercizi[ei];
   const attuale = recuperoEsercizio(e);
   const presets = [30,45,60,75,90,120,150,180,240];
@@ -6080,7 +6242,7 @@ function apriModificaRecupero(ei){
 }
 
 function apriModificaSerie(ei){
-  const scheda = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const scheda = schedaSessione();
   const e = scheda.esercizi[ei];
   let n = serieEsercizio(e);
   const overlay = document.createElement('div');
@@ -11349,7 +11511,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-03-drop-v14';
+const BUILD_ID = '2026-11-03-addex-v15';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
