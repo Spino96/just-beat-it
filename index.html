@@ -3503,6 +3503,7 @@ async function checkProfilo(){
   recuperiPersonalizzati = data.recuperiPersonalizzati || {};
   serieRipPersonalizzate = data.serieRipPersonalizzate || {};
   unilateraliPersonalizzati = data.unilateraliPersonalizzati || {};
+  layoutSchede = data.layoutSchede || {};
   // Normalizza il formato: versioni precedenti salvavano una singola stringa
   // per esercizio, ora è un array (più alternative possibili tra cui scegliere).
   const raw = data.alternativeSalvate || {};
@@ -3662,6 +3663,7 @@ async function registrati(){
     recuperiPersonalizzati = {};
     serieRipPersonalizzate = {};
     unilateraliPersonalizzati = {};
+    layoutSchede = {};
     alternativeSalvate = {};
     document.getElementById('registerScreen').style.display = 'none';
     await avviaApp();
@@ -5231,6 +5233,59 @@ function schedaSessione(){
   if(!sessionDraft.defs) sessionDraft.defs = base.esercizi.slice();
   return Object.assign({}, base, { esercizi: sessionDraft.defs });
 }
+let layoutSchede = {};
+function salvaLayoutSchede(){
+  attendiScrittura(db.collection('users').doc(currentUid).set({ layoutSchede }, { mergeFields:['layoutSchede'] })).catch(()=>{});
+}
+function creaDefAggiunto(nome, serie, rip, recupero, base){
+  const def = base ? Object.assign({}, base) : {
+    nome, note:'Esercizio aggiunto da te.', alternativa:'—', video:'', immagine:'',
+    guida:{ muscoli:'—', esecuzione:'Esercizio aggiunto da te.', errori:'—' }
+  };
+  delete def.superset; delete def.jump; delete def.tecnicaUltima;
+  def.nome = nome; def.serieTarget = serie; def.ripTarget = rip; def.recupero = recupero; def.aggiunto = true;
+  return def;
+}
+/* Ordine e esercizi aggiunti restano salvati per la scheda (sul tuo profilo)
+   e valgono per tutte le sedute future, finché non li cambi o li ripristini. */
+function layoutDaDefs(defs){
+  return defs.map(d=> d.aggiunto
+    ? { nome:d.nome, aggiunto:true, serieTarget:d.serieTarget, ripTarget:d.ripTarget, recupero:d.recupero }
+    : { nome:d.nome });
+}
+function memorizzaLayoutSeduta(){
+  const base = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  const lay = layoutDaDefs(sessionDraft.defs);
+  const identico = lay.length===base.esercizi.length && lay.every((x,i)=> !x.aggiunto && x.nome===base.esercizi[i].nome);
+  if(identico) delete layoutSchede[base.id]; else layoutSchede[base.id] = lay;
+  salvaLayoutSchede();
+}
+function defsConLayout(base){
+  const lay = layoutSchede[base.id];
+  if(!Array.isArray(lay) || !lay.length) return base.esercizi.slice();
+  const noti = eserciziNoti();
+  const usati = new Set();
+  const out = [];
+  lay.forEach(x=>{
+    if(x.aggiunto){ out.push(creaDefAggiunto(x.nome, x.serieTarget||3, x.ripTarget||'8-12', x.recupero||90, noti[String(x.nome).trim().toLowerCase()])); return; }
+    const idx = base.esercizi.findIndex((e,i)=> e.nome===x.nome && !usati.has(i));
+    if(idx>-1){ usati.add(idx); out.push(base.esercizi[idx]); }
+  });
+  base.esercizi.forEach((e,i)=>{ if(!usati.has(i)) out.push(e); }); // esercizi nuovi della scheda: in fondo
+  return out;
+}
+function ripristinaOrdineScheda(){
+  const base = SCHEDE.find(s=>s.id===sessionDraft.schedaId);
+  mostraConferma('Ripristinare l\'ordine originale della scheda? Gli esercizi che hai aggiunto verranno tolti da questa e dalle prossime sedute.').then(ok=>{
+    if(!ok) return;
+    const vecchi = sessionDraft.esercizi;
+    const nuovi = base.esercizi.map(d=> vecchi.find(x=>x.nome===d.nome && !x.aggiunto) || nuovoDraftEsercizio(d));
+    sessionDraft.defs = base.esercizi.slice();
+    sessionDraft.esercizi = nuovi;
+    delete layoutSchede[base.id]; salvaLayoutSchede();
+    hapticaLieve(); renderSessionePreservandoScroll();
+  });
+}
 function nuovoDraftEsercizio(def){
   const n = serieEsercizio(def);
   return {
@@ -5256,11 +5311,14 @@ function posizioniInserimento(){
   });
   return out;
 }
-function apriAggiungiEsercizio(dopoEi){
+function apriAggiungiEsercizio(dopoEi, modo){
   if(document.getElementById('addExOverlay')) return;
+  const storico = modo==='storico';
   const noti = eserciziNoti();
-  const posizioni = posizioniInserimento();
-  let selPos = (dopoEi==null) ? posizioni[posizioni.length-1].pos : (()=>{
+  const posizioni = storico
+    ? [{pos:0,label:"All'inizio (prima di tutto)"}].concat(modificaSessioneDraft.esercizi.map((e,i)=>({pos:i+1,label:'Dopo: '+e.nome})))
+    : posizioniInserimento();
+  let selPos = storico ? ((dopoEi==null) ? modificaSessioneDraft.esercizi.length : dopoEi+1) : (dopoEi==null) ? posizioni[posizioni.length-1].pos : (()=>{
     // dopo l'esercizio indicato (o dopo la fine del suo gruppo)
     let i = dopoEi; const d = sessionDraft.defs;
     while(d[i] && d[i].superset && d[i+1] && d[i+1].superset===d[i].superset) i++;
@@ -5272,7 +5330,7 @@ function apriAggiungiEsercizio(dopoEi){
   overlay.id = 'addExOverlay';
   overlay.innerHTML = `<div class="confirm-box" style="max-height:88vh;overflow:auto;">
     <p class="confirm-msg" style="margin-bottom:4px;">➕ Aggiungi esercizio</p>
-    <p class="field-hint" style="text-align:center;margin:0 0 12px;">Vale solo per questa seduta.</p>
+    <p class="field-hint" style="text-align:center;margin:0 0 12px;">${storico ? 'Lo aggiungi a questa seduta salvata.' : 'Resta salvato nella scheda anche per le prossime sedute.'}</p>
     <div class="field" style="margin-bottom:12px;"><label>Nome (scegli dall'elenco o scrivi il tuo)</label>
       <input type="text" id="addExNome" list="addExLista" maxlength="60" autocomplete="off" placeholder="Es. Alzate laterali ai cavi">
       <datalist id="addExLista">${Object.values(noti).map(e=>`<option value="${escHtml(e.nome)}"></option>`).join('')}</datalist>
@@ -5286,7 +5344,7 @@ function apriAggiungiEsercizio(dopoEi){
     </div>
     <div class="grid2">
       <div class="field"><label>Ripetizioni</label><input type="text" id="addExRip" maxlength="12" value="8-12" style="text-align:center;"></div>
-      <div class="field"><label>Recupero</label>
+      <div class="field" style="${storico?'display:none;':''}"><label>Recupero</label>
         <select id="addExRec">${[30,45,60,90,120,150,180,240].map(v=>`<option value="${v}" ${v===90?'selected':''}>${fmtRecupero(v)}</option>`).join('')}</select>
       </div>
     </div>
@@ -5320,22 +5378,18 @@ function apriAggiungiEsercizio(dopoEi){
     const rec = parseInt($('#addExRec').value,10) || 90;
     const pos = parseInt($('#addExPos').value,10);
     chiudi();
-    inserisciEsercizio(nome, n, rip, rec, pos, noti[nome.toLowerCase()]);
+    if(storico) inserisciEsercizioStorico(nome, n, pos, noti[nome.toLowerCase()]);
+    else inserisciEsercizio(nome, n, rip, rec, pos, noti[nome.toLowerCase()]);
   };
 }
 function inserisciEsercizio(nome, serie, rip, recupero, pos, base){
-  const def = base ? Object.assign({}, base) : {
-    nome, note:'Esercizio aggiunto da te durante la seduta.', alternativa:'—', video:'', immagine:'',
-    guida:{ muscoli:'—', esecuzione:'Esercizio aggiunto da te durante la seduta.', errori:'—' }
-  };
-  // Pensato per esercizi singoli: niente superset/jump e niente tecnica preimpostata.
-  delete def.superset; delete def.jump; delete def.tecnicaUltima;
-  def.serieTarget = serie; def.ripTarget = rip; def.recupero = recupero; def.aggiunto = true;
+  const def = creaDefAggiunto(nome, serie, rip, recupero, base);
   const draft = nuovoDraftEsercizio(def);
   // Le serie scelte qui contano, anche se in passato avevi personalizzato questo esercizio.
   draft.sets = Array.from({length:serie}, ()=>({peso:'', rip:'', fatta:false, rpe:null, saltata:false, tecnica:''}));
   sessionDraft.defs.splice(pos, 0, def);
   sessionDraft.esercizi.splice(pos, 0, draft);
+  memorizzaLayoutSeduta();
   hapticaMedia();
   renderSessionePreservandoScroll();
   scrollAEsercizio(pos);
@@ -5355,6 +5409,7 @@ function spostaEsercizio(ei, dir){
   if(ei<pos) pos--;
   sessionDraft.defs.splice(pos,0,def);
   sessionDraft.esercizi.splice(pos,0,ex);
+  memorizzaLayoutSeduta();
   hapticaLieve();
   renderSessionePreservandoScroll();
   scrollAEsercizio(pos);
@@ -5365,6 +5420,7 @@ async function rimuoviEsercizioAggiunto(ei){
   if(!(await mostraConferma(fatte ? 'Questo esercizio ha serie già segnate: rimuoverlo le cancella. Procedere?' : 'Rimuovere questo esercizio dalla seduta?'))) return;
   sessionDraft.defs.splice(ei,1);
   sessionDraft.esercizi.splice(ei,1);
+  memorizzaLayoutSeduta();
   renderSessionePreservandoScroll();
 }
 
@@ -5491,16 +5547,18 @@ function avviaSessione(schedaId){
     blocchiIniziati[schedaId] = new Date().toISOString();
     db.collection('users').doc(currentUid).set({ blocchiIniziati }, { merge:true }).catch(()=>{});
   }
+  const defsSeduta = defsConLayout(scheda);
   sessionDraft = {
-    defs: scheda.esercizi.slice(),
+    defs: defsSeduta,
     schedaId,
     schedaNome: scheda.nome,
     iniziata: new Date().toISOString(),
     warmDone: scheda.riscaldamento.map(()=>false),
-    esercizi: scheda.esercizi.map(e=>{
+    esercizi: defsSeduta.map(e=>{
       const n = serieEsercizio(e);
       return {
         nome: e.nome,
+        aggiunto: !!e.aggiunto,
         usaAlternativa: false,
         noteUtente: '',
         unilaterale: unilateraleEsercizio(e),
@@ -6154,6 +6212,7 @@ function renderSessione(){
   });
 
   html += `<button type="button" class="btn secondary" style="width:100%;margin-top:6px;" onclick="apriAggiungiEsercizio()">➕ Aggiungi un esercizio</button>`;
+  if(layoutSchede[sessionDraft.schedaId]) html += `<button type="button" class="btn small secondary" style="width:100%;margin-top:8px;" onclick="ripristinaOrdineScheda()">↺ Ripristina ordine originale della scheda</button>`;
   html += `<div class="ex-attrib">Immagini illustrative degli esercizi: <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a> (CC BY-SA)</div>`;
   html += `<div style="height:120px;"></div>`;
   // Il contatore "X di Y esercizi completati" ora sta attaccato al bottone
@@ -7449,8 +7508,14 @@ function renderSessioneModificaHTML(){
     <div class="field"><label>Data</label><input type="date" id="smData" value="${new Date(s.data).toISOString().slice(0,10)}"></div>
   </div>`;
   modificaSessioneDraft.esercizi.forEach((e,ei)=>{
-    html += `<div class="exercise-card">
+    html += `<div class="exercise-card" id="mexcard-${ei}">
       <h3>${e.nome}</h3>
+      <div class="ex-tools">
+        <button type="button" class="set-mini-btn" ${ei===0?'disabled':''} onclick="spostaEsercizioStorico(${ei},-1)">▲ Su</button>
+        <button type="button" class="set-mini-btn" ${ei>=modificaSessioneDraft.esercizi.length-1?'disabled':''} onclick="spostaEsercizioStorico(${ei},1)">▼ Giù</button>
+        <button type="button" class="set-mini-btn" onclick="apriAggiungiEsercizio(${ei},'storico')">➕ Aggiungi sotto</button>
+        <button type="button" class="set-mini-btn" onclick="rimuoviEsercizioStorico(${ei})">🗑 Rimuovi</button>
+      </div>
       <p class="rpe-legend">RPE per ogni serie: 6 = leggero · 8 = a 2 rip dal cedimento · 10 = cedimento totale</p>`;
     e.sets.forEach((set,si)=>{
       html += `<div class="set-row">
@@ -7476,10 +7541,35 @@ function renderSessioneModificaHTML(){
     html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio" oninput="updateNotaEsercizioModifica(${ei}, this.value)">${e.noteUtente||''}</textarea>`;
     html += `</div>`;
   });
+  html += `<button type="button" class="btn secondary" style="width:100%;margin-bottom:10px;" onclick="apriAggiungiEsercizio(null,'storico')">➕ Aggiungi un esercizio</button>`;
   html += `<button class="btn" id="saveSessioneModBtn" onclick="salvaModificaSessione('${s.id}')">Salva modifiche</button>`;
   view.innerHTML = html;
 }
 
+function ridisegnaModifica(){
+  const y = window.scrollY; renderSessioneModificaHTML(); window.scrollTo(0, y);
+}
+function inserisciEsercizioStorico(nome, serie, pos, base){
+  modificaSessioneDraft.esercizi.splice(pos, 0, {
+    nome, noteUtente:'', aggiunto:true, unilaterale: base ? unilateraleEsercizio(base) : false,
+    sets: Array.from({length:serie}, ()=>({peso:'', rip:'', fatta:false, rpe:null}))
+  });
+  hapticaMedia(); ridisegnaModifica();
+  setTimeout(()=>{ const el = document.getElementById('mexcard-'+pos); if(el) el.scrollIntoView({behavior:'smooth', block:'center'}); }, 60);
+}
+function spostaEsercizioStorico(ei, dir){
+  const arr = modificaSessioneDraft.esercizi; const j = ei+dir;
+  if(j<0 || j>=arr.length) return;
+  const [x] = arr.splice(ei,1); arr.splice(j,0,x);
+  hapticaLieve(); ridisegnaModifica();
+  setTimeout(()=>{ const el = document.getElementById('mexcard-'+j); if(el) el.scrollIntoView({behavior:'smooth', block:'center'}); }, 60);
+}
+async function rimuoviEsercizioStorico(ei){
+  const e = modificaSessioneDraft.esercizi[ei];
+  if(!(await mostraConferma(`Togliere "${e.nome}" da questa seduta? Le sue serie verranno cancellate quando salvi.`))) return;
+  modificaSessioneDraft.esercizi.splice(ei,1);
+  ridisegnaModifica();
+}
 function aggiungiSetModifica(ei){
   modificaSessioneDraft.esercizi[ei].sets.push({peso:'', rip:'', fatta:false, rpe:null});
   const scrollY = window.scrollY;
@@ -11511,7 +11601,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-03-addex-v15';
+const BUILD_ID = '2026-11-03-addex-v16';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
