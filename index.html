@@ -438,6 +438,23 @@
     font-size:13px;color:var(--text-dim);background:var(--panel-2);
     border-radius:12px;padding:12px 14px;margin-top:10px;line-height:1.55;font-weight:500;
   }
+  .carico-partenza{font-size:13px;color:var(--text-dim);margin:2px 0 10px;font-weight:600;}
+  .carico-partenza b{color:var(--accent);}
+  .scheda-btn{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:12px;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:14px;
+    padding:13px 14px;font-size:14px;font-weight:800;cursor:pointer;text-align:left;font-family:inherit;}
+  .scheda-chev{color:var(--accent);transition:transform .2s;}
+  .scheda-btn[aria-expanded="true"] .scheda-chev{transform:rotate(180deg);}
+  .scheda-es{display:none;margin-top:8px;}
+  .scheda-es.open{display:block;}
+  .scheda-tools{display:flex;gap:8px;margin-bottom:8px;}
+  .scheda-sez{border:1px solid var(--border);border-radius:12px;margin-bottom:8px;background:var(--panel);overflow:hidden;}
+  .scheda-sez summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:13.5px;font-weight:800;display:flex;justify-content:space-between;align-items:center;}
+  .scheda-sez summary::-webkit-details-marker{display:none;}
+  .scheda-sez summary::after{content:'▾';color:var(--accent);transition:transform .2s;}
+  .scheda-sez[open] summary::after{transform:rotate(180deg);}
+  .scheda-sez[open] summary{border-bottom:1px solid var(--border);}
+  .scheda-txt{padding:12px 14px;font-size:13.5px;line-height:1.65;color:var(--text-dim);}
   .toggle-guide{
     background:none;border:none;color:var(--accent);font-size:13px;
     padding:8px 0 0;cursor:pointer;font-weight:800;
@@ -2627,7 +2644,7 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Lat machine unilaterale (un braccio alla volta)', serieTarget:3, ripTarget:'8-12 per braccio', recupero:150,
+        nome:'High row unilaterale Impulse (a dischi, un braccio alla volta)', serieTarget:3, ripTarget:'8-12 per braccio', recupero:150,
         unilaterale:true,
         note:'Maniglia singola: fai la serie con un braccio e poi con l\'altro, il recupero parte dopo il secondo. Parti dal lato più debole (il sinistro). Busto fermo, petto in fuori, schiena neutra. Porta il gomito verso il bacino senza tirare con la mano, fermo di mezzo secondo in allungamento. Non serve portare il braccio del tutto in alto.',
         alternativa:'—',
@@ -2865,7 +2882,7 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Low row (macchina con appoggio o manubri su panca inclinata)', serieTarget:3, ripTarget:'8-12', recupero:120,
+        nome:'Low row (macchina con appoggio al petto)', serieTarget:3, ripTarget:'8-12', recupero:120,
         note:'Petto appoggiato. In allungamento lascia le scapole andare in avanti, poi tira avvicinandole e alzando leggermente le spalle a fine corsa, con i gomiti larghi e obliqui verso l\'alto per i fasci alti del trapezio.',
         alternativa:'—',
         video:'',
@@ -2948,7 +2965,7 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Leg extension', serieTarget:2, ripTarget:'10-15', recupero:120,
+        nome:'Leg extension (Matrix)', serieTarget:2, ripTarget:'10-15', recupero:120,
         tecnicaUltima:'drop',
         note:'Schienale regolato con il ginocchio allineato al perno. Estendi completamente, scendi controllato in 2 secondi fino a un buon allungamento con fermo di mezzo secondo, senza far cadere il peso. Ultima serie: drop set.',
         alternativa:'—',
@@ -3388,9 +3405,519 @@ function ripEsercizio(e){
 function salvaSerieRipPersonalizzate(){
   attendiScrittura(db.collection('users').doc(currentUid).set({ serieRipPersonalizzate }, { mergeFields:['serieRipPersonalizzate'] }));
 }
+/* Schede dettagliate degli esercizi del Piano Massa (dal PDF del piano): chiave 'idScheda|nome minuscolo'. */
+const INFO_ESERCIZI = {
+ "massa1|panca 15° al multipower": {
+  "cp": "40 kg",
+  "impostazione": "Panca inclinata di 15° sotto il multipower (se la panca non ha tacche, usa l'inclinazione minima dello schienale). Posizionala in modo che, a braccia tese, la barra stia sopra la parte alta del petto, verso le clavicole. Regola i fermi di sicurezza appena sotto il punto più basso della discesa, così se cedi la barra si ferma senza schiacciarti. Prima di caricare impara come si sganciano e si riagganciano i ganci a rotazione.",
+  "posizione": "Sdraiato con gli occhi sotto la barra. Piedi piantati a terra, appena dietro le ginocchia, appoggiati con tutta la pianta. Presa poco più larga delle spalle (in basso gli avambracci sono verticali), pollici avvolti, polsi dritti sopra gli avambracci. Porta le scapole indietro e in basso, come se volessi metterle nelle tasche posteriori dei pantaloni, e tienile così per tutta la serie. Glutei e testa restano sulla panca, arco lombare naturale e leggero. Sgancia ruotando i polsi e porta la barra sopra il petto a braccia tese.",
+  "impugnatore": "Impugnatore: barra del multipower. Presa: prona (palmi in avanti), poco più larga delle spalle: in basso gli avambracci sono verticali. La barra poggia sul palmo basso, in linea con l'avambraccio, non sulle dita. Pollici avvolti attorno alla barra (mai presa a falce). Polsi dritti, stringi forte la barra per tenerli fermi.",
+  "esecuzione": "Scendi in 1-2 secondi con i gomiti a 45-60° dal busto (non aperti a 90°), fino a sfiorare la parte alta del petto. Fermo di mezzo secondo senza rilassarti. Spingi in modo esplosivo, anche se la barra va lenta, estendendo i gomiti quasi del tutto senza bloccarli. Ripeti tenendo sempre la tensione, senza rimbalzare.",
+  "respirazione": "Inspira in discesa e trattieni un po' il fiato nel punto basso, espira nella parte più dura della salita.",
+  "errori": "Glutei che si staccano dalla panca. Rimbalzo sul petto. Gomiti troppo aperti. Polsi piegati all'indietro. Scapole che si rilassano. Testa che si solleva.",
+  "carico": "Lascia 1 ripetizione in riserva: ferma la serie quando la successiva uscirebbe con tecnica sporca. Carico di partenza 40 kg (ultima volta 45 x 5, 40 x 6, 40 x 5, 35 x 7). Se arrivi a 8 su tutte le serie, sali del 2,5-5%.",
+  "reg": [
+   "Inclinazione",
+   "Posizione panca",
+   "Altezza fermi"
+  ]
+ },
+ "massa1|pec deck": {
+  "cp": "20 kg",
+  "impostazione": "Regola il sedile in modo che le maniglie (o i cuscinetti per gli avambracci) siano a metà petto, con i gomiti all'altezza delle spalle o appena sotto. Regola il limitatore di partenza in modo che a braccia aperte le spalle siano in buon allungamento ma i gomiti non vadano dietro la linea del busto. Schienale ben appoggiato.",
+  "posizione": "Petto in fuori, schiena e testa appoggiate, scapole addotte e depresse come nella panca. Mani sulle maniglie con i polsi dritti, gomiti leggermente piegati (circa 10-20°) e fissi. Parti con le braccia aperte, in allungamento controllato.",
+  "impugnatore": "Impugnatore: maniglie verticali, oppure cuscinetti per gli avambracci se la macchina li ha. Presa: neutra sulle maniglie, mani a metà petto, polsi dritti, pollici avvolti. Con i cuscinetti, gli avambracci poggiano interi e le mani restano rilassate. Spingi con i gomiti, non con le mani.",
+  "esecuzione": "Fermo di mezzo secondo in apertura. Chiudi in modo fluido, come se abbracciassi un albero, fino a incontrare le braccia davanti al petto senza battere i pesi e senza spingere le spalle in avanti. Torna in apertura in 2 secondi mantenendo la tensione.",
+  "respirazione": "Espira in chiusura, inspira in apertura.",
+  "errori": "Spalle che salgono verso le orecchie. Gomiti troppo bassi o troppo indietro. Schiena che si stacca dallo schienale. Rimbalzo in chiusura. Carico troppo alto che costringe allo slancio.",
+  "carico": "A cedimento tecnico. Carico di partenza 20 kg (ultima volta 25 x 9, 20 x 12, 20 x 9). Sali quando fai 15 su tutte le serie.",
+  "reg": [
+   "Sedile",
+   "Limitatore partenza"
+  ]
+ },
+ "massa1|high row unilaterale impulse (a dischi, un braccio alla volta)": {
+  "cp": "da trovare",
+  "impostazione": "Macchina a dischi con due leve indipendenti che salgono in diagonale sopra la testa. Il carico si mette sui perni dei dischi dello stesso lato: carica un solo lato alla volta e ricordati di segnare il peso del singolo braccio. Regola il sedile in modo che, a braccio teso, la maniglia sia poco sopra l'altezza della spalla. Regola il cuscino toracico (il perno giallo) in modo che il petto sia appoggiato senza schiacciarti e il braccio si allunghi del tutto. Piedi sulla pedana. Siediti in modo che il perno della leva sia all'altezza della spalla.",
+  "posizione": "Siediti con il petto contro il cuscino e il bacino ben indietro nel sedile. Piedi sulla pedana, schiena neutra. La mano libera si tiene al cuscino o alla struttura. Afferra la maniglia in alto con il braccio disteso in avanti e in alto, scapola lasciata allungare in avanti senza far salire la spalla verso l'orecchio. Inizia sempre dal lato sinistro, che è quello più indietro.",
+  "impugnatore": "Impugnatore: la maniglia fissa in cima alla leva (corta, con una curva). Presa: neutra o semi-neutra, con il palmo verso l'interno. Pollice avvolto, polso dritto. Tieni la maniglia con le dita come un gancio senza stringere troppo: pensa al gomito che tira. Le maniglie basse sul lato della macchina sono per altri esercizi: non usarle qui. La mano libera sta sul cuscino.",
+  "esecuzione": "Parti abbassando la scapola, poi tira il gomito verso il basso e indietro, verso il bacino e il fianco: pensa al gomito, non alla mano. Il percorso è diagonale, dall'alto in basso. Fermati quando il gomito è sulla linea del busto o poco oltre, senza staccare il petto dal cuscino. Risali in 2 secondi fino a un fermo di mezzo secondo in allungamento, con la scapola che si allunga in avanti.",
+  "respirazione": "Espira tirando, inspira risalendo.",
+  "errori": "Staccare il petto dal cuscino per prendere slancio. Spalla che sale verso l'orecchio. Tirare con bicipite e avambraccio. Portare il gomito troppo indietro inarcando la schiena. Ruotare il busto per aiutarti.",
+  "carico": "Il recupero parte dopo aver fatto entrambi i lati. Carico da trovare con 1-2 serie di prova: scegli un peso con cui fai 8-12 ripetizioni pulite e segnalo nell'app. Su entrambi i lati fai le stesse ripetizioni del lato più debole.",
+  "reg": [
+   "Sedile",
+   "Cuscino petto",
+   "Limitatore partenza"
+  ]
+ },
+ "massa1|lento avanti al multipower": {
+  "cp": "20 kg",
+  "impostazione": "Panca regolata a 75-80° (quasi verticale) sotto il multipower, posizionata in modo che la barra scenda leggermente davanti al viso e non dietro la testa. Regola i fermi di sicurezza poco sotto il livello del mento.",
+  "posizione": "Schiena e glutei appoggiati, piedi a terra con le ginocchia a 90°. Presa poco più larga delle spalle: in basso gli avambracci sono verticali. Sgancia e porta la barra all'altezza della clavicola, con i gomiti davanti al busto, non troppo aperti (circa 45°). Addome contratto per non inarcare la zona lombare.",
+  "impugnatore": "Impugnatore: barra del multipower. Presa: prona, poco più larga delle spalle: in basso gli avambracci sono verticali. La barra sta sul palmo basso, in linea con l'avambraccio. Polsi dritti, mai piegati all'indietro. Pollici avvolti.",
+  "esecuzione": "Scendi in 2 secondi fino a poco sotto il mento. Fermo di mezzo secondo. Spingi in modo esplosivo lungo la verticale, senza portare la testa avanti e senza inarcare, estendendo i gomiti senza bloccarli del tutto.",
+  "respirazione": "Inspira in discesa e trattieni, espira in salita.",
+  "errori": "Inarcare la zona lombare. Staccare i glutei. Rimbalzare. Sporgere la testa in avanti. Bloccare i gomiti con forza in alto.",
+  "carico": "È un esercizio pesante: lascia 1 ripetizione in riserva, niente cedimento totale. Carico di partenza 20 kg (ultima volta 20 x 7, 15 x 8, 15 x 6). Sali quando arrivi a 10 su tutte le serie.",
+  "reg": [
+   "Inclinazione panca",
+   "Posizione panca",
+   "Altezza fermi"
+  ]
+ },
+ "massa1|rematore con supporto al petto": {
+  "cp": "30 kg",
+  "impostazione": "Regola il sedile in modo che il petto appoggi sul cuscino e le maniglie siano all'altezza dello sterno o poco sotto. Regola la distanza del cuscino in modo che a braccia estese le maniglie siano appena sotto la linea delle spalle. Piedi sul poggiapiedi o a terra.",
+  "posizione": "Petto appoggiato per tutta la serie, schiena neutra, spalle basse. Presa neutra o prona (secondo le maniglie), polsi dritti, gomiti a 45-60° dal busto. Parti con le scapole in avanti e le braccia estese.",
+  "impugnatore": "Impugnatore: maniglie della macchina. Presa: neutra (palmi uno di fronte all'altro) oppure prona, secondo le maniglie. Larghezza data dalla macchina. Polsi dritti, pollici avvolti. Le mani sono ganci: tira con i gomiti.",
+  "esecuzione": "Lascia che le scapole vadano in avanti (allungamento) e fai un fermo di mezzo secondo. Tira avvicinando le scapole e portando i gomiti indietro lungo i fianchi, senza staccare il petto. A fine corsa non serve schiacciare. Torna in allungamento in 2 secondi.",
+  "respirazione": "Espira tirando, inspira tornando.",
+  "errori": "Petto che si stacca dal cuscino. Spalle che si alzano. Tirare con i bicipiti. Fermarsi prima di sentire l'allungamento. Rimbalzo in allungamento.",
+  "carico": "Carico di partenza 30 kg (ultima volta 30 x 10, 30 x 8, 25 x 10). Sali quando fai 12 su tutte le serie.",
+  "reg": [
+   "Sedile",
+   "Distanza cuscino",
+   "Presa"
+  ]
+ },
+ "massa1|alzate laterali al cavo basso": {
+  "cp": "da trovare",
+  "impostazione": "Puleggia al minimo con maniglia singola. Mettiti di fianco al cavo, in modo che il cavo passi davanti al corpo (la maniglia è nella mano più lontana dal cavo). La tensione deve esserci già in partenza.",
+  "posizione": "Piedi a larghezza anche, ginocchia leggermente flesse. Con la mano libera tieniti a un montante per stabilità. Gomito leggermente piegato (10-15°) e fisso, polso in linea con l'avambraccio, spalla bassa.",
+  "impugnatore": "Impugnatore: maniglia singola del cavo. Presa: neutra, con il palmo verso la coscia in partenza e il pollice avvolto. Polso in linea con l'avambraccio, mano mai più alta del gomito. Presa leggera: guida con il gomito, non con la mano.",
+  "esecuzione": "Sali leggermente davanti al fianco (circa 20-30° davanti al piano laterale) guidando con il gomito, fino all'altezza della spalla, mai oltre. Scendi in 2 secondi mantenendo la tensione. In basso fai un fermo di mezzo secondo senza lasciare che il cavo ti porti la mano al fianco in modo brusco.",
+  "respirazione": "Espira salendo, inspira scendendo.",
+  "errori": "Spalla che sale verso l'orecchio. Slancio con il busto. Gomito che si piega troppo. Mano più alta del gomito. Salire oltre l'altezza della spalla.",
+  "carico": "Carico da trovare: leggero, ma non irrisorio, scegli un peso con cui fai 10-15 ripetizioni senza slancio. Nella parte bassa, che è quella allungata, il cavo tiene più tensione dei manubri.",
+  "tecnica": "Parziali in allungamento. A cedimento tecnico continua con 4-6 ripetizioni corte, solo nella metà bassa del movimento, quella in cui il muscolo è allungato.",
+  "reg": [
+   "Altezza puleggia",
+   "Distanza dal cavo"
+  ]
+ },
+ "massa1|crunch machine": {
+  "cp": "35 kg",
+  "impostazione": "Regola il sedile in modo che il perno di rotazione della macchina sia all'altezza dell'addome. Regola cuscino e maniglie in modo che si appoggino sul petto e sulle spalle. Piedi sotto i rulli o a terra, senza spingere. Scegli un carico che permetta 10-15 ripetizioni controllate.",
+  "posizione": "Seduto con la schiena sullo schienale, addome in allungamento (schiena leggermente estesa senza inarcare), mani sulle maniglie con i gomiti piegati.",
+  "impugnatore": "Impugnatore: maniglie della macchina. Presa: salda ma senza tirare, gomiti piegati e pollici avvolti. Le mani servono solo a stabilizzare: il lavoro lo fa l'addome.",
+  "esecuzione": "Arrotonda la schiena portando le costole verso il bacino (immagina di accorciare la distanza sterno-ombelico). Fermo breve in contrazione. Risali controllato in 2 secondi fino a riallungare bene l'addome.",
+  "respirazione": "Espira forte mentre fletti, inspira risalendo.",
+  "errori": "Spingere con le gambe o tirare con le braccia. Muovere solo le anche invece della colonna. Carico troppo alto che impedisce di arrotondare. Scattare in salita.",
+  "carico": "A cedimento tecnico. Carico di partenza 35 kg (ultima volta 35 x 16, 40 x 12, 40 x 10). Sali quando fai 15 su tutte le serie.",
+  "reg": [
+   "Sedile",
+   "Cuscino"
+  ]
+ },
+ "massa2|hack squat": {
+  "cp": "40 kg",
+  "impostazione": "Schiena e glutei appoggiati, spalle sotto i cuscinetti. Piedi a metà piattaforma, a larghezza spalle, punte extraruotate di 10-20°. Sgancia le leve di sicurezza ruotandole. Ricordati di riagganciarle a fine serie. Se la macchina ha dei fermi di profondità, mettili al limite della tua mobilità.",
+  "posizione": "Ginocchia in linea con le punte dei piedi. Bacino e schiena premuti sullo schienale. Petto in fuori, sguardo avanti. Parti con le gambe quasi estese, senza bloccare le ginocchia.",
+  "impugnatore": "Impugnatore: maniglie laterali della macchina. Presa: salda, pollici avvolti, braccia rilassate: non tirare per aiutarti a spingere. Se non ci sono maniglie, appoggia le mani sulle maniglie anteriori o incrocia le braccia sul petto.",
+  "esecuzione": "Scendi in 2 secondi quanto la mobilità permette, senza staccare il bacino dallo schienale. Fermo di mezzo secondo nel punto basso. Spingi in modo esplosivo con tutto il piede (talloni e avampiede) e risali senza bloccare le ginocchia.",
+  "respirazione": "Inspira in discesa, trattieni nel punto basso, espira passato il punto più duro della salita.",
+  "errori": "Talloni che si staccano. Ginocchia che rientrano. Bacino che si stacca dallo schienale. Rimbalzo in basso. Bloccare le ginocchia in alto.",
+  "carico": "Lascia 1 ripetizione in riserva. Carico di partenza 40 kg (ultima volta 6-5-5). Quando fai 9 su tutte e 3 le serie, sali a 45 kg. Recupero pieno di 3-4 minuti.",
+  "reg": [
+   "Piedi (altezza/larghezza)",
+   "Schienale"
+  ]
+ },
+ "massa2|leg extension (matrix)": {
+  "cp": "32,5-35 kg",
+  "impostazione": "Regola lo schienale in modo che il dietro del ginocchio sia a filo del bordo del sedile e il ginocchio sia allineato all'asse di rotazione della macchina. Il cuscinetto va sul collo del piede, appena sopra la caviglia, non sulle dita. Regola il limitatore di partenza per partire con le ginocchia a circa 90° di flessione o poco più.",
+  "posizione": "Schiena appoggiata, mani sulle maniglie, bacino fermo sul sedile, punte dei piedi neutre.",
+  "impugnatore": "Impugnatore: maniglie laterali del sedile. Presa: salda per tenere fermo il bacino, pollici avvolti, polsi dritti. Non tirare con le braccia per estendere.",
+  "esecuzione": "Estendi completamente le ginocchia in modo fluido, senza scatti e senza battere i pesi. Scendi in 2 secondi fino a un buon allungamento. Fermo di mezzo secondo in basso, senza lasciare cadere il peso.",
+  "respirazione": "Espira estendendo, inspira scendendo.",
+  "errori": "Bacino che si solleva dal sedile. Scatto in estensione. Rimbalzo in basso. Lasciare cadere il peso. Iperestendere le ginocchia in alto.",
+  "carico": "Carico di partenza 32,5-35 kg (ultima volta 35 x 14, 35 x 11, 30 x 12). Sali quando fai 15 su tutte le serie.",
+  "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
+  "reg": [
+   "Schienale",
+   "Cuscinetto",
+   "Partenza"
+  ]
+ },
+ "massa2|stacco rumeno": {
+  "cp": "40 kg",
+  "impostazione": "Barra su rack o ganci all'altezza dei fianchi (se usi il multipower, regola i fermi a metà tibia). Parti dal rack, non da terra, così lavori da subito in tensione.",
+  "posizione": "Presa prona, poco più larga delle spalle (fuori dalle cosce). Piedi a larghezza anche, ginocchia leggermente flesse (circa 10-15°) e fisse. Schiena neutra, scapole basse, sguardo a un metro e mezzo davanti ai piedi.",
+  "impugnatore": "Impugnatore: barra. Presa: prona (palmi verso le cosce), poco più larga delle spalle, con le braccia tese lungo le cosce come ganci. Pollici avvolti. Se la presa cede prima dei femorali, usa i lacci: la presa mista (una prona, una supina) solo sulle serie più pesanti.",
+  "esecuzione": "Spingi il bacino indietro, come per chiudere una porta con i glutei, con la barra che scivola sulle cosce e poi sulle tibie. Scendi in 2 secondi fino a sentire il massimo allungamento dei femorali (di solito a metà tibia). Fermo di mezzo secondo. Risali spingendo il bacino in avanti fino alla posizione eretta, senza iperestendere.",
+  "respirazione": "Inspira in alto prima di scendere, trattieni in discesa, espira risalendo.",
+  "errori": "Schiena che si arrotonda. Barra lontana dalle gambe. Ginocchia che si piegano troppo (diventa uno stacco normale). Iperestendere in alto. Scendere oltre il punto in cui la schiena resta neutra.",
+  "carico": "Lascia 1 ripetizione in riserva. Carico di partenza 40 kg (ultima volta 7-6-5). Sali quando fai 10 su tutte le serie.",
+  "reg": [
+   "Altezza ganci",
+   "Presa"
+  ]
+ },
+ "massa2|leg curl seduto": {
+  "cp": "30 kg",
+  "impostazione": "Regola lo schienale in modo che il ginocchio sia allineato all'asse di rotazione. Il cuscinetto va sul tendine d'Achille, appena sopra i talloni. Il cuscino sulle cosce deve bloccarle senza schiacciarle. Impugna le maniglie. Regola il limitatore di partenza per avere un buon allungamento.",
+  "posizione": "Schiena appoggiata, bacino fermo sul sedile, punte dei piedi neutre. Parti dal massimo allungamento controllato.",
+  "impugnatore": "Impugnatore: maniglie laterali del sedile. Presa: salda, pollici avvolti, polsi dritti. Le mani tengono ferme busto e bacino.",
+  "esecuzione": "Tira i talloni verso i glutei con i femorali, senza sollevare il bacino. Fermo breve in contrazione. Torna in 2 secondi fino al massimo allungamento, con un fermo di mezzo secondo senza lasciare cadere il peso.",
+  "respirazione": "Espira tirando, inspira tornando.",
+  "errori": "Bacino che si solleva. Cosce non bloccate. Rimbalzo in allungamento. Carico troppo alto che accorcia la corsa.",
+  "carico": "Carico di partenza 30 kg (macchina a carico libero, ultima volta 11 e 9: non confrontarla con la macchina a pacco pesi). Sali quando fai 12 su entrambe le serie.",
+  "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
+  "reg": [
+   "Schienale",
+   "Cuscino cosce",
+   "Cuscinetto caviglie"
+  ]
+ },
+ "massa2|kneeling hip thrust (impulse)": {
+  "cp": "50 kg",
+  "impostazione": "Regola il cuscinetto in modo che appoggi sul bacino, sulla piega dell'anca, non sulla zona lombare. Se la macchina ha una pedana o una cintura, fissala. Ginocchia appoggiate sul cuscino e piedi bloccati. Regola la partenza in modo da scendere con il bacino fino a un buon allungamento dei glutei, senza che la schiena si arrotondi.",
+  "posizione": "Busto allungato e addome contratto, mento leggermente verso il petto, costole giù. Mani sull'appoggio o sulle maniglie. Parti con il bacino in basso, in allungamento.",
+  "impugnatore": "Impugnatore: maniglie o appoggio davanti, secondo la macchina. Presa: salda ma braccia rilassate, pollici avvolti, polsi dritti. Il movimento viene dai glutei, non dalle braccia.",
+  "esecuzione": "Spingi con i glutei, estendendo le anche fino alla posizione allineata. In alto non serve forzare la chiusura. Non inarcare la zona lombare. Scendi in 2 secondi fino al massimo allungamento e fai un fermo di mezzo secondo.",
+  "respirazione": "Espira spingendo, inspira scendendo.",
+  "errori": "Inarcare la zona lombare in alto. Lavorare con le gambe invece che con i glutei. Ginocchia che si aprono o si chiudono. Rimbalzo in basso.",
+  "carico": "A cedimento tecnico. Carico di partenza 50 kg (ultima volta 12-12). Sali quando fai 15 su entrambe le serie.",
+  "reg": [
+   "Altezza cuscinetto",
+   "Posizione ginocchia"
+  ]
+ },
+ "massa2|polpacci in piedi": {
+  "cp": "50 kg",
+  "impostazione": "Spalle sotto i cuscinetti, avampiede sul bordo della pedana con i talloni fuori. Piedi a larghezza anche, punte neutre. Ginocchia quasi tese, sbloccate. Scegli un carico importante.",
+  "posizione": "Corpo allineato, addome contratto, sguardo avanti. Parti con i talloni sotto il livello della pedana, in massimo allungamento.",
+  "impugnatore": "Impugnatore: maniglie davanti. Presa: appoggiata o leggera, pollici avvolti, solo per stabilizzare. Non spingere con le braccia.",
+  "esecuzione": "Fermo di mezzo secondo-1 secondo in basso, nel massimo allungamento. Sali sulla punta il più in alto possibile, senza rimbalzare. Fermo di mezzo secondo in alto e scendi in 2 secondi.",
+  "respirazione": "Espira salendo, inspira scendendo.",
+  "errori": "Rimbalzo in basso. Ginocchia che si piegano. Ampiezza ridotta. Slancio con il corpo. Carico troppo leggero.",
+  "carico": "Recuperi abbondanti. Carico di partenza 50 kg (ultima volta 10-9-8). Sali quando fai 12 su tutte e 3 le serie.",
+  "reg": [
+   "Altezza cuscinetti"
+  ]
+ },
+ "massa2|tricipiti overhead al cavo": {
+  "cp": "11,3 kg",
+  "impostazione": "Puleggia bassa con corda. Mettiti di spalle al cavo, a un passo di distanza, con un piede avanti per stabilità. Il busto è inclinato in avanti di circa 10-15°.",
+  "posizione": "Presa neutra sulla corda. Porta le mani dietro la testa, con i gomiti vicino alle orecchie e puntati verso l'alto. Gomiti fermi, spalle ferme.",
+  "impugnatore": "Impugnatore: corda. Presa: neutra (palmi uno di fronte all'altro), pollici avvolti, mani vicine ai lati della testa. Polsi dritti. In estensione puoi aprire leggermente la corda.",
+  "esecuzione": "Estendi i gomiti fino a quasi completare l'estensione, senza bloccarli. Scendi in 2 secondi fino a un buon allungamento, con i gomiti sempre fermi, e fai un fermo di mezzo secondo. Alterna con il curl (jump set).",
+  "respirazione": "Espira estendendo, inspira scendendo.",
+  "errori": "Gomiti che si aprono o scendono. Spalle che si spostano. Inarcare la schiena. Usare lo slancio del busto.",
+  "carico": "Carico di partenza 11,3 kg (ultima volta 10-9-8). Sali quando fai 12 su tutte le serie. Jump set con il curl in piedi: 1'30 tra una serie e l'altra.",
+  "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
+  "reg": [
+   "Altezza puleggia",
+   "Distanza dal cavo"
+  ]
+ },
+ "massa2|curl in piedi (bilanciere ez o manubri)": {
+  "cp": "25 kg",
+  "impostazione": "Bilanciere EZ con presa supinata sulle curve interne, a larghezza spalle. Piedi a larghezza anche, ginocchia leggermente flesse.",
+  "posizione": "Gomiti vicino ai fianchi, schiena ferma, spalle basse, addome contratto. Parti con le braccia quasi estese.",
+  "impugnatore": "Impugnatore: bilanciere EZ. Presa: supina (palmi verso l'alto) sulle curve interne, larghezza spalle. Pollici avvolti. Polsi dritti o leggermente flessi in avanti, mai piegati all'indietro. Presa salda ma senza stringere inutilmente.",
+  "esecuzione": "Sali senza portare i gomiti in avanti e senza dondolare. Scendi in 1-2 secondi quasi fino all'estensione e fai un fermo di mezzo secondo in basso. Alterna con i tricipiti (jump set).",
+  "respirazione": "Espira salendo, inspira scendendo.",
+  "errori": "Dondolare con la schiena. Gomiti che avanzano. Rimbalzo in basso. Carico troppo alto che costringe allo slancio.",
+  "carico": "Carico di partenza 25 kg (ultima volta 25 x 10, 25 x 8, 20 x 8). Sali quando fai 12 su tutte le serie. Jump set con i tricipiti overhead: 1'30 tra una serie e l'altra.",
+  "tecnica": "Rest-pause. A cedimento tecnico, fermati per 15-20 secondi, poi fai altre 3-5 ripetizioni con lo stesso carico.",
+  "reg": [
+   "Larghezza presa"
+  ]
+ },
+ "massa3|chest press inclinata guidata": {
+  "cp": "25 kg",
+  "impostazione": "Regola il sedile in modo che le maniglie, quando le impugni, siano all'altezza della parte alta del petto, circa sopra i capezzoli. Se la macchina è reclinata, imposta lo schienale vicino ai 30° (la sdraiata/reclinata è meglio della seduta quasi verticale). Usa sempre la stessa macchina per confrontare i carichi.",
+  "posizione": "Schiena appoggiata, scapole addotte e depresse. Piedi a terra o sul poggiapiedi. Polsi dritti, impugnatura salda.",
+  "impugnatore": "Impugnatore: maniglie della macchina. Presa: neutra o prona, secondo la macchina, con le mani all'altezza della parte alta del petto. Polsi dritti, pollici avvolti. Spingi con il petto, non con le mani.",
+  "esecuzione": "Scendi in 1-2 secondi fino a un buon allungamento del petto, con i gomiti a circa 90° o poco oltre (senza che le spalle vadano troppo avanti). Fermo di mezzo secondo. Spingi in modo esplosivo e senza bloccare i gomiti in alto.",
+  "respirazione": "Inspira in discesa, espira spingendo.",
+  "errori": "Schiena che si stacca dallo schienale. Spalle che salgono verso le orecchie. Gomiti troppo aperti. Rimbalzo. Polsi piegati.",
+  "carico": "Lascia 1 ripetizione in riserva. Carico di partenza 25 kg (ultima volta 25 x 10, 20 x 10, 20 x 9). Sali quando fai 10 su tutte le serie.",
+  "reg": [
+   "Sedile",
+   "Schienale",
+   "Maniglie"
+  ]
+ },
+ "massa3|pulley col triangolo": {
+  "cp": "25 kg",
+  "impostazione": "Siediti con i piedi sul poggiapiedi e le ginocchia leggermente flesse. Regola la distanza in modo che a braccia estese ci sia tensione sul cavo. Triangolo con presa neutra.",
+  "posizione": "Busto verticale o appena inclinato indietro (5-10°), petto in fuori, schiena neutra. Spalle basse, scapole addotte e leggermente indietro all'inizio della trazione.",
+  "impugnatore": "Impugnatore: triangolo (maniglia a V). Presa: neutra, mani strette sulle impugnature, polsi dritti, pollici avvolti. Le mani sono ganci: tira con i gomiti.",
+  "esecuzione": "Tira i gomiti vicino al busto e verso il bacino, con i gomiti a circa 30-45° dal busto. Evita di portarli alti e larghi. Tira fino ad avvicinare i gomiti al busto, senza inarcare la schiena, e controlla il ritorno in 2 secondi. In allungamento lascia che le scapole vadano in avanti e fai un fermo di mezzo secondo, senza flettere il busto più di 10-15°.",
+  "respirazione": "Espira tirando, inspira tornando.",
+  "errori": "Busto che dondola. Gomiti troppo alti e aperti. Tirare con le mani invece che con i gomiti. Rimbalzo in allungamento. Inarcare la schiena.",
+  "carico": "Carico di partenza 25 kg (da 18/09: 25 x 12, 25 x 11, 20 x 12). Sali quando fai 12 su tutte le serie.",
+  "reg": [
+   "Distanza panca",
+   "Cavo/puleggia"
+  ]
+ },
+ "massa3|spinte verticali con manubri (panca 60-75°)": {
+  "cp": "10-12 kg per mano",
+  "impostazione": "Panca regolata a 60-75°, schienale ben stabile. Siediti con la schiena e i glutei appoggiati e i piedi a terra, con le ginocchia a 90°.",
+  "posizione": "Porta i manubri sulle cosce, poi sollevali con l'aiuto delle ginocchia fino all'altezza delle spalle, con i gomiti davanti al busto (circa 45-60°) e gli avambracci verticali. Presa neutra o semi-prona, polsi dritti, scapole appoggiate. Addome contratto per non inarcare la zona lombare.",
+  "impugnatore": "Impugnatore: manubri. Presa: neutra o semi-prona (palmi leggermente in avanti, circa 30-45°). Polsi dritti sopra gli avambracci, pollici avvolti, manubrio sul palmo.",
+  "esecuzione": "Spingi i manubri in alto e leggermente avanti, in arco convergente, senza batterli in alto e senza bloccare i gomiti. Scendi in 2 secondi fino al livello del mento o dell'orecchio, con i gomiti a circa 90° o poco sotto. Fermo di mezzo secondo in basso, senza rimbalzo.",
+  "respirazione": "Inspira in discesa, espira spingendo.",
+  "errori": "Inarcare la zona lombare. Manubri troppo dietro la testa. Gomiti troppo aperti. Rimbalzo. Testa che si porta in avanti.",
+  "carico": "È un esercizio nuovo e pesante: lascia 1 ripetizione in riserva e non andare a cedimento totale con i manubri sopra la testa. Carico da trovare con le serie di avvicinamento: parti da 10-12 kg per mano e correggi.",
+  "reg": [
+   "Inclinazione panca"
+  ]
+ },
+ "massa3|low row (macchina con appoggio al petto)": {
+  "cp": "25-30 kg",
+  "impostazione": "Regola il sedile in modo che il petto appoggi sul cuscino e le maniglie siano all'altezza dello sterno o poco sotto. Regola la distanza in modo che a braccia estese tu senta allungare la schiena.",
+  "posizione": "Presa prona e larga (circa come le spalle o un po' di più), oppure neutra se la macchina ha solo maniglie neutre. Petto appoggiato per tutta la serie, schiena neutra, scapole in avanti in partenza. Gomiti larghi e obliqui verso l'alto, a circa 60-75° dal busto.",
+  "impugnatore": "Impugnatore: maniglie della macchina. Presa: prona e larga (circa come le spalle o un po' di più), oppure neutra se ci sono solo maniglie neutre. Polsi dritti, pollici avvolti. Le mani sono ganci: tira con i gomiti.",
+  "esecuzione": "Tira avvicinando le scapole e portando i gomiti indietro. A fine corsa alza leggermente le spalle verso le orecchie (1-2 cm) per coinvolgere i fasci alti del trapezio. Torna in 2 secondi fino all'allungamento con un fermo di mezzo secondo, senza staccare il petto dal cuscino.",
+  "respirazione": "Espira tirando, inspira tornando.",
+  "errori": "Petto che si stacca dal cuscino. Alzare troppo le spalle verso le orecchie. Tirare con i bicipiti. Rimbalzo in allungamento. Dondolare con il busto.",
+  "carico": "Carico di partenza 25-30 kg (ultima volta rematore 30 x 10, 30 x 8, 25 x 10). Segna nell'app la presa usata. Sali quando fai 12 su tutte le serie.",
+  "reg": [
+   "Sedile",
+   "Distanza",
+   "Presa"
+  ]
+ },
+ "massa3|pec deck": {
+  "cp": "20 kg",
+  "impostazione": "Regola il sedile in modo che le maniglie (o i cuscinetti per gli avambracci) siano a metà petto, con i gomiti all'altezza delle spalle o appena sotto. Regola il limitatore di partenza in modo che a braccia aperte le spalle siano in buon allungamento ma i gomiti non vadano dietro la linea del busto. Schienale ben appoggiato.",
+  "posizione": "Petto in fuori, schiena e testa appoggiate, scapole addotte e depresse come nella panca. Mani sulle maniglie con i polsi dritti, gomiti leggermente piegati (circa 10-20°) e fissi. Parti con le braccia aperte, in allungamento controllato.",
+  "impugnatore": "Impugnatore: maniglie verticali, oppure cuscinetti per gli avambracci se la macchina li ha. Presa: neutra sulle maniglie, mani a metà petto, polsi dritti, pollici avvolti. Con i cuscinetti, gli avambracci poggiano interi e le mani restano rilassate. Spingi con i gomiti, non con le mani.",
+  "esecuzione": "Fermo di mezzo secondo in apertura. Chiudi in modo fluido, come se abbracciassi un albero, fino a incontrare le braccia davanti al petto senza battere i pesi e senza spingere le spalle in avanti. Torna in apertura in 2 secondi mantenendo la tensione.",
+  "respirazione": "Espira in chiusura, inspira in apertura.",
+  "errori": "Spalle che salgono verso le orecchie. Gomiti troppo bassi o troppo indietro. Schiena che si stacca dallo schienale. Rimbalzo in chiusura. Carico troppo alto che costringe allo slancio.",
+  "carico": "A cedimento tecnico. Carico di partenza 20 kg (ultima volta 25 x 9, 20 x 12, 20 x 9). Sali quando fai 15 su tutte le serie.",
+  "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
+  "reg": [
+   "Sedile",
+   "Limitatore partenza"
+  ]
+ },
+ "massa3|alzate laterali con manubri": {
+  "cp": "7,5-8 kg per mano",
+  "impostazione": "Scegli manubri leggeri (7,5-8 kg per mano come punto di partenza). Resta in piedi senza appoggi.",
+  "posizione": "Piedi a larghezza anche, ginocchia leggermente flesse, busto inclinato in avanti di 10-15°. Manubri lungo i fianchi, presa neutra, gomiti leggermente piegati e fissi.",
+  "impugnatore": "Impugnatore: manubri. Presa: neutra (palmi verso le cosce), manubri tenuti con le dita e non solo col palmo. Polsi dritti. Non ruotare i manubri durante la salita.",
+  "esecuzione": "Sali nel piano leggermente davanti al fianco (circa 20-30°), guidando con i gomiti, fino all'altezza delle spalle, non oltre. Scendi in 2 secondi, con un fermo di mezzo secondo in basso, senza dondolare. Alterna con il rear delt (jump set).",
+  "respirazione": "Espira salendo, inspira scendendo.",
+  "errori": "Slancio con il busto. Spalle che salgono verso le orecchie. Manubri più in alto dei gomiti. Gomiti che si piegano troppo. Carico troppo alto.",
+  "carico": "Carico di partenza 7,5-8 kg per mano. Jump set con il rear delt: 1'30 tra una serie e l'altra.",
+  "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
+  "reg": [
+   "Peso manubri"
+  ]
+ },
+ "massa3|rear delt (reverse fly)": {
+  "cp": "15 kg",
+  "impostazione": "Usa la macchina reverse fly (pec deck inverso). Regola il sedile in modo che le maniglie siano all'altezza delle spalle e il petto appoggi sul cuscino. Regola la partenza con le braccia chiuse davanti, senza iperflessione delle spalle.",
+  "posizione": "Petto appoggiato, schiena dritta, presa neutra o prona, polsi dritti, gomiti leggermente flessi e fissi.",
+  "impugnatore": "Impugnatore: maniglie della macchina. Presa: neutra o prona, quella che ti permette di tenere il gomito più alto. Pollici avvolti, polsi dritti, mani rilassate: lavorano i gomiti.",
+  "esecuzione": "Apri portando i gomiti indietro, non le mani, senza ruotare il busto e senza lanciare. Fermo breve in apertura. Torna in 2 secondi fino a un buon allungamento. Alterna con le alzate laterali (jump set).",
+  "respirazione": "Espira aprendo, inspira tornando.",
+  "errori": "Busto che ruota o si stacca. Gomiti troppo flessi. Spalle che salgono verso le orecchie. Slancio. Carico troppo alto.",
+  "carico": "Carico di partenza 15 kg (ultima volta 15 x 16, 15 x 11, 15 x 10). Sali quando fai 15 su tutte le serie.",
+  "tecnica": "Rest-pause. A cedimento tecnico, fermati per 15-20 secondi, poi fai altre 3-5 ripetizioni con lo stesso carico.",
+  "reg": [
+   "Sedile",
+   "Maniglie"
+  ]
+ },
+ "massa4|leg press 45°": {
+  "cp": "45-50 kg",
+  "impostazione": "Regola lo schienale (se è regolabile) per ottenere la profondità che la mobilità permette. Schiena e glutei appoggiati. Piedi a larghezza spalle, medio-bassi sulla pedana (più bassi lavorano di più i quadricipiti, più alti di più i glutei), punte leggermente extraruotate di 10-15°. Sgancia le leve di sicurezza e ricordati di riagganciarle a fine serie. Mani sulle maniglie.",
+  "posizione": "Ginocchia in linea con le punte dei piedi, bacino premuto contro il sedile. Parti con le gambe quasi estese senza bloccare le ginocchia.",
+  "impugnatore": "Impugnatore: maniglie laterali del sedile. Presa: salda, pollici avvolti, braccia rilassate. Non spingere con le braccia.",
+  "esecuzione": "Scendi in 2 secondi quanto la mobilità permette, senza che il bacino si stacchi dal sedile e senza arrotondare la zona lombare. Fermo di mezzo secondo. Spingi in modo esplosivo con tutto il piede e risali senza bloccare le ginocchia.",
+  "respirazione": "Inspira in discesa, trattieni, espira passato il punto più duro della salita.",
+  "errori": "Bacino che si stacca dal sedile. Ginocchia che rientrano. Talloni che si staccano. Rimbalzo in basso. Bloccare le ginocchia in alto.",
+  "carico": "Lascia 1 ripetizione in riserva. Ultima volta 40 kg x 12, 9, 7 a RPE 10. Per il range 5-9 parti da 45-50 kg e regola dalla prima serie. Recupero pieno di 3-4 minuti.",
+  "reg": [
+   "Schienale",
+   "Piedi (altezza/larghezza)"
+  ]
+ },
+ "massa4|leg extension (matrix)": {
+  "cp": "32,5-35 kg",
+  "impostazione": "Regola lo schienale in modo che il dietro del ginocchio sia a filo del bordo del sedile e il ginocchio sia allineato all'asse di rotazione della macchina. Il cuscinetto va sul collo del piede, appena sopra la caviglia, non sulle dita. Regola il limitatore di partenza per partire con le ginocchia a circa 90° di flessione o poco più.",
+  "posizione": "Schiena appoggiata, mani sulle maniglie, bacino fermo sul sedile, punte dei piedi neutre.",
+  "impugnatore": "Impugnatore: maniglie laterali del sedile. Presa: salda per tenere fermo il bacino, pollici avvolti, polsi dritti. Non tirare con le braccia per estendere.",
+  "esecuzione": "Estendi completamente le ginocchia in modo fluido, senza scatti e senza battere i pesi. Scendi in 2 secondi fino a un buon allungamento. Fermo di mezzo secondo in basso, senza lasciare cadere il peso.",
+  "respirazione": "Espira estendendo, inspira scendendo.",
+  "errori": "Bacino che si solleva dal sedile. Scatto in estensione. Rimbalzo in basso. Lasciare cadere il peso. Iperestendere le ginocchia in alto.",
+  "carico": "Carico di partenza 32,5-35 kg (ultima volta 35 x 14, 35 x 11, 30 x 12). Sali quando fai 15 su tutte le serie.",
+  "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
+  "reg": [
+   "Schienale",
+   "Cuscinetto",
+   "Partenza"
+  ]
+ },
+ "massa4|stacco rumeno con manubri": {
+  "cp": "10-14 kg per mano",
+  "impostazione": "Scegli manubri adatti: 10-14 kg per mano come punto di partenza. Parti con i manubri in mano, non da terra.",
+  "posizione": "Piedi a larghezza anche, ginocchia leggermente flesse (circa 10-15°) e fisse. Manubri davanti alle cosce con presa neutra. Schiena neutra, scapole basse, sguardo a un metro e mezzo davanti ai piedi.",
+  "impugnatore": "Impugnatore: manubri. Presa: neutra (palmi verso le cosce), braccia tese come ganci. Polsi dritti, pollici avvolti. Se la presa cede prima dei femorali, usa i lacci.",
+  "esecuzione": "Spingi il bacino indietro e fai scivolare i manubri lungo le cosce e poi le tibie, vicinissimi alle gambe. Scendi in 2 secondi fino a sentire il massimo allungamento dei femorali (di solito a metà tibia). Fermo di mezzo secondo. Risali spingendo il bacino in avanti, senza iperestendere.",
+  "respirazione": "Inspira in alto, trattieni in discesa, espira risalendo.",
+  "errori": "Schiena che si arrotonda. Manubri lontani dalle gambe. Ginocchia che si piegano troppo. Iperestendere in alto. Scendere oltre il punto in cui la schiena resta neutra.",
+  "carico": "Lascia 1 ripetizione in riserva. Carico da trovare con le serie di avvicinamento. Sali quando fai 12 su tutte le serie.",
+  "reg": [
+   "Peso manubri"
+  ]
+ },
+ "massa4|leg curl sdraiato": {
+  "cp": "25-30 kg",
+  "impostazione": "Sdraiato a pancia in giù con le ginocchia appena oltre il bordo della panca, in modo che l'articolazione del ginocchio sia allineata all'asse di rotazione. Il cuscinetto va sul tendine d'Achille, appena sopra i talloni. Impugna le maniglie e regola il limitatore di partenza.",
+  "posizione": "Anche premute sulla panca, bacino fermo, punte dei piedi neutre. Parti con le gambe quasi estese.",
+  "impugnatore": "Impugnatore: maniglie sotto la testa o bordo della panca. Presa: salda per tenere stabile il corpo, polsi dritti, pollici avvolti.",
+  "esecuzione": "Tira i talloni verso i glutei con i femorali, senza sollevare il bacino. Fermo breve in contrazione. Torna in 2 secondi fino a quasi l'estensione completa.",
+  "respirazione": "Espira tirando, inspira tornando.",
+  "errori": "Bacino che si solleva dalla panca. Rimbalzo in basso. Carico troppo alto che accorcia la corsa. Ginocchia non allineate all'asse.",
+  "carico": "A cedimento tecnico. Carico da trovare: parti da 25-30 kg. Sali quando fai 12 su entrambe le serie.",
+  "reg": [
+   "Posizione sulla panca",
+   "Cuscinetto"
+  ]
+ },
+ "massa4|adductor machine": {
+  "cp": "45-50 kg",
+  "impostazione": "Regola la leva o il limitatore di apertura in modo da partire con le gambe aperte il più possibile senza dolore (allungamento). I cuscinetti vanno sulla parte interna delle cosce, sopra il ginocchio. Schiena appoggiata.",
+  "posizione": "Schiena appoggiata, bacino fermo sul sedile, mani sulle maniglie, gambe aperte al massimo allungamento comodo.",
+  "impugnatore": "Impugnatore: maniglie laterali. Presa: salda, pollici avvolti, schiena appoggiata. Non spingere con le braccia.",
+  "esecuzione": "Fermo di mezzo secondo in apertura. Chiudi in modo controllato, senza scatti, fino a incontrare le ginocchia. Torna in apertura in 2 secondi.",
+  "respirazione": "Espira chiudendo, inspira aprendo.",
+  "errori": "Rimbalzo in apertura. Bacino che si sposta. Chiudere con slancio. Apertura troppo ridotta.",
+  "carico": "A cedimento tecnico. Carico di partenza 45-50 kg (ultima volta 50 x 16, 50 x 11, 45 x 12). Sali quando fai 15 su entrambe le serie.",
+  "reg": [
+   "Apertura partenza",
+   "Sedile"
+  ]
+ },
+ "massa4|pushdown con la corda": {
+  "cp": "25 kg",
+  "impostazione": "Puleggia alta con corda. Piedi a larghezza anche, un piede leggermente avanti. Busto inclinato in avanti di 10-15°.",
+  "posizione": "Gomiti vicino ai fianchi e fermi. Presa neutra sulla corda, polsi dritti. Parti con i gomiti a circa 90°.",
+  "impugnatore": "Impugnatore: corda. Presa: neutra (palmi uno di fronte all'altro), pollici avvolti. Mani vicine, in fondo apri leggermente la corda. Polsi dritti.",
+  "esecuzione": "Estendi i gomiti aprendo leggermente la corda in basso, senza bloccarli. Risali in 2 secondi fino a circa 90° di gomito, non oltre (oltre i gomiti avanzano e perdi tensione). Fermo di mezzo secondo in alto. Alterna con il curl (jump set).",
+  "respirazione": "Espira spingendo, inspira risalendo.",
+  "errori": "Gomiti che avanzano o si aprono. Busto che oscilla. Spalle che salgono. Polsi piegati. Usare il peso del corpo.",
+  "carico": "Carico di partenza 25 kg (ultima volta 30 x 15, 30 x 9, 25 x 10). Jump set con il curl sui cuscinetti: 1'30 tra una serie e l'altra. Sali quando fai 12 su tutte le serie.",
+  "reg": [
+   "Altezza puleggia"
+  ]
+ },
+ "massa4|curl con manubri sui cuscinetti della lat machine": {
+  "cp": "8 kg per mano",
+  "impostazione": "Seduto al contrario rispetto alla lat machine, con i gomiti appoggiati sui cuscinetti e il busto inclinato un po' indietro. Regola l'altezza dei cuscinetti in modo che le braccia stiano in appoggio e il gomito sia poco sotto la spalla.",
+  "posizione": "Manubri con presa supina, gomiti appoggiati e fermi per tutta la serie, spalle basse. Più ti inclini indietro, più il bicipite parte allungato.",
+  "impugnatore": "Impugnatore: manubri. Presa: supina (palmi verso l'alto), pollici avvolti. Polsi dritti o leggermente flessi in avanti, senza ruotarli. Presa salda.",
+  "esecuzione": "Scendi controllato fino a un buon allungamento (fermo di mezzo secondo, senza lasciar cadere il peso). Sali senza staccare i gomiti, fino alla contrazione. Alterna con i pushdown (jump set).",
+  "respirazione": "Espira salendo, inspira scendendo.",
+  "errori": "Gomiti che si staccano. Rimbalzo in basso. Inclinazione troppo ridotta. Slancio con il busto. Carico troppo alto.",
+  "carico": "Carico di partenza 8 kg per mano (ultima volta 9 x 13, 9 x 8, 8 x 8 alla panca inclinata). Jump set con il pushdown: 1'30 tra una serie e l'altra. Sali quando fai 12 su tutte le serie.",
+  "tecnica": "Parziali in allungamento. A cedimento tecnico continua con 4-6 ripetizioni corte, solo nella metà bassa del movimento, quella in cui il muscolo è allungato.",
+  "reg": [
+   "Altezza cuscinetti",
+   "Inclinazione"
+  ]
+ },
+ "massa4|crunch machine": {
+  "cp": "35 kg",
+  "impostazione": "Regola il sedile in modo che il perno di rotazione della macchina sia all'altezza dell'addome. Regola cuscino e maniglie in modo che si appoggino sul petto e sulle spalle. Piedi sotto i rulli o a terra, senza spingere. Scegli un carico che permetta 10-15 ripetizioni controllate.",
+  "posizione": "Seduto con la schiena sullo schienale, addome in allungamento (schiena leggermente estesa senza inarcare), mani sulle maniglie con i gomiti piegati.",
+  "impugnatore": "Impugnatore: maniglie della macchina. Presa: salda ma senza tirare, gomiti piegati e pollici avvolti. Le mani servono solo a stabilizzare: il lavoro lo fa l'addome.",
+  "esecuzione": "Arrotonda la schiena portando le costole verso il bacino (immagina di accorciare la distanza sterno-ombelico). Fermo breve in contrazione. Risali controllato in 2 secondi fino a riallungare bene l'addome.",
+  "respirazione": "Espira forte mentre fletti, inspira risalendo.",
+  "errori": "Spingere con le gambe o tirare con le braccia. Muovere solo le anche invece della colonna. Carico troppo alto che impedisce di arrotondare. Scattare in salita.",
+  "carico": "A cedimento tecnico. Carico di partenza 35 kg (ultima volta 35 x 16, 40 x 12, 40 x 10). Sali quando fai 15 su tutte le serie.",
+  "reg": [
+   "Sedile",
+   "Cuscino"
+  ]
+ }
+};
+
+function infoEsercizio(schedaId, nome){
+  const n = String(nome||'').trim().toLowerCase();
+  if(INFO_ESERCIZI[schedaId+'|'+n]) return INFO_ESERCIZI[schedaId+'|'+n];
+  const k = Object.keys(INFO_ESERCIZI).find(x=> x.split('|')[1]===n);
+  return k ? INFO_ESERCIZI[k] : null;
+}
+/* Le tue regolazioni (sedile, schienale, ecc.) per esercizio: restano salvate sul profilo. */
+let regolazioniMacchine = {};
+let sezioniSchedaAperte = {};
+let regSalvaTimer = null;
+function salvaRegolazione(nome, i, val){
+  const k = String(nome).trim().toLowerCase();
+  const arr = regolazioniMacchine[k] || [];
+  arr[i] = val; for(let j=0;j<arr.length;j++) if(arr[j]==null) arr[j]='';
+  regolazioniMacchine[k] = arr;
+  clearTimeout(regSalvaTimer);
+  regSalvaTimer = setTimeout(()=>{
+    attendiScrittura(db.collection('users').doc(currentUid).set({ regolazioniMacchine }, { mergeFields:['regolazioniMacchine'] })).catch(()=>{});
+  }, 700);
+}
+function memSezioneScheda(chiave, aperta){ sezioniSchedaAperte[chiave] = !!aperta; }
+function toggleSchedaEsercizio(ei){
+  const el = document.getElementById('schedaes-'+ei); if(!el) return;
+  const apri = !el.classList.contains('open');
+  el.classList.toggle('open', apri);
+  const nome = sessionDraft && schedaSessione().esercizi[ei] ? schedaSessione().esercizi[ei].nome : '';
+  memSezioneScheda('__pannello|'+nome, apri);
+  const b = document.getElementById('schedabtn-'+ei); if(b) b.setAttribute('aria-expanded', apri);
+}
+function apriChiudiTutteSezioni(ei, apri){
+  const el = document.getElementById('schedaes-'+ei); if(!el) return;
+  el.querySelectorAll('details').forEach(d=>{ d.open = apri; });
+}
+const SEZIONI_SCHEDA = [
+  ['impostazione','🛠 Impostazione macchina'],
+  ['posizione','🧍 Posizione di partenza'],
+  ['impugnatore','✋ Mani e impugnatore'],
+  ['esecuzione','🎯 Esecuzione'],
+  ['respirazione','🫁 Respirazione'],
+  ['errori','⚠️ Errori da evitare'],
+  ['carico','📈 Carico e progressione'],
+  ['tecnica','⚡ Tecnica (ultima serie)']
+];
+function schedaEsercizioHtml(ei, nome, info){
+  const aperto = !!sezioniSchedaAperte['__pannello|'+nome];
+  let h = `<button type="button" class="scheda-btn" id="schedabtn-${ei}" aria-expanded="${aperto}" onclick="toggleSchedaEsercizio(${ei})">
+    <span>📖 Scheda dell'esercizio</span><span class="scheda-chev">▾</span></button>`;
+  h += `<div class="scheda-es${aperto?' open':''}" id="schedaes-${ei}">
+    <div class="scheda-tools"><button type="button" class="set-mini-btn" onclick="apriChiudiTutteSezioni(${ei},true)">Apri tutte</button>
+    <button type="button" class="set-mini-btn" onclick="apriChiudiTutteSezioni(${ei},false)">Chiudi tutte</button></div>`;
+  SEZIONI_SCHEDA.forEach(([k,titolo])=>{
+    if(!info[k]) return;
+    const chiave = nome+'|'+k;
+    h += `<details class="scheda-sez"${sezioniSchedaAperte[chiave]?' open':''} ontoggle="memSezioneScheda(${JSON.stringify(chiave).replace(/"/g,'&quot;')}, this.open)">
+      <summary>${titolo}</summary><div class="scheda-txt">${escHtml(info[k])}</div></details>`;
+  });
+  if(info.reg && info.reg.length){
+    const salvati = regolazioniMacchine[String(nome).trim().toLowerCase()] || [];
+    const chiave = nome+'|reg';
+    h += `<details class="scheda-sez"${sezioniSchedaAperte[chiave]?' open':''} ontoggle="memSezioneScheda(${JSON.stringify(chiave).replace(/"/g,'&quot;')}, this.open)">
+      <summary>🔧 Le tue regolazioni</summary><div class="scheda-txt">
+      <p class="field-hint" style="margin:0 0 8px;">Trova la regolazione giusta alla prima seduta e scrivila qui: ripetila identica ogni volta, così i carichi restano confrontabili.</p>
+      ${info.reg.map((lab,i)=>`<div class="field" style="margin-bottom:8px;"><label>${escHtml(lab)}</label>
+        <input type="text" maxlength="40" value="${escHtml(salvati[i]||'')}" oninput="salvaRegolazione(${JSON.stringify(nome).replace(/"/g,'&quot;')}, ${i}, this.value)"></div>`).join('')}
+      </div></details>`;
+  }
+  h += `</div>`;
+  return h;
+}
+
 /* Nomi usati in passato / alias: lo storico dei vecchi esercizi rinominati
    resta collegato ai nuovi, e il confronto ignora maiuscole/minuscole. */
 const ALIAS_ESERCIZI = {
+  'high row unilaterale impulse (a dischi, un braccio alla volta)':['lat machine unilaterale (un braccio alla volta)'],
+  'low row (macchina con appoggio al petto)':['low row (macchina con appoggio o manubri su panca inclinata)'],
+  'leg extension (matrix)':['leg extension'],
   'high row impulse':['high row bilaterale'],
   'shoulder press sdraiato':['shoulder press'],
   'deltoidi posteriori ai cavi':['rear delt (reverse fly)']
@@ -3570,6 +4097,7 @@ async function checkProfilo(){
   serieRipPersonalizzate = data.serieRipPersonalizzate || {};
   unilateraliPersonalizzati = data.unilateraliPersonalizzati || {};
   layoutSchede = data.layoutSchede || {};
+  regolazioniMacchine = data.regolazioniMacchine || {};
   // Normalizza il formato: versioni precedenti salvavano una singola stringa
   // per esercizio, ora è un array (più alternative possibili tra cui scegliere).
   const raw = data.alternativeSalvate || {};
@@ -3730,6 +4258,7 @@ async function registrati(){
     serieRipPersonalizzate = {};
     unilateraliPersonalizzati = {};
     layoutSchede = {};
+    regolazioniMacchine = {};
     alternativeSalvate = {};
     document.getElementById('registerScreen').style.display = 'none';
     await avviaApp();
@@ -6121,6 +6650,9 @@ function renderEsercizioCard(scheda, ei, supersetTag){
       ${draft.aggiunto ? `<button type="button" class="set-mini-btn" onclick="rimuoviEsercizioAggiunto(${ei})">🗑 Rimuovi</button>` : ''}
     </div>`;
   }
+  const infoEs = (!usaAlt) ? infoEsercizio(sessionDraft.schedaId, e.nome) : null;
+  if(infoEs && infoEs.cp && infoEs.cp!=='da trovare') html += `<div class="carico-partenza">🏁 Carico di partenza: <b>${escHtml(infoEs.cp)}</b></div>`;
+  else if(infoEs && infoEs.cp==='da trovare') html += `<div class="carico-partenza">🏁 Carico di partenza: <b>da trovare</b> con 1-2 serie di prova</div>`;
   const ultimaVolta = datiUltimaSessione(nomeAttivo);
   if(ultimaVolta){
     const dataLbl = new Date(ultimaVolta.data).toLocaleDateString('it-IT',{day:'numeric',month:'short'});
@@ -6199,13 +6731,16 @@ function renderEsercizioCard(scheda, ei, supersetTag){
     html += `<div class="progress-tip">💡 ${suggerimento}</div>`;
   }
   html += `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;">`;
-  if(!usaAlt){
+  if(!usaAlt && infoEs){
+    html += `${e.video ? `<a href="${e.video}" target="_blank" rel="noopener" class="video-link">▶ Guarda il video</a>` : ''}`;
+  } else if(!usaAlt){
     html += `<button class="toggle-guide" onclick="toggleGuide(${ei})">Guida esercizio ▾</button>
       ${e.video ? `<a href="${e.video}" target="_blank" rel="noopener" class="video-link">▶ Guarda il video</a>` : ''}`;
   }
   html += `<button type="button" class="skip-ex-link" onclick="saltaEsercizioConferma(${ei})">Salta esercizio</button>`;
   html += `</div>`;
-  if(!usaAlt){
+  if(infoEs) html += schedaEsercizioHtml(ei, e.nome, infoEs);
+  if(!usaAlt && !infoEs){
     html += `<div class="guide-body" id="guide-${ei}">
       <b>Muscoli:</b> ${e.guida.muscoli}<br><br>
       <b>Esecuzione:</b> ${e.guida.esecuzione}<br><br>
@@ -11668,7 +12203,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-04-massa-v17';
+const BUILD_ID = '2026-11-05-scheda-v18';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
