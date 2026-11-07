@@ -7276,6 +7276,43 @@ function csvEscape(v){
   return /[",\n]/.test(s) ? `"${s}"` : s;
 }
 
+/* Cosa è stato mangiato in un giorno, voce per voce (per l'export CSV): pasti
+   del piano segnati, alimenti/ricette aggiunti (con grammi e ingredienti) e
+   integratori. Ordinati per pasto. */
+function vociMangiateGiorno(g){
+  const out = [];
+  if(g.manualMacros){
+    const m = g.manualMacros;
+    out.push({ pasto:'', cosa:'Giorno inserito a mano (solo totali)', marca:'', qta:'', kcal:m.kcal||0, prot:m.prot||0, carb:m.carb||0, polio:0, grassi:m.grassi||0, tipo:'totali manuali', ingredienti:'' });
+    return out;
+  }
+  const nomePasto = i=> (DIETA_PIANO.pasti[i] && DIETA_PIANO.pasti[i].nome) || '';
+  const pastiFatti = g.pastiFatti || {}, snaps = g.pastiSnapshot || {};
+  Object.keys(pastiFatti).map(Number).sort((a,b)=>a-b).forEach(i=>{
+    if(!pastiFatti[i]) return;
+    const sn = snaps[i];
+    if(sn && sn.viaExtra) return; // sostituito da alimenti extra, elencati sotto
+    out.push({ ord:i, pasto:nomePasto(i), cosa: sn ? sn.titolo : 'Pasto del piano (dettaglio non disponibile)', marca:'', qta:'',
+      kcal: sn?sn.kcal:'', prot: sn?sn.prot:'', carb: sn?sn.carb:'', polio:'', grassi: sn?sn.grassi:'', tipo:'pasto del piano', ingredienti:'' });
+  });
+  (g.alimentiExtra||[]).forEach(a=>{
+    const ingr = (a.isRicetta && a.ingredienti && a.ingredienti.length)
+      ? a.ingredienti.map(x=> `${x.nome} ${x.grammi!=null?x.grammi+'g':''}`.trim()).join('; ') : '';
+    out.push({ ord:(typeof a.pasto==='number'?a.pasto:99), pasto: typeof a.pasto==='number'?nomePasto(a.pasto):'', cosa:a.nome, marca:a.marca||'',
+      qta: a.isRicetta ? '1 porzione' : (a.grammi!=null ? a.grammi+' g' : ''), kcal:a.kcal, prot:a.prot, carb:a.carb, polio:a.polio||0, grassi:a.grassi,
+      tipo: a.isRicetta ? 'ricetta' : 'alimento', ingredienti: ingr });
+  });
+  out.sort((x,y)=> (x.ord??99)-(y.ord??99));
+  return out;
+}
+function integratoriGiorno(g){
+  return Object.keys(g.integratoriFatti||{}).filter(k=>g.integratoriFatti[k]);
+}
+function sintesiMangiatoGiorno(g){
+  const v = vociMangiateGiorno(g);
+  return v.map(x=> `${x.pasto?x.pasto+': ':''}${x.cosa}${x.qta?' ('+x.qta+')':''}`).join(' | ');
+}
+
 function esportaCSV(){
   const righe = [];
   righe.push('=== ALLENAMENTI ===');
@@ -7291,14 +7328,28 @@ function esportaCSV(){
   });
   righe.push('');
   righe.push('=== DIETA (kcal e macro mangiati per giorno) ===');
-  righe.push(['Data','Tipo giornata','Kcal','Proteine (g)','Carboidrati (g)','di cui polialcoli (g)','Grassi (g)','Acqua (ml)','Dettaglio parziale'].join(','));
-  cache.dietaLog.slice().sort((a,b)=> a.id.localeCompare(b.id)).forEach(g=>{
+  righe.push(['Data','Tipo giornata','Kcal','Proteine (g)','Carboidrati (g)','di cui polialcoli (g)','Grassi (g)','Acqua (ml)','Dettaglio parziale','Cosa ho mangiato','Integratori'].join(','));
+  // Giorni salvati + oggi con i dati più recenti (anche se non ancora sincronizzati).
+  const giorniDieta = cache.dietaLog.filter(d=>d.id!==todayKey());
+  if(cache.dietaLogOggi) giorniDieta.push(Object.assign({ id: todayKey() }, cache.dietaLogOggi));
+  giorniDieta.sort((a,b)=> a.id.localeCompare(b.id));
+  giorniDieta.forEach(g=>{
     const t = calcolaTotaliGiorno(g);
     if(!t.kcalTot && !t.protTot && !t.carbTot && !t.grassiTot && !g.acquaMl) return;
     const parti = String(g.id).split('-');
     const data = parti.length===3 ? `${parti[2]}/${parti[1]}/${parti[0]}` : g.id;
     const tipo = typeof g.giornoAllenamento==='boolean' ? (g.giornoAllenamento ? 'pesi' : 'riposo') : '';
-    righe.push([data, tipo, Math.round(t.kcalTot), fmt1(t.protTot), fmt1(t.carbTot), fmt1(t.polioTot||0), fmt1(t.grassiTot), g.acquaMl||0, t.dettagliNonDisponibili?'si':''].join(','));
+    righe.push([data, tipo, Math.round(t.kcalTot), fmt1(t.protTot), fmt1(t.carbTot), fmt1(t.polioTot||0), fmt1(t.grassiTot), g.acquaMl||0, t.dettagliNonDisponibili?'si':'', csvEscape(sintesiMangiatoGiorno(g)), csvEscape(integratoriGiorno(g).join('; '))].join(','));
+  });
+  righe.push('');
+  righe.push('=== DIETA: COSA HO MANGIATO (alimento per alimento) ===');
+  righe.push(['Data','Pasto','Cosa','Marca','Quantità','Kcal','Proteine (g)','Carboidrati (g)','di cui polialcoli (g)','Grassi (g)','Tipo','Ingredienti (ricette)'].join(','));
+  giorniDieta.forEach(g=>{
+    const parti = String(g.id).split('-');
+    const data = parti.length===3 ? `${parti[2]}/${parti[1]}/${parti[0]}` : g.id;
+    vociMangiateGiorno(g).forEach(v=>{
+      righe.push([data, csvEscape(v.pasto), csvEscape(v.cosa), csvEscape(v.marca), csvEscape(v.qta), v.kcal===''?'':Math.round(v.kcal), v.prot===''?'':fmt1(v.prot), v.carb===''?'':fmt1(v.carb), v.polio===''?'':fmt1(v.polio), v.grassi===''?'':fmt1(v.grassi), csvEscape(v.tipo), csvEscape(v.ingredienti)].join(','));
+    });
   });
   righe.push('');
   righe.push('=== CARDIO ===');
@@ -12203,7 +12254,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-05-scheda-v18';
+const BUILD_ID = '2026-11-07-csv-v19';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
