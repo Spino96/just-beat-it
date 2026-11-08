@@ -3132,15 +3132,16 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Leg curl sdraiato', serieTarget:2, ripTarget:'8-12', recupero:120,
-        note:'Anche premute sulla panca, senza sollevare il bacino. Tira con i femorali e ritorna controllato fino a quasi l\'estensione completa.',
+        nome:'Leg curl seduto', serieTarget:2, ripTarget:'8-12', recupero:120,
+        tecnicaUltima:'drop',
+        note:'Schienale regolato con il ginocchio allineato al perno. Tira con i femorali senza sollevare il bacino, ritorna controllato fino al massimo allungamento con fermo di mezzo secondo. Ultima serie: drop set.',
         alternativa:'—',
         video:'',
         immagine:'',
         guida:{
           muscoli:'Femorali.',
-          esecuzione:'Anche premute sulla panca, senza sollevare il bacino. Tira con i femorali e ritorna controllato fino a quasi l\'estensione completa.',
-          errori:'Non sollevare il bacino.'
+          esecuzione:'Schienale regolato con il ginocchio allineato al perno. Tira con i femorali senza sollevare il bacino, ritorna controllato fino al massimo allungamento con fermo di mezzo secondo. Ultima serie: drop set.',
+          errori:'Non sollevare il bacino. Se il fastidio dietro il ginocchio torna, salta l\'esercizio.'
         }
       },
       {
@@ -3938,18 +3939,20 @@ const INFO_ESERCIZI = {
    "Peso manubri"
   ]
  },
- "massa4|leg curl sdraiato": {
-  "cp": "25-30 kg",
-  "impostazione": "Sdraiato a pancia in giù con le ginocchia appena oltre il bordo della panca, in modo che l'articolazione del ginocchio sia allineata all'asse di rotazione. Il cuscinetto va sul tendine d'Achille, appena sopra i talloni. Impugna le maniglie e regola il limitatore di partenza.",
-  "posizione": "Anche premute sulla panca, bacino fermo, punte dei piedi neutre. Parti con le gambe quasi estese.",
-  "impugnatore": "Impugnatore: maniglie sotto la testa o bordo della panca. Presa: salda per tenere stabile il corpo, polsi dritti, pollici avvolti.",
-  "esecuzione": "Tira i talloni verso i glutei con i femorali, senza sollevare il bacino. Fermo breve in contrazione. Torna in 2 secondi fino a quasi l'estensione completa.",
+ "massa4|leg curl seduto": {
+  "cp": "30 kg",
+  "impostazione": "Regola lo schienale in modo che il ginocchio sia allineato all'asse di rotazione. Il cuscinetto va sul tendine d'Achille, appena sopra i talloni. Il cuscino sulle cosce deve bloccarle senza schiacciarle. Impugna le maniglie. Regola il limitatore di partenza per avere un buon allungamento.",
+  "posizione": "Schiena appoggiata, bacino fermo sul sedile, punte dei piedi neutre. Parti dal massimo allungamento controllato.",
+  "impugnatore": "Impugnatore: maniglie laterali del sedile. Presa: salda, pollici avvolti, polsi dritti. Le mani tengono ferme busto e bacino.",
+  "esecuzione": "Tira i talloni verso i glutei con i femorali, senza sollevare il bacino. Fermo breve in contrazione. Torna in 2 secondi fino al massimo allungamento, con un fermo di mezzo secondo senza lasciare cadere il peso.",
   "respirazione": "Espira tirando, inspira tornando.",
-  "errori": "Bacino che si solleva dalla panca. Rimbalzo in basso. Carico troppo alto che accorcia la corsa. Ginocchia non allineate all'asse.",
-  "carico": "A cedimento tecnico. Carico da trovare: parti da 25-30 kg. Sali quando fai 12 su entrambe le serie.",
+  "errori": "Bacino che si solleva. Cosce non bloccate. Rimbalzo in allungamento. Carico troppo alto che accorcia la corsa.",
+  "carico": "Carico di partenza 30 kg (macchina a carico libero, ultima volta 11 e 9: non confrontarla con la macchina a pacco pesi). Sali quando fai 12 su entrambe le serie.",
+  "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
   "reg": [
-   "Posizione sulla panca",
-   "Cuscinetto"
+   "Schienale",
+   "Cuscino cosce",
+   "Cuscinetto caviglie"
   ]
  },
  "massa4|adductor machine": {
@@ -12635,7 +12638,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-11-dieta-v23';
+const BUILD_ID = '2026-11-12-legcurl-v24';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
