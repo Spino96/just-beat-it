@@ -1629,6 +1629,65 @@
   .finish-bar-progress .bp-label{display:flex;align-items:center;gap:8px;}
   .finish-bar-progress .bp-label #sessionElapsed{font-family:var(--mono);color:var(--text);font-weight:800;}
   .finish-bar-progress .bp-label #sessionCount{margin-left:auto;}
+
+/* ===== Dieta v2 ===== */
+.dz-summary{background:var(--card,#161922);border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:12px}
+.dz-sum-top{display:flex;gap:14px;align-items:center}
+.dz-ring{position:relative;width:96px;height:96px;flex:none}
+.dz-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.dz-ring .kr-bg{fill:none;stroke:var(--border);stroke-width:9}
+.dz-ring .kr-fill{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .4s}
+.dz-ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.dz-ring-c b{font-size:20px;font-weight:800}
+.dz-ring-c span{font-size:11px;color:var(--text-dim)}
+.dz-sum-side{flex:1;min-width:0}
+.dz-kcal-line{font-size:14px;margin-bottom:8px;color:var(--text-dim)}
+.dz-kcal-line b{color:var(--text)}
+.dz-kcal-line .over{color:var(--danger);font-weight:800}
+.dz-seg{display:flex;background:var(--bg,#0e1016);border-radius:12px;padding:3px;gap:3px}
+.dz-seg button{flex:1;border:0;background:transparent;color:var(--text-dim);font-weight:700;font-size:13px;padding:9px 4px;border-radius:9px;min-height:40px}
+.dz-seg button.on{background:var(--accent);color:#06110b}
+.dz-macros{display:grid;gap:9px;margin-top:14px}
+.dz-mac-top{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-dim);margin-bottom:4px}
+.dz-mac-top b{color:var(--text)}
+.dz-mac-top em{font-style:normal;margin-left:4px;font-size:11.5px}
+.dz-mac.over .dz-mac-top b,.dz-mac.over .dz-mac-top em{color:var(--danger)}
+.dz-bar{height:7px;border-radius:5px;background:var(--border);overflow:hidden;flex:1}
+.dz-bar-fill{height:100%;border-radius:5px;background:var(--mc,var(--accent));transition:width .3s}
+.dz-mac.over{--mc:var(--danger)}
+.dz-water{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:13px;font-weight:700}
+.dz-water button{border:1px solid var(--border);background:transparent;color:var(--text);border-radius:10px;min-width:44px;min-height:38px;font-weight:700;font-size:13px}
+.dz-water button:disabled{opacity:.35}
+.dz-fase{margin-top:10px;font-size:11.5px;color:var(--text-dim);line-height:1.35}
+.dz-tabs{display:flex;gap:6px;margin:4px 0 12px}
+.dz-tabs button{flex:1;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-weight:700;font-size:13px;padding:10px 4px;border-radius:12px;min-height:44px}
+.dz-tabs button.on{background:var(--accent);border-color:var(--accent);color:#06110b}
+.dz-tabs i{font-style:normal;font-size:11px;opacity:.8}
+.dz-pasto{background:var(--card,#161922);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden}
+.dz-pasto.now{border-color:var(--accent)}
+.dz-pasto-head{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 4px}
+.dz-pasto-main{flex:1;min-width:0;display:flex;align-items:center;gap:10px;padding:8px;cursor:pointer}
+.dz-pasto-ico{font-size:24px}
+.dz-pasto-n{font-weight:800;font-size:15px}
+.dz-pasto-s{font-size:12px;color:var(--text-dim);margin-top:1px}
+.dz-pasto-s b{color:var(--text)}
+.dz-chev{display:inline-block;font-style:normal;color:var(--text-dim);transition:transform .2s;margin-left:2px}
+.dz-chev.open{transform:rotate(90deg)}
+.dz-add{width:44px;height:44px;border-radius:14px;border:0;background:var(--accent);color:#06110b;font-size:26px;font-weight:700;line-height:1;flex:none}
+.dz-voci{padding:0 12px 6px;border-top:1px solid var(--border)}
+.dz-voce{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)}
+.dz-voce:last-child{border-bottom:0}
+.dz-voce-info{flex:1;min-width:0}
+.dz-voce-n{font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dz-voce-n span{font-weight:500;color:var(--text-dim)}
+.dz-voce-m{font-size:12px;color:var(--text-dim);margin-top:1px}
+.dz-voce-m b{color:var(--text)}
+.dz-repeat{display:flex;justify-content:space-between;gap:8px;width:calc(100% - 16px);margin:0 8px 8px;border:1px dashed var(--border);background:transparent;color:var(--text);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:700;min-height:42px;text-align:left}
+.dz-repeat span{color:var(--text-dim);font-weight:500;font-size:12px}
+.dz-note{margin:6px 0 14px;border:1px solid var(--border);border-radius:14px;padding:12px 14px}
+.dz-note summary{font-weight:700;font-size:14px;cursor:pointer}
+.dz-note .dic-b{margin-top:8px}
+.dz-tabs + .note-box{margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -9494,14 +9553,10 @@ function renderAlimentazione(){
     const pct = goal ? Math.min(100, Math.round((val/goal)*100)) : 0;
     const over = val > goal;
     const diff = goal - val;
-    const diffLabel = diff>=0 ? `mancano ${fmt1(diff)}g` : `+${fmt1(Math.abs(diff))}g oltre`;
-    const tileColor = over ? 'var(--danger)' : m.color;
-    return `<div class="macro-tile${over?' over':''}" style="--tile-color:${tileColor};">
-      <span class="mt-icon">${m.icona}</span>
-      <div class="mt-label">${m.label}</div>
-      <div class="mt-val">${fmt1(val)}<span class="mt-goal">/${fmt1(goal)}g</span></div>
-      <div class="mt-track"><div class="mt-fill" style="width:${pct}%;"></div></div>
-      <div class="mt-diff">${diffLabel}</div>
+    const diffLabel = diff>=0 ? `-${fmt1(diff)}g` : `+${fmt1(Math.abs(diff))}g`;
+    return `<div class="dz-mac${over?' over':''}" style="--mc:${m.color};">
+      <div class="dz-mac-top"><span>${m.icona} ${m.label}</span><span><b>${fmt1(val)}</b>/${fmt1(goal)}g <em>${diffLabel}</em></span></div>
+      <div class="dz-bar"><div class="dz-bar-fill" style="width:${pct}%;"></div></div>
     </div>`;
   }).join('');
 
@@ -9539,29 +9594,38 @@ function renderAlimentazione(){
   // conta resta quello giornaliero in cima alla Dieta): qui mostriamo invece
   // il totale effettivo di quello che è stato segnato in quel pasto, così
   // il numero riflette cosa hai davvero mangiato, non cosa "dovresti".
+  const pastoCorrente = pastoSuggeritoOra();
+  const vocaRiga = a=>`<div class="dz-voce">
+      <div class="dz-voce-info">
+        <div class="dz-voce-n">${escHtml(a.nome)}${a.marca?` <span>· ${escHtml(a.marca)}</span>`:''}${a.isRicetta?' <span>· 🍲</span>':''}</div>
+        <div class="dz-voce-m">${a.isRicetta?'1 porz.':`${a.grammi}g`} · <b>${fmt1(a.kcal)}</b> kcal · P ${fmt1(a.prot)} · C ${fmt1(a.carb)} · G ${fmt1(a.grassi)}</div>
+      </div>
+      <div class="efi-actions">
+        ${btnModificaVoce(a)}
+        <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
+      </div>
+    </div>`;
   const pastiTargetHtml = DIETA_PIANO.pasti.map((p,pi)=>{
     const voci = alimentiExtra.filter(a=> a.pasto===pi);
     const subKcal = voci.reduce((s,a)=>s+a.kcal,0);
     const subProt = voci.reduce((s,a)=>s+a.prot,0);
     const subCarb = voci.reduce((s,a)=>s+a.carb,0);
     const subGrassi = voci.reduce((s,a)=>s+a.grassi,0);
-    const assuntoHtml = voci.length ? `<div class="dic-b">Assunto: <b>${fmt1(subKcal)} kcal</b> · P ${fmt1(subProt)}g · C ${fmt1(subCarb)}g · G ${fmt1(subGrassi)}g</div>` : '';
-    const vociHtml = voci.length ? `<div class="extra-food-list" style="margin-top:8px;">${voci.map(a=>`
-        <div class="extra-food-item">
-          <div class="efi-info">
-            <div class="efi-n">${a.nome}${a.marca?` <span class="efi-brand">· ${a.marca}</span>`:''}${a.isRicetta?' <span class="efi-brand">· 🍲 ricetta</span>':''}</div>
-            <div class="efi-m">${a.isRicetta?'1 porzione':`${a.grammi}g`} · ${fmt1(a.kcal)} kcal · P ${fmt1(a.prot)}g · C ${fmt1(a.carb)}g · G ${fmt1(a.grassi)}g</div>
+    const chiuso = dietaPastiChiusi.has(pi) && voci.length>0;
+    const ripetibile = !voci.length && ultimoPastoPassato(pi);
+    return `<div class="dz-pasto${voci.length?' has':''}${pi===pastoCorrente&&!voci.length?' now':''}">
+      <div class="dz-pasto-head">
+        <div class="dz-pasto-main" onclick="${voci.length?`toggleDietaPasto(${pi})`:`apriRicercaPerPasto(${pi})`}">
+          <span class="dz-pasto-ico">${p.icona}</span>
+          <div class="dz-pasto-tit">
+            <div class="dz-pasto-n">${p.nome}${voci.length?` <i class="dz-chev${chiuso?'':' open'}">›</i>`:''}</div>
+            <div class="dz-pasto-s">${voci.length ? `<b>${fmt1(subKcal)} kcal</b> · P ${fmt1(subProt)} · C ${fmt1(subCarb)} · G ${fmt1(subGrassi)}` : p.orario}</div>
           </div>
-          <div class="efi-actions">
-            ${btnModificaVoce(a)}
-            <button class="efi-remove" onclick="rimuoviAlimentoExtra('${a.id}')" aria-label="Rimuovi">✕</button>
-          </div>
-        </div>`).join('')}</div>` : '';
-    return `<div class="diet-info-card">
-      <div class="dic-t">${p.icona} ${p.nome} <span style="float:right;font-weight:600;color:var(--text-dim);font-size:12px;">${p.orario}</span></div>
-      ${assuntoHtml}
-      ${vociHtml}
-      <button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="apriRicercaPerPasto(${pi})">+ Aggiungi a ${p.nome}</button>
+        </div>
+        <button class="dz-add" onclick="apriRicercaPerPasto(${pi})" aria-label="Aggiungi a ${p.nome}">+</button>
+      </div>
+      ${voci.length && !chiuso ? `<div class="dz-voci">${voci.map(vocaRiga).join('')}</div>` : ''}
+      ${ripetibile ? `<button class="dz-repeat" onclick="ripetiPastoPassato(${pi})">↻ Ripeti come ${ripetibile.label} <span>${ripetibile.n} ${ripetibile.n===1?'voce':'voci'} · ${fmt1(ripetibile.kcal)} kcal</span></button>` : ''}
     </div>`;
   }).join('');
 
@@ -9588,15 +9652,12 @@ function renderAlimentazione(){
 
   const segnaPastoTabHtml = `
     ${timingHtml}
-    <p class="section-label" style="margin-top:4px;">I tuoi pasti</p>
     ${pastiTargetHtml}
-
     ${extraSenzaPastoHtml}
-
-    <div class="diet-info-card">
-      <div class="dic-t">📝 Note pratiche</div>
+    <details class="dz-note">
+      <summary>📝 Note pratiche</summary>
       <div class="dic-b">Grassi da condimento (olio EVO) sempre a crudo o a fine cottura. Verdura non pesata in modo ossessivo: 150-200g corrispondono a circa 1 piatto abbondante o 2 pugni chiusi. Alcol in eliminazione (circa 1 birra media a settimana, ~130 kcal) e pasto libero nel weekend restano gestiti come da nota generale del piano — non compresi nelle tabelle sopra.</div>
-    </div>`;
+    </details>`;
 
   const integratoriTabHtml = `
     <div class="diet-summary" style="margin-bottom:12px;">
@@ -9621,46 +9682,89 @@ function renderAlimentazione(){
 
   const tabContentHtml = dietaTab==='integratori' ? integratoriTabHtml : segnaPastoTabHtml;
 
+  const nIntegr = INTEGRAZIONE_PIANO.integratori.length;
+  const nIntegrFatti = INTEGRAZIONE_PIANO.integratori.filter(x=>cache.dietaLogOggi.integratoriFatti[x.nome]).length;
+  const acquaMl = cache.dietaLogOggi.acquaMl || 0;
+  const acquaPct = Math.min(100, Math.round((acquaMl/(t.acquaMl||2500))*100));
+  const giornoSet = cache.dietaLogOggi.giornoAllenamento!==null;
+  const faseNome = pianoDietaAttivo().fase;
+
   view.innerHTML = `
-    <div class="diet-summary diet-summary-glow">
-      <div class="tlt">Piano nutrizionale</div>
-      <div class="tsb">${pianoDietaAttivo().fase}<br>5 pasti al giorno · segna cosa mangi davvero, pasto per pasto</div>
-      ${cache.dietaLogOggi.giornoAllenamento!==null ? `<div class="day-mode-toggle">
-        <button class="dmt-btn${!cache.dietaLogOggi.giornoAllenamento?' active':''}" onclick="impostaGiornoDiretto(false)">🛋️ Riposo</button>
-        <button class="dmt-btn${cache.dietaLogOggi.giornoAllenamento?' active':''}" onclick="impostaGiornoDiretto(true)">🏋️ Allenamento</button>
-      </div>` : ''}
-      <div class="kcal-ring-wrap">
-        <div class="kcal-ring-glow${kcalOver?' over':''}"></div>
-        <svg viewBox="0 0 120 120" class="kcal-ring">
-          <defs>
-            <linearGradient id="kcalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="${kcalOver?'#ff5470':'#39ff94'}"></stop>
-              <stop offset="100%" stop-color="${kcalOver?'#ff9d4d':'#8b6bff'}"></stop>
-            </linearGradient>
-          </defs>
-          <circle cx="60" cy="60" r="${RING_R}" class="kr-bg"></circle>
-          <circle cx="60" cy="60" r="${RING_R}" class="kr-fill" style="stroke:url(#kcalGrad);stroke-dasharray:${RING_C};stroke-dashoffset:${ringOffset};filter:drop-shadow(0 0 6px ${kcalOver?'rgba(255,84,112,.55)':'rgba(57,255,148,.5)'});"></circle>
-        </svg>
-        <div class="kr-center">
-          <span class="kr-n" style="color:${kcalColor};">${fmt1(acquisito.kcal)}</span>
-          <span class="kr-u">/ ${fmt1(t.kcal)} kcal oggi</span>
-          ${kcalDiffHtml}
+    <div class="dz-summary">
+      <div class="dz-sum-top">
+        <div class="dz-ring">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="${RING_R}" class="kr-bg"></circle>
+            <circle cx="60" cy="60" r="${RING_R}" class="kr-fill" style="stroke:${kcalColor};stroke-dasharray:${RING_C};stroke-dashoffset:${ringOffset};"></circle>
+          </svg>
+          <div class="dz-ring-c"><b style="color:${kcalColor};">${fmt1(acquisito.kcal)}</b><span>/ ${fmt1(t.kcal)}</span></div>
+        </div>
+        <div class="dz-sum-side">
+          <div class="dz-kcal-line">${kcalOver ? `<span class="over">+${fmt1(Math.abs(kcalDiff))} kcal oltre</span>` : `<span>Mancano <b>${fmt1(kcalDiff)}</b> kcal</span>`}</div>
+          ${giornoSet ? `<div class="dz-seg">
+            <button class="${!cache.dietaLogOggi.giornoAllenamento?'on':''}" onclick="impostaGiornoDiretto(false)">🛋️ Riposo</button>
+            <button class="${cache.dietaLogOggi.giornoAllenamento?'on':''}" onclick="impostaGiornoDiretto(true)">🏋️ Pesi</button>
+          </div>` : ''}
         </div>
       </div>
-      <div class="macro-grid">${macroBarsHtml}</div>
+      <div class="dz-macros">${macroBarsHtml}</div>
+      <div class="dz-water">
+        <span>💧 ${(acquaMl/1000).toFixed(2).replace('.',',')} L</span>
+        <div class="dz-bar"><div class="dz-bar-fill" style="width:${acquaPct}%;--mc:var(--accent-2);"></div></div>
+        <button onclick="aggiungiAcqua(-250)" ${acquaMl<=0?'disabled':''} aria-label="Togli 250 ml">−</button>
+        <button onclick="aggiungiAcqua(250)" aria-label="Aggiungi 250 ml">+250</button>
+      </div>
+      <div class="dz-fase">${faseNome}</div>
     </div>
 
     ${renderBlocco3DietaAnteprima()}
     ${renderFasiDieta()}
 
-    <div class="tab-bar">
-      <div class="tab-btn${dietaTab==='segna-pasto'?' active':''}" onclick="setDietaTab('segna-pasto')">🍽️ Segna pasto</div>
-      <div class="tab-btn${dietaTab==='integratori'?' active':''}" onclick="setDietaTab('integratori')">💊 Integratori</div>
-      <div class="tab-btn" onclick="setRoute({name:'diario'})" title="Diario dei giorni passati">📖 Diario</div>
+    <div class="dz-tabs">
+      <button class="${dietaTab==='segna-pasto'?'on':''}" onclick="setDietaTab('segna-pasto')">🍽️ Pasti</button>
+      <button class="${dietaTab==='integratori'?'on':''}" onclick="setDietaTab('integratori')">💊 Integratori <i>${nIntegrFatti}/${nIntegr}</i></button>
+      <button onclick="setRoute({name:'diario'})">📖 Diario</button>
     </div>
 
     ${tabContentHtml}
   `;
+}
+
+let dietaPastiChiusi = new Set();
+function toggleDietaPasto(i){
+  if(dietaPastiChiusi.has(i)) dietaPastiChiusi.delete(i); else dietaPastiChiusi.add(i);
+  hapticaLieve();
+  renderAlimentazione();
+}
+
+/* Ultimo giorno passato in cui il pasto pi ha delle voci: serve al tasto
+   "Ripeti come ieri". Ritorna null se non c'è nulla da ripetere. */
+function ultimoPastoPassato(pi){
+  const oggiId = todayKey();
+  const giorni = (cache.dietaLog||[]).filter(d=> d.id < oggiId ).slice().sort((a,b)=> a.id<b.id?1:-1);
+  for(const g of giorni){
+    const voci = (g.alimentiExtra||[]).filter(a=> a.pasto===pi);
+    if(voci.length){
+      const ieri = new Date(); ieri.setDate(ieri.getDate()-1);
+      const label = g.id===chiaveGiorno(ieri) ? 'ieri' : new Date(g.id+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long'});
+      return { giorno:g, voci, label, n:voci.length, kcal:voci.reduce((s,a)=>s+a.kcal,0) };
+    }
+  }
+  return null;
+}
+function chiaveGiorno(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function ripetiPastoPassato(pi){
+  const r = ultimoPastoPassato(pi);
+  if(!r) return;
+  r.voci.forEach(v=>{
+    const copia = JSON.parse(JSON.stringify(v));
+    copia.id = 'extra-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
+    copia.pasto = pi;
+    aggiungiAlimentoExtra(copia);
+  });
+  segnaPastoFattoDaExtra(pi);
+  hapticaMedia();
+  renderAlimentazione();
 }
 
 function selectDietaOpzione(i, oi){
@@ -12531,7 +12635,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-10-allenamento-v22';
+const BUILD_ID = '2026-11-11-dieta-v23';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
