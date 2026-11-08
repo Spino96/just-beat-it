@@ -1558,6 +1558,77 @@
   .rp-m{font-size:11px;font-weight:600;color:var(--text-dim);margin-top:2px;}
   .rp-row input{width:78px;text-align:center;background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 4px;font-size:15px;font-weight:800;}
   .rp-g{font-size:12px;color:var(--text-dim);}
+
+  /* ===== Allenamento v2: schede esercizio apribili, serie compatte ===== */
+  .ex2{background:var(--panel);border:1px solid var(--border);border-radius:20px;margin-bottom:10px;overflow:hidden;scroll-margin-top:84px;box-shadow:var(--shadow-card);}
+  .ex2.open{border-color:var(--sa,var(--accent));box-shadow:0 14px 30px -22px #000, 0 0 0 1px #39ff9422;}
+  .ex2.done:not(.open){opacity:.72;}
+  .ex2-head{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;padding:14px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .ex2-badge{flex:0 0 30px;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--text-dim);font-size:13px;font-weight:900;}
+  .ex2.open .ex2-badge{background:linear-gradient(135deg,var(--sa,var(--accent)),var(--sb,var(--accent-3)));color:var(--sfg,#04140d);border-color:transparent;}
+  .ex2.done .ex2-badge{background:var(--accent);color:#04140d;border-color:transparent;}
+  .ex2-title{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+  .ex2-title b{font-size:15.5px;font-weight:800;line-height:1.25;color:var(--text);}
+  .ex2-title small{font-size:12px;color:var(--text-dim);font-weight:700;font-family:var(--mono);}
+  .ex2-prog{font-size:12.5px;font-weight:800;color:var(--text-dim);font-family:var(--mono);}
+  .ex2.done .ex2-prog{color:var(--accent);}
+  .ex2-chev{color:var(--accent);font-size:14px;transition:transform .2s;}
+  .ex2.open .ex2-chev{transform:rotate(180deg);}
+  .ex2-body{padding:0 12px 14px;border-top:1px solid var(--border);padding-top:12px;}
+  .ex2-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;}
+  .ex2-cp{font-size:12px;font-weight:700;color:var(--text-dim);background:var(--panel-2);border-radius:10px;padding:5px 9px;}
+  .ex2-last{background:var(--panel-2);border-radius:14px;padding:10px 12px;margin-bottom:12px;}
+  .ex2-last-t{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;color:#8b6bff;}
+  .ex2-last .pst-sets{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+  .ex2-last .pst-set{background:#ffffff10;border-radius:9px;padding:4px 8px;font-size:12px;font-weight:800;}
+  .ex2-last-n{font-size:12px;color:var(--text-dim);margin-top:6px;}
+  .s2-head,.s2-row{display:grid;grid-template-columns:26px minmax(0,1.7fr) minmax(0,1fr) 50px 34px 22px;gap:6px;align-items:center;}
+  .s2-head{font-size:10.5px;font-weight:800;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;text-align:center;margin:0 0 6px;}
+  .s2-row{margin-bottom:8px;}
+  .s2-row.s2-dx{grid-template-columns:26px minmax(0,1.7fr) minmax(0,1fr) 50px 34px 22px;margin-top:-3px;}
+  .s2-n{width:26px;height:26px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:var(--text-dim);background:var(--panel-2);line-height:1;}
+  .s2-n small{font-size:7.5px;font-weight:900;color:var(--accent);margin-top:1px;}
+  .s2-row.s2-done .s2-n{background:var(--accent);color:#04140d;}
+  .s2-row.s2-done .s2-n small{color:#04140d;}
+  .s2-kg{min-width:0;}
+  .s2-kg input[type=number]{width:100%;min-width:0;text-align:center;padding:10px 0;font-size:15px;font-weight:800;background:#0c0e15;border:1px solid #2a3149;border-radius:12px;color:var(--text);}
+  .s2-kg .stepper-btn{width:22px;height:34px;border-radius:9px;}
+  .s2-row input.s2-rip{width:100%;min-width:0;text-align:center;padding:10px 0;font-size:15px;font-weight:800;background:#0c0e15;border:1px solid #2a3149;border-radius:12px;color:var(--text);}
+  .s2-row select.s2-rpe{width:100%;padding:10px 0;font-size:12.5px;font-weight:800;text-align:center;background:#0c0e15;border:1px solid #2a3149;border-radius:12px;color:var(--text);}
+  .s2-row.rpe-missing select.s2-rpe{border-color:var(--accent-2);box-shadow:0 0 0 2px #ff8a3d33;}
+  .s2-row input:focus,.s2-row select:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+  .s2-ok{-webkit-appearance:none;appearance:none;width:34px;height:34px;border-radius:50%;background:#0c0e15;border:2px solid #3a4262;cursor:pointer;position:relative;transition:all .15s;justify-self:center;}
+  .s2-ok:checked{background:linear-gradient(135deg,var(--sa,var(--accent)),var(--sb,var(--accent-3)));border-color:transparent;box-shadow:0 0 14px -2px var(--sa,var(--accent));}
+  .s2-ok:checked::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--sfg,#04140d);font-weight:900;font-size:16px;}
+  .s2-more{all:unset;box-sizing:border-box;width:22px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:18px;font-weight:900;cursor:pointer;border-radius:8px;}
+  .s2-more.on{color:var(--accent);}
+  .s2-skipped{grid-template-columns:26px 1fr auto;opacity:.65;}
+  .s2-skl{font-size:13px;color:var(--text-dim);font-style:italic;font-weight:600;}
+  .s2-opts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-2px 0 10px 32px;}
+  .s2-chip{background:var(--panel-2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:8px 12px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;}
+  .s2-chip.on{border-color:var(--accent);color:var(--accent);}
+  .s2-chip:active{background:var(--accent);color:#04140d;}
+  .s2-chip[disabled]{opacity:.35;pointer-events:none;}
+  .s2-chip.s2-danger{color:var(--danger);}
+  .s2-link{background:none;border:none;color:var(--accent);font-size:12px;font-weight:800;cursor:pointer;padding:2px 0;font-family:inherit;}
+  .ex2-actions{display:flex;gap:8px;margin-top:4px;}
+  .ex2-more{margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);}
+  .ex2-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .ex2 .tec-panel{margin:0 0 12px 0;}
+  .sess-info{background:var(--panel);border:1px solid var(--border);border-radius:16px;margin-bottom:10px;overflow:hidden;}
+  .sess-info summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;font-size:14px;font-weight:800;}
+  .sess-info summary::-webkit-details-marker{display:none;}
+  .sess-info summary::after{content:'▾';color:var(--accent);transition:transform .2s;margin-left:auto;}
+  .sess-info[open] summary::after{transform:rotate(180deg);}
+  .sess-info summary em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--text-dim);}
+  .sess-info[open] summary{border-bottom:1px solid var(--border);}
+  .sess-info-body{padding:12px 14px;font-size:13px;line-height:1.65;color:var(--text-dim);}
+  .sess-info-body p{margin:0 0 10px;}
+  .sess-info-body b{color:var(--text);}
+  .finish-bar-progress .bp-label{display:flex;align-items:center;gap:8px;}
+  .finish-bar-progress .bp-label #sessionElapsed{font-family:var(--mono);color:var(--text);font-weight:800;}
+  .finish-bar-progress .bp-label #sessionCount{margin-left:auto;}
 </style>
 </head>
 <body>
@@ -4148,6 +4219,7 @@ async function checkProfilo(){
   serieRipPersonalizzate = data.serieRipPersonalizzate || {};
   unilateraliPersonalizzati = data.unilateraliPersonalizzati || {};
   layoutSchede = data.layoutSchede || {};
+  sessioneInCorsoRemota = data.sessioneInCorso || null;
   regolazioniMacchine = data.regolazioniMacchine || {};
   // Normalizza il formato: versioni precedenti salvavano una singola stringa
   // per esercizio, ora è un array (più alternative possibili tra cui scegliere).
@@ -5407,6 +5479,9 @@ function renderAllenamentoList(){
   const passate = disponibili.filter(s=>schedaScaduta(s));
 
   let html = '';
+  if(sessionDraft){
+    html += `<div class="list-item turno" onclick="setRoute({name:'sessione'})"><span class="turn-badge">▶ Allenamento in corso</span><h3>${escHtml(sessionDraft.schedaNome)}</h3><p>Tocca per riprendere da dove eri</p></div>`;
+  }
   if(!attive.length && !passate.length){
     html += `<p class="empty"><span class="empty-icon">⏳</span>Il tuo trainer non ti ha ancora assegnato una scheda. Torna a controllare più tardi.</p>`;
   }
@@ -5906,9 +5981,9 @@ function memorizzaLayoutSeduta(){
   if(identico) delete layoutSchede[base.id]; else layoutSchede[base.id] = lay;
   salvaLayoutSchede();
 }
-function defsConLayout(base){
-  const lay = layoutSchede[base.id];
-  if(!Array.isArray(lay) || !lay.length) return base.esercizi.slice();
+function defsConLayout(base, layOverride, strict){
+  const lay = layOverride || layoutSchede[base.id];
+  if(!Array.isArray(lay) || !lay.length) return strict ? null : base.esercizi.slice();
   const noti = eserciziNoti();
   const usati = new Set();
   const out = [];
@@ -5917,6 +5992,7 @@ function defsConLayout(base){
     const idx = base.esercizi.findIndex((e,i)=> e.nome===x.nome && !usati.has(i));
     if(idx>-1){ usati.add(idx); out.push(base.esercizi[idx]); }
   });
+  if(strict) return out;
   // Esercizi nuovi della scheda (non presenti nel tuo ordine salvato): li inserisco
   // dopo quello che li precede nella scheda, così restano al loro posto naturale.
   base.esercizi.forEach((e,i)=>{
@@ -6047,8 +6123,8 @@ function inserisciEsercizio(nome, serie, rip, recupero, pos, base){
   renderSessionePreservandoScroll();
   scrollAEsercizio(pos);
 }
-function scrollAEsercizio(ei){
-  setTimeout(()=>{ const el = document.getElementById('excard-'+ei); if(el) el.scrollIntoView({behavior:'smooth', block:'center'}); }, 60);
+function scrollAEsercizio(ei, block){
+  setTimeout(()=>{ const el = document.getElementById('excard-'+ei); if(el) el.scrollIntoView({behavior:'smooth', block: block||'center'}); }, 80);
 }
 function spostaEsercizio(ei, dir){
   const un = unitaSessione(schedaSessione());
@@ -6195,7 +6271,117 @@ function tecnicaPanelHtml(ei, si, set, nome){
   </div>`;
 }
 
-function avviaSessione(schedaId){
+/* ============ ALLENAMENTO IN CORSO: SALVATAGGIO AUTOMATICO ============
+   Ogni modifica alla seduta viene copiata sul telefono (localStorage) e, con
+   qualche secondo di ritardo, sul tuo profilo online: se l'app si chiude o il
+   telefono si riavvia, alla riapertura puoi riprendere da dove eri. */
+const SESS_MAX_ORE = 20;
+let sessioneInCorsoRemota = null;
+let sessSalvaTimer = null, sessRemotoTimer = null;
+function chiaveSessioneLocale(){ return 'by_sessione_in_corso_' + currentUid; }
+function serializzaSessione(){
+  if(!sessionDraft) return null;
+  return JSON.parse(JSON.stringify({
+    v:1, salvato: Date.now(),
+    schedaId: sessionDraft.schedaId, schedaNome: sessionDraft.schedaNome,
+    iniziata: sessionDraft.iniziata, warmDone: sessionDraft.warmDone,
+    layout: layoutDaDefs(sessionDraft.defs),
+    esercizi: sessionDraft.esercizi
+  }));
+}
+function salvaSessioneLocale(){
+  if(!sessionDraft || !currentUid) return;
+  try{ localStorage.setItem(chiaveSessioneLocale(), JSON.stringify(serializzaSessione())); }catch(e){}
+}
+function salvaSessioneRemota(){
+  if(!sessionDraft || !currentUid) return;
+  try{
+    attendiScrittura(db.collection('users').doc(currentUid).set({ sessioneInCorso: serializzaSessione() }, { mergeFields:['sessioneInCorso'] })).catch(()=>{});
+  }catch(e){}
+}
+function pianificaSalvataggioSessione(){
+  clearTimeout(sessSalvaTimer);
+  sessSalvaTimer = setTimeout(salvaSessioneLocale, 250);
+  clearTimeout(sessRemotoTimer);
+  sessRemotoTimer = setTimeout(salvaSessioneRemota, 6000);
+}
+function salvaSessioneOra(){
+  if(!sessionDraft) return;
+  clearTimeout(sessSalvaTimer); clearTimeout(sessRemotoTimer);
+  salvaSessioneLocale(); salvaSessioneRemota();
+}
+function cancellaSessioneSalvata(){
+  clearTimeout(sessSalvaTimer); clearTimeout(sessRemotoTimer);
+  try{ localStorage.removeItem(chiaveSessioneLocale()); }catch(e){}
+  sessioneInCorsoRemota = null;
+  try{ if(currentUid) db.collection('users').doc(currentUid).set({ sessioneInCorso: null }, { mergeFields:['sessioneInCorso'] }).catch(()=>{}); }catch(e){}
+}
+['input','change','click'].forEach(ev=> document.addEventListener(ev, ()=>{ if(sessionDraft) pianificaSalvataggioSessione(); }));
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') salvaSessioneOra(); });
+window.addEventListener('pagehide', salvaSessioneOra);
+
+function ricostruisciSessione(s){
+  try{
+    if(!s || !Array.isArray(s.esercizi) || !s.esercizi.length) return null;
+    const base = SCHEDE.find(x=>x.id===s.schedaId);
+    if(!base) return null;
+    const defs = defsConLayout(base, s.layout, true);
+    if(!defs || defs.length !== s.esercizi.length) return null;
+    return {
+      defs, schedaId:s.schedaId, schedaNome:s.schedaNome || base.nome, iniziata:s.iniziata,
+      warmDone: Array.isArray(s.warmDone) ? s.warmDone : base.riscaldamento.map(()=>false),
+      esercizi: s.esercizi
+    };
+  }catch(e){ return null; }
+}
+function sessioneSalvataCandidata(){
+  let loc = null;
+  try{ loc = JSON.parse(localStorage.getItem(chiaveSessioneLocale()) || 'null'); }catch(e){}
+  const cand = [loc, sessioneInCorsoRemota].filter(x=> x && x.salvato && (Date.now()-x.salvato) < SESS_MAX_ORE*3600*1000);
+  if(!cand.length) return null;
+  cand.sort((a,b)=> b.salvato - a.salvato);
+  return cand[0];
+}
+function chiediRiprendiAllenamento(s){
+  return new Promise(resolve=>{
+    const fatte = (s.esercizi||[]).reduce((n,e)=> n + (e.sets||[]).filter(x=>x.fatta).length, 0);
+    const minuti = Math.max(0, Math.round((Date.now() - new Date(s.iniziata).getTime())/60000));
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `<div class="confirm-box">
+      <p class="confirm-msg" style="margin-bottom:6px;">🏋️ Allenamento in corso</p>
+      <p class="field-hint" style="text-align:center;margin:0 0 16px;line-height:1.6;"><b>${escHtml(s.schedaNome||'')}</b><br>iniziato ${minuti<60 ? minuti+' min' : Math.floor(minuti/60)+' h '+(minuti%60)+' min'} fa · ${fatte} ${fatte===1?'serie segnata':'serie segnate'}</p>
+      <div class="confirm-actions">
+        <button class="btn secondary" id="rsScarta">Scarta</button>
+        <button class="btn" id="rsRiprendi">Riprendi</button>
+      </div></div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#rsRiprendi').onclick = ()=>{ overlay.remove(); resolve(true); };
+    overlay.querySelector('#rsScarta').onclick = ()=>{ overlay.remove(); resolve(false); };
+  });
+}
+async function controllaSessioneInCorso(){
+  const s = sessioneSalvataCandidata();
+  if(!s){ cancellaSessioneSalvata(); return false; }
+  const ric = ricostruisciSessione(s);
+  if(!ric){ cancellaSessioneSalvata(); return false; }
+  const riprendi = await chiediRiprendiAllenamento(s);
+  if(!riprendi){ cancellaSessioneSalvata(); return false; }
+  sessionDraft = ric;
+  return true;
+}
+async function scartaAllenamento(){
+  if(!(await mostraConferma('Scartare questo allenamento? I dati segnati finora andranno persi.', 'danger'))) return;
+  sessionDraft = null;
+  cancellaSessioneSalvata();
+  setRoute({name:'allenamento-list'});
+}
+
+async function avviaSessione(schedaId){
+  if(sessionDraft){
+    if(sessionDraft.schedaId===schedaId){ setRoute({name:'sessione'}); return; }
+    if(!(await mostraConferma(`Hai già un allenamento in corso (${escHtml(sessionDraft.schedaNome)}). Iniziarne uno nuovo cancella i dati di quello. Procedere?`,'danger'))) return;
+  }
   const scheda = SCHEDE.find(s=>s.id===schedaId);
   if(!blocchiIniziati[schedaId]){
     blocchiIniziati[schedaId] = new Date().toISOString();
@@ -6221,6 +6407,7 @@ function avviaSessione(schedaId){
       };
     })
   };
+  salvaSessioneLocale();
   setRoute({name:'sessione'});
 }
 
@@ -6474,20 +6661,21 @@ function unitaCompletata(u){
 
 function refreshLocks(){
   const scheda = schedaSessione();
-  const unita = unitaSessione(scheda);
-  const nuovi = sessionDraft.esercizi.map((_,ei)=>{
-    const uIdx = unita.findIndex(u=>u.indici.includes(ei));
-    return false; // sblocco sequenziale rimosso
-  });
-  const precedenti = sessionDraft._locks || [];
-  const cambiati = nuovi.length !== precedenti.length || nuovi.some((v,i)=>v!==precedenti[i]);
-  sessionDraft._locks = nuovi;
-  if(cambiati){ renderSessionePreservandoScroll(); return; }
-  // Nessun cambio di sblocchi (es. si completa l'ULTIMO esercizio di una
-  // unità, o la serie finale): la pagina non viene ridisegnata, quindi il
-  // contatore "X di Y esercizi completati" e l'avviso RPE vanno aggiornati
-  // a mano. Prima restavano fermi e l'ultimo esercizio risultava sempre
-  // mancante finché non si toglieva e si rimetteva una serie.
+  const sig = scheda.esercizi.map((_,i)=> esercizioCompletato(i)?'1':'0').join('');
+  const prec = sessionDraft._sig;
+  sessionDraft._sig = sig;
+  if(prec!==undefined && prec!==sig && prec.length===sig.length){
+    // Un esercizio è stato completato (o riaperto): chi si è appena chiuso torna
+    // in modalità automatica, così si richiude e si apre il prossimo da fare.
+    sessionDraft.esercizi.forEach((d,i)=>{ if(sig[i]==='1' && prec[i]!=='1') delete uiDi(d).open; });
+    renderSessionePreservandoScroll();
+    const nuovi = (sig.match(/1/g)||[]).length > (prec.match(/1/g)||[]).length;
+    if(nuovi){
+      const k = indiceUnitaCorrente(scheda);
+      if(k>=0) scrollAEsercizio(unitaSessione(scheda)[k].indici[0], 'start');
+    }
+    return;
+  }
   aggiornaProgressoSessione();
 }
 
@@ -6501,10 +6689,10 @@ function aggiornaProgressoSessione(){
   const ok = scheda.esercizi.reduce((n,_,i)=> n + (esercizioCompletato(i) ? 1 : 0), 0);
   const box = document.getElementById('sessionProgress');
   if(!box) return;
-  const lbl = box.querySelector('.bp-label');
+  const lbl = box.querySelector('#sessionCount');
   const fill = box.querySelector('.bp-fill');
   const nt = contaTecnicheSessione();
-  if(lbl) lbl.textContent = `${ok} di ${tot} esercizi completati${nt?` · ⚡ ${nt}/${maxTecnicheSeduta()} tecniche`:''}`;
+  if(lbl) lbl.textContent = `${ok} di ${tot} esercizi${nt?` · ⚡ ${nt}/${maxTecnicheSeduta()}`:''}`;
   if(fill) fill.style.width = (tot ? Math.round(ok/tot*100) : 0) + '%';
 }
 
@@ -6513,19 +6701,10 @@ function aggiornaProgressoSessione(){
 function aggiornaAvvisoRPE(ei, si){
   const set = sessionDraft.esercizi[ei] && sessionDraft.esercizi[ei].sets[si];
   const row = document.getElementById(`setrow-${ei}-${si}`);
-  const act = document.getElementById(`setact-${ei}-${si}`);
-  if(!set || !row || !act) return;
+  if(!set || !row) return;
   const manca = set.fatta && set.rpe==null && !set.saltata;
   row.classList.toggle('rpe-missing', manca);
-  let hint = act.querySelector('.set-row-hint');
-  if(manca && !hint){
-    hint = document.createElement('span');
-    hint.className = 'set-row-hint';
-    hint.textContent = "⚠️ Segna l'RPE per completare questa serie";
-    act.insertBefore(hint, act.firstChild);
-  } else if(!manca && hint){
-    hint.remove();
-  }
+  row.classList.toggle('s2-done', !!set.fatta && !manca);
 }
 
 /* renderSessione() sostituisce tutto view.innerHTML: senza precauzioni il
@@ -6678,209 +6857,246 @@ function renderUnitaSupersetBloccata(scheda, u){
    estratta a funzione perché ora va richiamata sia per un esercizio
    singolo sia per ciascun membro di un gruppo superset. supersetTag: se
    valorizzato, mostra un'etichetta "🔗 Superset" sulla card. */
+/* ============ SCHERMATA ALLENAMENTO (v2) ============
+   Esercizi a scheda apribile (di default aperto solo quello da fare ora, i
+   completati si richiudono da soli), serie su una riga sola, extra e
+   strumenti nascosti sotto "Altro". Lo stato aperto/chiuso vive in una
+   WeakMap legata all'esercizio, così non finisce nei dati salvati. */
+const uiEs = new WeakMap();
+function uiDi(draft){ let u = uiEs.get(draft); if(!u){ u = { menu:{} }; uiEs.set(draft,u); } return u; }
+function indiceUnitaCorrente(scheda){
+  return unitaSessione(scheda).findIndex(u=>!unitaCompletata(u));
+}
+function esercizioAperto(ei, scheda){
+  const u = uiDi(sessionDraft.esercizi[ei]);
+  if(typeof u.open==='boolean') return u.open;
+  const un = unitaSessione(scheda); const k = indiceUnitaCorrente(scheda);
+  return k>=0 && un[k].indici.includes(ei);
+}
+function toggleEsercizio(ei){
+  const scheda = schedaSessione();
+  const u = uiDi(sessionDraft.esercizi[ei]);
+  u.open = !esercizioAperto(ei, scheda);
+  renderSessionePreservandoScroll();
+}
+function toggleAltroEsercizio(ei){
+  const u = uiDi(sessionDraft.esercizi[ei]);
+  u.more = !u.more;
+  renderSessionePreservandoScroll();
+}
+function toggleMenuSerie(ei, si){
+  const u = uiDi(sessionDraft.esercizi[ei]);
+  u.menu[si] = !u.menu[si];
+  renderSessionePreservandoScroll();
+}
+function formattaNoteScheda(txt){
+  let h = escHtml(txt || '');
+  h = h.replace(/\s([A-ZÀ-Ü][A-ZÀ-Ü' ]{5,}:)/g, '<br><br><b>$1</b>');
+  ['Drop set:','Rest-pause:','Parziali in allungamento:','Jump set:','Esercizi unilaterali:','Progressione:','Esecuzione:','Dopo 4-6 settimane:','Sono linee guida generali'].forEach(l=>{
+    h = h.split(' '+l).join('<br><br><b>'+l+'</b>');
+  });
+  return h.replace(/^(<br>)+/,'');
+}
+
+function setRigaHtml(e, ei, si, set, uni, isExtra, nomeAttivo){
+  const ui = uiDi(sessionDraft.esercizi[ei]);
+  if(set.saltata){
+    return `<div class="s2-row s2-skipped"><span class="s2-n">${si+1}</span><span class="s2-skl">Serie saltata</span>
+      <button type="button" class="s2-link" onclick="annullaSaltoSet(${ei},${si})">↺ Annulla</button></div>`;
+  }
+  const rpeMissing = set.fatta && set.rpe==null;
+  const menuAperto = !!ui.menu[si];
+  let h = `<div class="s2-row${set.fatta && !rpeMissing ? ' s2-done' : ''}${rpeMissing ? ' rpe-missing' : ''}" id="setrow-${ei}-${si}">
+    <span class="s2-n">${si+1}${uni?'<small>SX</small>':''}</span>
+    <div class="peso-stepper s2-kg">
+      <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},-1.25)" aria-label="Togli peso">–</button>
+      <input type="number" inputmode="decimal" min="0" max="500" placeholder="kg" id="peso-${ei}-${si}" value="${set.peso}" oninput="updateSet(${ei},${si},'peso',this.value)">
+      <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},1.25)" aria-label="Aggiungi peso">+</button>
+    </div>
+    <input type="text" class="s2-rip" inputmode="numeric" pattern="[0-9]*" placeholder="rip" value="${set.rip}" oninput="updateSet(${ei},${si},'rip',this.value)">
+    <select class="s2-rpe" onchange="setRPESet(${ei},${si},this.value)" aria-label="RPE">
+      <option value="">RPE</option>
+      ${[6,7,8,9,10].map(v=>`<option value="${v}" ${set.rpe===v?'selected':''}>${v}</option>`).join('')}
+    </select>
+    <input type="checkbox" class="s2-ok" ${set.fatta?'checked':''} onchange="markSetDone(${ei},${si},${recuperoEsercizio(e)},this.checked,this)" aria-label="Serie fatta">
+    <button type="button" class="s2-more${menuAperto||set.tecnica?' on':''}" onclick="toggleMenuSerie(${ei},${si})" aria-label="Altre opzioni serie">⋯</button>
+  </div>`;
+  if(uni){
+    h += `<div class="s2-row s2-dx" id="setdx-${ei}-${si}">
+      <span class="s2-n"><small>DX</small></span>
+      <div class="peso-stepper s2-kg">
+        <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},-1.25,'pesoDx')" aria-label="Togli peso destro">–</button>
+        <input type="number" inputmode="decimal" min="0" max="500" placeholder="kg" id="pesodx-${ei}-${si}" value="${set.pesoDx??''}" oninput="updateSet(${ei},${si},'pesoDx',this.value)">
+        <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},1.25,'pesoDx')" aria-label="Aggiungi peso destro">+</button>
+      </div>
+      <input type="text" class="s2-rip" inputmode="numeric" pattern="[0-9]*" placeholder="rip" value="${set.ripDx??''}" oninput="updateSet(${ei},${si},'ripDx',this.value)">
+    </div>`;
+  }
+  if(menuAperto){
+    h += `<div class="s2-opts" id="setact-${ei}-${si}">
+      <button type="button" class="s2-chip" onclick="saltaSet(${ei},${si})">⏭ Salta serie</button>
+      <select class="tec-sel${set.tecnica?' on':''}" onchange="setTecnica(${ei},${si},this.value)" aria-label="Tecnica d'intensità">
+        <option value="">⚡ Tecnica</option>
+        ${Object.keys(TECNICHE).map(k=>`<option value="${k}" ${set.tecnica===k?'selected':''}>${TECNICHE[k].label}</option>`).join('')}
+      </select>
+      ${isExtra ? `<button type="button" class="s2-chip" onclick="rimuoviSet(${ei},${si})">🗑 Rimuovi</button>` : ''}
+    </div>`;
+  }
+  if(set.tecnica) h += tecnicaPanelHtml(ei, si, set, nomeAttivo);
+  return h;
+}
+
 function renderEsercizioCard(scheda, ei, supersetTag){
   const e = scheda.esercizi[ei];
   const draft = sessionDraft.esercizi[ei];
+  const ui = uiDi(draft);
   const uni = !!draft.unilaterale;
   const usaAlt = !!draft.usaAlternativa;
   const nomeAttivo = draft.nome || e.nome;
-  const suggerimento = suggerimentoProgressione(nomeAttivo, e.ripTarget);
+  const aperto = esercizioAperto(ei, scheda);
+  const compl = esercizioCompletato(ei);
+  const ris = draft.sets.filter(setRisolto).length;
+  const nSet = draft.sets.length;
+  const nomeEsc = escHtml(nomeAttivo);
 
-  let html = `<div class="exercise-card" id="excard-${ei}">`;
-  if(supersetTag){
-    html += `<div class="superset-tag">${supersetTag==='Jump set'?'🔁':'🔗'} ${supersetTag}</div>`;
-  }
-  html += `<div class="ex-head">
-      ${(!usaAlt && e.immagine) ? `<div class="ex-thumb"><img src="${e.immagine}" alt="${e.nome}" loading="lazy"></div>` : ''}
-      <div class="ex-head-info">
-        <h3>${nomeAttivo}${usaAlt ? ' <span class="alt-tag">alternativa</span>' : ''}</h3>
-        <div class="ex-meta" style="margin-bottom:0;"><button type="button" class="rec-chip${serieRipPersonalizzate[e.nome]?' custom':''}" onclick="apriModificaSerie(${ei})" aria-label="Modifica serie e ripetizioni">${serieEsercizio(e)} x ${escHtml(ripEsercizio(e))} ✎</button> <button type="button" class="rec-chip${recuperiPersonalizzati[e.nome]!=null?' custom':''}" onclick="apriModificaRecupero(${ei})" aria-label="Modifica il tempo di recupero">⏱ ${fmtRecupero(recuperoEsercizio(e))} ✎</button> <button type="button" class="rec-chip${uni?' custom':''}" onclick="toggleUnilaterale(${ei})" aria-label="Esegui un lato alla volta">↔ Unilaterale${uni?' ✓':''}</button></div>
-      </div>
-    </div>`;
-  {
-    const nUn = unitaSessione(scheda).length;
-    const uIdx = unitaSessione(scheda).findIndex(u=>u.indici.includes(ei));
-    const mobile = !e.superset;
-    html += `<div class="ex-tools">
-      ${mobile ? `<button type="button" class="set-mini-btn" ${uIdx<=0?'disabled':''} onclick="spostaEsercizio(${ei},-1)" aria-label="Sposta su">▲ Su</button>
-      <button type="button" class="set-mini-btn" ${uIdx>=nUn-1?'disabled':''} onclick="spostaEsercizio(${ei},1)" aria-label="Sposta giù">▼ Giù</button>` : ''}
-      <button type="button" class="set-mini-btn" onclick="apriAggiungiEsercizio(${ei})">➕ Aggiungi sotto</button>
-      ${draft.aggiunto ? `<button type="button" class="set-mini-btn" onclick="rimuoviEsercizioAggiunto(${ei})">🗑 Rimuovi</button>` : ''}
-    </div>`;
-  }
+  let html = `<div class="ex2${aperto?' open':''}${compl?' done':''}" id="excard-${ei}">`;
+  html += `<button type="button" class="ex2-head" onclick="toggleEsercizio(${ei})" aria-expanded="${aperto}">
+    <span class="ex2-badge">${compl ? '✓' : ei+1}</span>
+    <span class="ex2-title"><b>${nomeEsc}${usaAlt?' <em class="alt-tag">alternativa</em>':''}</b>
+      <small>${serieEsercizio(e)} × ${escHtml(ripEsercizio(e))} · ⏱ ${fmtRecupero(recuperoEsercizio(e))}${supersetTag?` · ${supersetTag==='Jump set'?'🔁':'🔗'} ${supersetTag}`:''}</small></span>
+    <span class="ex2-prog">${ris}/${nSet}</span><span class="ex2-chev">▾</span>
+  </button>`;
+  if(!aperto){ return html + `</div>`; }
+
+  html += `<div class="ex2-body">`;
   const infoEs = (!usaAlt) ? infoEsercizio(sessionDraft.schedaId, e.nome) : null;
-  if(infoEs && infoEs.cp && infoEs.cp!=='da trovare') html += `<div class="carico-partenza">🏁 Carico di partenza: <b>${escHtml(infoEs.cp)}</b></div>`;
-  else if(infoEs && infoEs.cp==='da trovare') html += `<div class="carico-partenza">🏁 Carico di partenza: <b>da trovare</b> con 1-2 serie di prova</div>`;
+  // Riga sintetica: serie/ripetizioni e recupero modificabili, carico di partenza
+  html += `<div class="ex2-chips">
+    <button type="button" class="rec-chip${serieRipPersonalizzate[e.nome]?' custom':''}" onclick="apriModificaSerie(${ei})" aria-label="Modifica serie e ripetizioni">${serieEsercizio(e)} × ${escHtml(ripEsercizio(e))} ✎</button>
+    <button type="button" class="rec-chip${recuperiPersonalizzati[e.nome]!=null?' custom':''}" onclick="apriModificaRecupero(${ei})" aria-label="Modifica il tempo di recupero">⏱ ${fmtRecupero(recuperoEsercizio(e))} ✎</button>
+    ${infoEs && infoEs.cp ? `<span class="ex2-cp">🏁 ${escHtml(infoEs.cp==='da trovare' ? 'carico da trovare' : infoEs.cp)}</span>` : ''}
+    ${uni ? `<span class="ex2-cp">↔ un lato alla volta · parti dal SX</span>` : ''}
+  </div>`;
   const ultimaVolta = datiUltimaSessione(nomeAttivo);
   if(ultimaVolta){
     const dataLbl = new Date(ultimaVolta.data).toLocaleDateString('it-IT',{day:'numeric',month:'short'});
     const uniUV = !!(ultimaVolta.sets.some(s=>s.pesoDx!=null && s.pesoDx!==''));
     const setsConPeso = ultimaVolta.sets.filter(s=> (s.peso!=='' && s.peso!=null) || (s.pesoDx!=='' && s.pesoDx!=null));
-    const setsHtml = setsConPeso.length
-      ? `<div class="pst-sets">${setsConPeso.map(s=>`<span class="pst-set">${descriviSerie(s, uniUV)}</span>`).join('')}</div>`
-      : '';
-    html += `<div class="prev-session-tip">
-      <span class="pst-label">🕐 Ultima volta</span> (${dataLbl})${!setsConPeso.length ? ': nessun peso registrato' : ''}
-      ${setsHtml}
-      ${ultimaVolta.noteUtente ? `<div class="pst-nota"><b>Nota:</b> ${ultimaVolta.noteUtente}</div>` : ''}
-      ${setsConPeso.length ? `<button type="button" class="btn small secondary" style="width:100%;margin-top:10px;" onclick="usaValoriUltimaVolta(${ei})">↻ Usa questi valori</button>` : ''}
+    html += `<div class="ex2-last">
+      <div class="ex2-last-t"><span>🕐 Ultima volta · ${dataLbl}</span>${setsConPeso.length ? `<button type="button" class="s2-link" onclick="usaValoriUltimaVolta(${ei})">↻ Usa questi valori</button>` : ''}</div>
+      ${setsConPeso.length ? `<div class="pst-sets">${setsConPeso.map(s=>`<span class="pst-set">${descriviSerie(s, uniUV)}</span>`).join('')}</div>` : '<div class="ex2-last-n">nessun peso registrato</div>'}
+      ${ultimaVolta.noteUtente ? `<div class="ex2-last-n"><b>Nota:</b> ${escHtml(ultimaVolta.noteUtente)}</div>` : ''}
     </div>`;
   }
-  html += `<p class="rpe-legend">RPE per ogni serie: 6 = leggero · 8 = a 2 rip dal cedimento · 10 = cedimento totale</p>`;
-  if(uni) html += `<p class="rpe-legend" style="margin-top:-6px;">↔ Un lato alla volta: riga <b>SX</b> (lato debole, si parte da qui) e riga <b>DX</b>. Il recupero parte quando spunti la serie, dopo entrambi i lati.</p>`;
+  html += `<div class="s2-head"><span></span><span>Peso (kg)</span><span>Rip</span><span>RPE</span><span>✓</span><span></span></div>`;
   draft.sets.forEach((set,si)=>{
-    const isExtra = si >= serieEsercizio(e);
-    if(set.saltata){
-      html += `<div class="set-row set-row-skipped">
-        <span>${si+1}</span>
-        <div class="set-row-skipped-label">Serie saltata</div>
-        <button type="button" class="set-mini-btn" onclick="annullaSaltoSet(${ei},${si})">↺ Annulla</button>
-      </div>`;
-      return;
-    }
-    const rpeMissing = set.fatta && set.rpe==null;
-    html += `<div class="set-row${rpeMissing ? ' rpe-missing' : ''}" id="setrow-${ei}-${si}">
-      <span>${si+1}${uni?'<small class="side-lbl">SX</small>':''}</span>
-      <div class="peso-stepper">
-        <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},-1.25)" aria-label="Togli peso">–</button>
-        <input type="number" inputmode="decimal" min="0" max="500" placeholder="kg" id="peso-${ei}-${si}" value="${set.peso}" oninput="updateSet(${ei},${si},'peso',this.value)">
-        <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},1.25)" aria-label="Aggiungi peso">+</button>
-      </div>
-      <input type="text" inputmode="numeric" pattern="[0-9]*" placeholder="rip / sec" value="${set.rip}" oninput="updateSet(${ei},${si},'rip',this.value)">
-      <select onchange="setRPESet(${ei},${si},this.value)">
-        <option value="">RPE</option>
-        ${[6,7,8,9,10].map(v=>`<option value="${v}" ${set.rpe===v?'selected':''}>${v}</option>`).join('')}
-      </select>
-      <input type="checkbox" ${set.fatta?'checked':''} onchange="markSetDone(${ei},${si},${recuperoEsercizio(e)},this.checked,this)">
-    </div>`;
-    if(uni){
-      html += `<div class="set-row set-row-dx" id="setdx-${ei}-${si}">
-        <span><small class="side-lbl">DX</small></span>
-        <div class="peso-stepper">
-          <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},-1.25,'pesoDx')" aria-label="Togli peso destro">–</button>
-          <input type="number" inputmode="decimal" min="0" max="500" placeholder="kg" id="pesodx-${ei}-${si}" value="${set.pesoDx??''}" oninput="updateSet(${ei},${si},'pesoDx',this.value)">
-          <button type="button" class="stepper-btn" onclick="adjustPeso(${ei},${si},1.25,'pesoDx')" aria-label="Aggiungi peso destro">+</button>
-        </div>
-        <input type="text" inputmode="numeric" pattern="[0-9]*" placeholder="rip / sec" value="${set.ripDx??''}" oninput="updateSet(${ei},${si},'ripDx',this.value)">
-        <span></span><span></span>
-      </div>`;
-    }
-    html += `<div class="set-row-actions" id="setact-${ei}-${si}">
-      ${rpeMissing ? `<span class="set-row-hint">⚠️ Segna l'RPE per completare questa serie</span>` : ''}
-      <button type="button" class="set-mini-btn" onclick="saltaSet(${ei},${si})">⏭ Salta serie</button>
-      <select class="tec-sel${set.tecnica?' on':''}" onchange="setTecnica(${ei},${si},this.value)" aria-label="Tecnica d'intensità">
-        <option value="">⚡ Tecnica</option>
-        ${Object.keys(TECNICHE).map(k=>`<option value="${k}" ${set.tecnica===k?'selected':''}>${TECNICHE[k].label}</option>`).join('')}
-      </select>
-      ${isExtra ? `<button type="button" class="set-mini-btn" onclick="rimuoviSet(${ei},${si})">🗑 Rimuovi</button>` : ''}
-    </div>`;
-    if(set.tecnica) html += tecnicaPanelHtml(ei, si, set, nomeAttivo);
+    html += setRigaHtml(e, ei, si, set, uni, si >= serieEsercizio(e), nomeAttivo);
   });
-  html += `<button type="button" class="btn small secondary add-set-btn" style="margin-top:10px;" onclick="aggiungiSet(${ei})">+ Aggiungi serie</button>`;
-  html += `<div class="note-box">${usaAlt ? `Stai facendo l'alternativa al posto di <b>${e.nome}</b>. ${e.note}` : e.note}</div>`;
-  if(usaAlt){
-    html += `<button class="btn small secondary" style="width:100%;margin-top:10px;" onclick="apriAlternativeSheet(${ei})">🔁 ${draft.nome} <span style="opacity:.7;">· cambia</span></button>`;
-  } else {
-    const numAlt = candidatiAlternativa(e).length;
-    html += `<button class="btn small secondary" style="margin-top:10px;" onclick="apriAlternativeSheet(${ei})">🔁 ${numAlt ? 'Usa alternativa'+(numAlt>1?` (${numAlt})`:'') : "Usa un'alternativa"}</button>`;
-  }
-  html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio (sensazioni, dolori, aggiustamenti...)" oninput="updateNotaEsercizio(${ei}, this.value)">${draft.noteUtente||''}</textarea>`;
-  if(suggerimento){
-    html += `<div class="progress-tip">💡 ${suggerimento}</div>`;
-  }
-  html += `<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:12px;">`;
-  if(!usaAlt && infoEs){
-    html += `${e.video ? `<a href="${e.video}" target="_blank" rel="noopener" class="video-link">▶ Guarda il video</a>` : ''}`;
-  } else if(!usaAlt){
-    html += `<button class="toggle-guide" onclick="toggleGuide(${ei})">Guida esercizio ▾</button>
-      ${e.video ? `<a href="${e.video}" target="_blank" rel="noopener" class="video-link">▶ Guarda il video</a>` : ''}`;
-  }
-  html += `<button type="button" class="skip-ex-link" onclick="saltaEsercizioConferma(${ei})">Salta esercizio</button>`;
-  html += `</div>`;
-  if(infoEs) html += schedaEsercizioHtml(ei, e.nome, infoEs);
-  if(!usaAlt && !infoEs){
-    html += `<div class="guide-body" id="guide-${ei}">
-      <b>Muscoli:</b> ${e.guida.muscoli}<br><br>
-      <b>Esecuzione:</b> ${e.guida.esecuzione}<br><br>
-      <b>Errori da evitare:</b> ${e.guida.errori}
+  html += `<div class="ex2-actions">
+    <button type="button" class="s2-chip" onclick="aggiungiSet(${ei})">+ Aggiungi serie</button>
+    <button type="button" class="s2-chip${ui.more?' on':''}" onclick="toggleAltroEsercizio(${ei})">${ui.more ? '▲ Meno' : '⋯ Altro'}</button>
+  </div>`;
+
+  if(ui.more){
+    const nUn = unitaSessione(scheda).length;
+    const uIdx = unitaSessione(scheda).findIndex(u=>u.indici.includes(ei));
+    const mobile = !e.superset;
+    html += `<div class="ex2-more">`;
+    html += `<div class="ex2-tools">
+      <button type="button" class="s2-chip${uni?' on':''}" onclick="toggleUnilaterale(${ei})">↔ Unilaterale${uni?' ✓':''}</button>
+      ${usaAlt
+        ? `<button type="button" class="s2-chip" onclick="apriAlternativeSheet(${ei})">🔁 Cambia alternativa</button>`
+        : `<button type="button" class="s2-chip" onclick="apriAlternativeSheet(${ei})">🔁 Alternativa${(()=>{const n=candidatiAlternativa(e).length; return n?` (${n})`:'';})()}</button>`}
+      ${mobile ? `<button type="button" class="s2-chip" ${uIdx<=0?'disabled':''} onclick="spostaEsercizio(${ei},-1)">▲ Su</button>
+      <button type="button" class="s2-chip" ${uIdx>=nUn-1?'disabled':''} onclick="spostaEsercizio(${ei},1)">▼ Giù</button>` : ''}
+      <button type="button" class="s2-chip" onclick="apriAggiungiEsercizio(${ei})">➕ Aggiungi sotto</button>
+      ${draft.aggiunto ? `<button type="button" class="s2-chip" onclick="rimuoviEsercizioAggiunto(${ei})">🗑 Rimuovi esercizio</button>` : ''}
+      <button type="button" class="s2-chip s2-danger" onclick="saltaEsercizioConferma(${ei})">⏭ Salta esercizio</button>
     </div>`;
+    if(e.note) html += `<div class="note-box">${usaAlt ? `Stai facendo l'alternativa al posto di <b>${escHtml(e.nome)}</b>. ` : ''}${escHtml(e.note)}</div>`;
+    const suggerimento = suggerimentoProgressione(nomeAttivo, e.ripTarget);
+    if(suggerimento) html += `<div class="progress-tip">💡 ${suggerimento}</div>`;
+    html += `<p class="rpe-legend">RPE: 6 = leggero · 8 = a 2 rip dal cedimento · 10 = cedimento totale</p>`;
+    html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio (sensazioni, dolori, aggiustamenti...)" oninput="updateNotaEsercizio(${ei}, this.value)">${escHtml(draft.noteUtente||'')}</textarea>`;
+    if(!usaAlt && infoEs) html += schedaEsercizioHtml(ei, e.nome, infoEs);
+    else if(!usaAlt) html += `<button class="toggle-guide" onclick="toggleGuide(${ei})">Guida esercizio ▾</button>
+      <div class="guide-body" id="guide-${ei}"><b>Muscoli:</b> ${e.guida.muscoli}<br><br><b>Esecuzione:</b> ${e.guida.esecuzione}<br><br><b>Errori da evitare:</b> ${e.guida.errori}</div>`;
+    if(!usaAlt && e.video) html += `<a href="${e.video}" target="_blank" rel="noopener" class="video-link">▶ Guarda il video</a>`;
+    html += `</div>`;
   }
-  html += `</div>`;
+  html += `</div></div>`;
   return html;
 }
+
+function riscaldamentoCompletati(){ return (sessionDraft.warmDone||[]).filter(Boolean).length; }
 
 function renderSessione(){
   const scheda = schedaSessione();
   pageTitle.textContent = scheda.nome;
-
   if(!sessionTimerHandle){
     sessionTimerHandle = setInterval(updateSessionElapsedDisplay, 1000);
   }
-
   const totaleEsercizi = scheda.esercizi.length;
   const completatiEsercizi = scheda.esercizi.reduce((n,_,i)=> n + (esercizioCompletato(i) ? 1 : 0), 0);
   const pctSessione = totaleEsercizi ? Math.round(completatiEsercizi/totaleEsercizi*100) : 0;
+  sessionDraft._sig = scheda.esercizi.map((_,i)=> esercizioCompletato(i)?'1':'0').join('');
+
+  const apertaSez = k=> !!sezioniSchedaAperte['__sess|'+sessionDraft.schedaId+'|'+k];
+  const tog = k=> `ontoggle="memSezioneScheda('__sess|${sessionDraft.schedaId}|${k}', this.open)"`;
 
   let html = '';
-  html += `<div class="session-elapsed"><span class="se-dot"></span>Tempo sessione: <span id="sessionElapsed">${formatElapsed(Date.now() - new Date(sessionDraft.iniziata).getTime())}</span></div>`;
   if(profiloUtente && profiloUtente.attenzioni){
     html += `<div class="card" style="border-left:3px solid var(--accent-2);"><p style="margin:0;font-size:13px;line-height:1.6;"><b>Attenzione:</b> ${profiloUtente.attenzioni}</p></div>`;
   }
-  if(scheda.descrizione){
-    html += `<div class="card"><p style="margin:0;font-size:13px;line-height:1.6;color:var(--text-dim);">${scheda.descrizione}</p></div>`;
+  // Da tenere a mente: a scomparsa, chiuso di default
+  if(scheda.note || scheda.descrizione){
+    html += `<details class="sess-info"${apertaSez('dtm')?' open':''} ${tog('dtm')}>
+      <summary><span>📌 Da tenere a mente</span></summary>
+      <div class="sess-info-body">
+        ${scheda.descrizione ? `<p>${escHtml(scheda.descrizione)}</p>` : ''}
+        ${scheda.note ? `<p>${formattaNoteScheda(scheda.note)}</p>` : ''}
+      </div>
+    </details>`;
   }
-  if(scheda.note){
-    html += `<div class="card" style="border-left:3px solid var(--accent-2);"><p style="margin:0;font-size:13px;line-height:1.6;"><b>📌 Da tenere a mente:</b> ${scheda.note}</p></div>`;
-  }
-  html += `<div class="card">
-    <div class="pill">Riscaldamento</div>
-    <p style="font-size:12.5px;color:var(--text-dim);margin:8px 0 0;">Da fare prima di iniziare, 5-8 minuti totali.</p>`;
+  // Riscaldamento: a scomparsa, con contatore
+  html += `<details class="sess-info"${apertaSez('warm')?' open':''} ${tog('warm')}>
+    <summary><span>🔥 Riscaldamento</span><em id="warmCount">${riscaldamentoCompletati()}/${scheda.riscaldamento.length}</em></summary>
+    <div class="sess-info-body">
+      <p class="field-hint" style="margin:0 0 8px;">Da fare prima di iniziare, 5-8 minuti totali.</p>`;
   scheda.riscaldamento.forEach((w,i)=>{
     html += `<div class="warm-item">
       <div>
-        <div class="l">
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-            <input type="checkbox" ${sessionDraft.warmDone[i]?'checked':''} onchange="toggleWarm(${i})" style="width:18px;height:18px;accent-color:var(--accent);">
-            ${w.nome}
-          </label>
-        </div>
-        <div class="r" style="margin-left:28px;">${w.note}${w.video ? ` · <a href="${w.video}" target="_blank" rel="noopener" class="video-link" style="padding:0;">▶ Video</a>` : ''}</div>
+        <div class="l"><label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <input type="checkbox" ${sessionDraft.warmDone[i]?'checked':''} onchange="toggleWarm(${i})" style="width:18px;height:18px;accent-color:var(--accent);">
+          ${escHtml(w.nome)}</label></div>
+        <div class="r" style="margin-left:28px;">${escHtml(w.note||'')}${w.video ? ` · <a href="${w.video}" target="_blank" rel="noopener" class="video-link" style="padding:0;">▶ Video</a>` : ''}</div>
       </div>
-      <div class="r">${w.serie}</div>
+      <div class="r">${escHtml(w.serie||'')}</div>
     </div>`;
   });
-  html += `</div>`;
+  html += `</div></details>`;
 
   const unita = unitaSessione(scheda);
-  unita.forEach((u, uIdx)=>{
-    const bloccata = false; // nessun blocco: gli esercizi si possono fare in qualsiasi ordine
+  unita.forEach(u=>{
     if(u.tipo==='superset'){
-      if(bloccata){
-        html += renderUnitaSupersetBloccata(scheda, u);
-      } else {
-        html += `<div class="superset-group">
-          <div class="superset-label">${scheda.esercizi[u.indici[0]].jump ? '🔁 Jump set · alterna una serie per esercizio' : '🔗 Superset · alterna liberamente questi esercizi'}</div>`;
-        u.indici.forEach(ei=> html += renderEsercizioCard(scheda, ei, scheda.esercizi[ei].jump ? 'Jump set' : 'Superset'));
-        html += `</div>`;
-      }
+      const jump = scheda.esercizi[u.indici[0]].jump;
+      html += `<div class="superset-group">
+        <div class="superset-label">${jump ? '🔁 Jump set · alterna una serie per esercizio' : '🔗 Superset · alterna liberamente questi esercizi'}</div>`;
+      u.indici.forEach(ei=> html += renderEsercizioCard(scheda, ei, scheda.esercizi[ei].jump ? 'Jump set' : 'Superset'));
+      html += `</div>`;
     } else {
-      const ei = u.indici[0];
-      html += bloccata
-        ? renderEsercizioBloccato(scheda.esercizi[ei], "🔒 Completa tutte le serie (segnate e valutate con RPE, o saltate) dell'esercizio precedente per sbloccarlo")
-        : renderEsercizioCard(scheda, ei, null);
+      html += renderEsercizioCard(scheda, u.indici[0], null);
     }
   });
 
   html += `<button type="button" class="btn secondary" style="width:100%;margin-top:6px;" onclick="apriAggiungiEsercizio()">➕ Aggiungi un esercizio</button>`;
   if(layoutSchede[sessionDraft.schedaId]) html += `<button type="button" class="btn small secondary" style="width:100%;margin-top:8px;" onclick="ripristinaOrdineScheda()">↺ Ripristina ordine originale della scheda</button>`;
+  html += `<button type="button" class="skip-ex-link" style="display:block;margin:18px auto 0;" onclick="scartaAllenamento()">Scarta questo allenamento</button>`;
   html += `<div class="ex-attrib">Immagini illustrative degli esercizi: <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a> (CC BY-SA)</div>`;
-  html += `<div style="height:120px;"></div>`;
-  // Il contatore "X di Y esercizi completati" ora sta attaccato al bottone
-  // "Termina", non più in cima alla pagina: così mentre scorri gli esercizi
-  // vedi entrambi insieme in fondo, invece di dover risalire per il conteggio.
+  html += `<div style="height:130px;"></div>`;
   html += `<div class="finish-bar">
     <div class="finish-bar-progress" id="sessionProgress">
-      <p class="bp-label">${completatiEsercizi} di ${totaleEsercizi} esercizi completati${contaTecnicheSessione()?` · ⚡ ${contaTecnicheSessione()}/${maxTecnicheSeduta()} tecniche`:''}</p>
+      <p class="bp-label"><span class="se-dot"></span><span id="sessionElapsed">${formatElapsed(Date.now() - new Date(sessionDraft.iniziata).getTime())}</span><span id="sessionCount">${completatiEsercizi} di ${totaleEsercizi} esercizi${contaTecnicheSessione()?` · ⚡ ${contaTecnicheSessione()}/${maxTecnicheSeduta()}`:''}</span></p>
       <div class="bp-bar"><div class="bp-fill" style="width:${pctSessione}%"></div></div>
     </div>
     <button class="btn" id="finishBtn" onclick="terminaSessione()">Termina e salva allenamento</button>
@@ -6888,7 +7104,7 @@ function renderSessione(){
   view.innerHTML = html;
 }
 
-function toggleWarm(i){ sessionDraft.warmDone[i] = !sessionDraft.warmDone[i]; }
+function toggleWarm(i){ sessionDraft.warmDone[i] = !sessionDraft.warmDone[i]; const c = document.getElementById('warmCount'); if(c) c.textContent = riscaldamentoCompletati()+'/'+schedaSessione().riscaldamento.length; }
 
 function toggleGuide(ei){
   document.getElementById('guide-'+ei).classList.toggle('open');
@@ -7250,6 +7466,7 @@ async function terminaSessione(){
     const ref = await aggiungiDocRapido(userCollection('sessioni'), payload);
     cache.sessioni.push({ id: ref.id, ...payload });
     sessionDraft = null;
+    cancellaSessioneSalvata();
     setRoute({name:'storico-allenamento', justSaved:true});
   }catch(e){
     alert('Errore nel salvataggio: '+e.message);
@@ -12258,7 +12475,9 @@ async function avviaApp(){
     if(pianoPersonale && cache.dietaLogOggi.giornoAllenamento === null){
       await chiediEImpostaGiornoAllenamento();
     }
+    const riprendi = await controllaSessioneInCorso();
     goHome();
+    if(riprendi) setRoute({name:'sessione'});
   }catch(e){
     view.innerHTML = `<div class="error-banner">Errore nel caricamento dei dati: ${e.message}</div>`;
   }
@@ -12312,7 +12531,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-09-massa-v21';
+const BUILD_ID = '2026-11-10-allenamento-v22';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
