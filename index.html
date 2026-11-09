@@ -4574,6 +4574,50 @@ function applicaCorrezioniKcal(){
     console.info('Correzioni kcal 07/11 applicate', nuovo?'(giorno creato)':'');
   }catch(e){ console.warn('Correzioni kcal non applicate', e); }
 }
+/* Correzione una tantum (PDF "Tortino singolo"): crea la ricetta salvata
+   "Tortino avena e cacao" (1 porzione) e la segna sulla Cena del 09/11/2026.
+   Idempotente: la ricetta si crea una sola volta (per nome) e la voce del
+   diario ha un id fisso. Le 186 kcal dell'etichetta superano di 10,4 il
+   conto 4/4/9 sui macro (fibre): la differenza sta in kcalExtra. */
+async function applicaTortinoCorrezione(){
+  try{
+    if(!currentUid) return;
+    const NOME = 'Tortino avena e cacao', GIORNO = '2026-11-09', ID_VOCE = 'corr-20261109-tortino';
+    // [nome, marca, grammi, prot, carb, grassi, fibre] per porzione
+    const ING = [
+      ["Farina d'avena", 'Prozis', 15, 2.1, 8.3, 1.1],
+      ['Albume', '', 33, 3.6, 0.2, 0],
+      ['Yogurt greco 0%', 'Milbona', 70, 7.0, 3.2, 0],
+      ['Cacao amaro', 'Primia', 8, 1.7, 1.4, 1.8],
+      ['Gocce di cioccolato fondente', 'Belbake', 8, 0.5, 4.2, 2.3]
+    ].map(([nome,marca,g,p,c,f])=>({ nome, marca, grammi:g,
+      prot100: Math.round(p/g*1e4)/100, carb100: Math.round(c/g*1e4)/100, grassi100: Math.round(f/g*1e4)/100, polio100:0 }));
+    const tot = totaliRicettaDaIngredienti(ING);          // 14.9 / 17.3 / 5.2
+    const KCAL_ETICHETTA = 186;
+    const kcalExtra = round1(KCAL_ETICHETTA - tot.kcal);
+    let ric = cache.ricettePersonalizzate.find(r=>r.nome===NOME);
+    if(!ric){
+      const payload = { nome:NOME, kcal:KCAL_ETICHETTA, kcalExtra, prot:tot.prot, carb:tot.carb, grassi:tot.grassi, polio:0, fibre:4.6, zuccheri:0,
+        ingredienti:ING, fonte:'carbo', creato:new Date().toISOString() };
+      const ref = await aggiungiDocRapido(userCollection('ricettePersonalizzate'), payload);
+      ric = { id:ref.id, ...payload };
+      cache.ricettePersonalizzate.push(ric);
+    }
+    const oggi = (GIORNO===todayKey());
+    const g = oggi ? cache.dietaLogOggi : cache.dietaLog.find(d=>d.id===GIORNO);
+    if(g && (g.alimentiExtra||[]).some(a=>a.id===ID_VOCE)) return;
+    if(!g) return; // giorno non ancora tracciato: nulla da correggere
+    if(g.manualMacros){
+      const m=g.manualMacros; m.kcal=(m.kcal||0)+KCAL_ETICHETTA; m.prot=(m.prot||0)+tot.prot; m.carb=(m.carb||0)+tot.carb; m.grassi=(m.grassi||0)+tot.grassi;
+    } else {
+      if(!g.alimentiExtra) g.alimentiExtra=[];
+      g.alimentiExtra.push({ id:ID_VOCE, nome:NOME, marca:'', grammi:null, isRicetta:true, ricettaId:ric.id,
+        ingredienti:ING.map(x=>({...x})), kcal:KCAL_ETICHETTA, kcalExtra, prot:tot.prot, carb:tot.carb, grassi:tot.grassi, polio:0, pasto:4, fonte:'carbo' });
+    }
+    if(oggi) salvaDietaLogOggi(); else salvaGiornoDietaLog(GIORNO, g);
+    if(route && route.name==='alimentazione') renderAlimentazione();
+  }catch(e){ console.warn('Correzione tortino non applicata', e); }
+}
 async function loadData(){
   const [sessioniSnap, misureSnap, dietaLogSnap, alimentiCustomSnap, ricetteSnap, cardioSnap] = await Promise.all([
     userCollection('sessioni').orderBy('data','asc').get(),
@@ -4853,7 +4897,7 @@ function modificaIngredientiRicettaPasto(id, giornoId, renderFn){
     const t = totaliRicettaDaIngredienti(ing);
     voce.ingredienti = ing;
     voce.prot = t.prot; voce.carb = t.carb; voce.grassi = t.grassi; voce.polio = t.polio||0;
-    voce.kcal = kcalDaMacro(t.prot, t.carb, t.grassi, t.polio||0);
+    voce.kcal = round1(kcalDaMacro(t.prot, t.carb, t.grassi, t.polio||0) + (voce.kcalExtra||0));
     chiudi(); hapticaLieve();
     if(giorno){ salvaGiornoDietaLog(giornoId, giorno); renderDiario(); }
     else { salvaDietaLogOggi(); (renderFn || renderAlimentazione)(); }
@@ -11105,7 +11149,7 @@ function selezionaRicettaPersonalizzata(id){
   if(!r) return;
   ricercaAlimentoState.selezionato = {
     nome: r.nome, marca: '', isRicetta: true, ricettaId: r.id,
-    kcal: r.kcal, prot: r.prot, carb: r.carb, grassi: r.grassi, polio: r.polio||0,
+    kcal: r.kcal, kcalExtra: r.kcalExtra||0, prot: r.prot, carb: r.carb, grassi: r.grassi, polio: r.polio||0,
     // Copia degli ingredienti: le quantità si possono cambiare per questa
     // sola aggiunta senza toccare la ricetta salvata.
     ingredienti: (r.ingredienti||[]).map(x=>({...x})),
@@ -11287,7 +11331,8 @@ async function salvaRicettaEditor(){
   const nome=(e.nome||'').trim();
   if(!nome){ errBox.innerHTML='<div class="error-banner">Dai un nome alla ricetta.</div>'; return; }
   const t = ricettaEdTotali();
-  const upd = { nome, fonte: e.fonte || null, ingredienti: e.ingredienti, prot:t.prot, carb:t.carb, grassi:t.grassi, polio:t.polio||0, kcal: kcalDaMacro(t.prot,t.carb,t.grassi,t.polio||0) };
+  const rEsist = cache.ricettePersonalizzate.find(x=>x.id===e.id);
+  const upd = { nome, fonte: e.fonte || null, ingredienti: e.ingredienti, prot:t.prot, carb:t.carb, grassi:t.grassi, polio:t.polio||0, kcal: round1(kcalDaMacro(t.prot,t.carb,t.grassi,t.polio||0) + ((rEsist && rEsist.kcalExtra)||0)) };
   btn.disabled=true; btn.textContent='Salvataggio...';
   try{
     await attendiScrittura(userCollection('ricettePersonalizzate').doc(e.id).update(upd));
@@ -11348,7 +11393,8 @@ function eseguiAggiungiAlimentoExtra(p, g, pastoIdx, fonte){
       isRicetta: true,
       ricettaId: p.ricettaId || null,
       ingredienti: (p.ingredienti||[]).map(x=>({...x})),
-      kcal: p.kcal,
+      kcalExtra: p.kcalExtra||0,
+      kcal: round1(kcalDaMacro(p.prot, p.carb, p.grassi, p.polio||0) + (p.kcalExtra||0)),
       prot: p.prot,
       carb: p.carb,
       grassi: p.grassi,
@@ -12718,7 +12764,7 @@ async function avviaApp(){
     // loadDataInVolo è ancora vuoto, quindi partiamo da zero come prima.
     await (loadDataInVolo || loadData());
     loadDataInVolo = null;
-    if(profiloUtente && profiloUtente.schedeAssegnate===null) applicaCorrezioniKcal();
+    if(profiloUtente && profiloUtente.schedeAssegnate===null){ applicaCorrezioniKcal(); applicaTortinoCorrezione(); }
     applicaPulloverSessioneOggi(); // senza attendere: non deve mai bloccare l'avvio
     // A schermata già pronta, scarica i grafici in background: Statistiche si apre subito.
     setTimeout(()=>{ (window.requestIdleCallback||setTimeout)(()=>{ caricaChartJs().catch(()=>{}); }); }, 4000);
@@ -12784,7 +12830,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-14-stat-v27';
+const BUILD_ID = '2026-11-15-tortino-v28';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
