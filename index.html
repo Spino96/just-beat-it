@@ -1688,6 +1688,27 @@
 .dz-note summary{font-weight:700;font-size:14px;cursor:pointer}
 .dz-note .dic-b{margin-top:8px}
 .dz-tabs + .note-box{margin-bottom:10px}
+
+.ex2-tec{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 4px;font-size:12.5px;color:var(--text-dim)}
+
+/* ===== Statistiche: Carichi esercizi ===== */
+.cs-card{padding:16px 14px}
+.cs-title{margin:0 0 12px;font-size:16px}
+.cs-seg{display:flex;gap:4px;background:#0c0e15;border:1px solid #2a3149;border-radius:14px;padding:4px;margin-bottom:12px}
+.cs-seg .chip{flex:1;text-align:center;padding:9px 2px;font-size:12.5px;border:0;background:transparent;border-radius:10px;box-shadow:none;color:var(--text-dim)}
+.cs-seg .chip.active{background:var(--accent);color:#04140d}
+.cs-scroll{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cs-scroll::-webkit-scrollbar{display:none}
+.cs-scroll .chip{flex:none;white-space:nowrap;padding:8px 13px;font-size:13px;border-radius:999px}
+.cs-ex .chip{font-size:12.5px;padding:7px 12px;font-weight:700;background:transparent;border:1px solid #2a3149;color:var(--text-dim)}
+.cs-ex .chip.active{background:#39ff9422;border-color:var(--accent);color:var(--accent);box-shadow:none}
+.cs-card .cs-hl{display:flex;flex-direction:row;justify-content:space-between;align-items:center;text-align:left;gap:12px;margin:8px 0 12px;padding:14px;border-radius:16px;background:linear-gradient(145deg,#161b2a,#0f1320);border:1px solid #2a3149}
+.cs-hl-main{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;flex:1}
+.cs-hl-side{display:flex;flex-direction:column;gap:8px;text-align:right;flex:none}
+.cs-hl-side div{display:flex;flex-direction:column;line-height:1.15}
+.cs-hl-side b{font-size:15px}
+.cs-hl-side span{font-size:11px;color:var(--text-dim)}
+.cs-chart{background:#0c0e15;border-radius:14px;padding:10px 8px 6px;border:1px solid #20263a}
 </style>
 </head>
 <body>
@@ -2739,8 +2760,8 @@ const SCHEDE_DEFAULT = [
     nome: 'Massa — Torso A',
     periodo: 'Massa lenta · 4x/settimana · 90-95 minuti',
     durataSettimane: null,
-    descrizione: 'Torso A (22 serie): panca, croci ai cavi, dorsali unilaterali, lento avanti, rematore, laterali e addome. Prima dei torsi circa 4 minuti di mobilità dinamica, poi le serie di avvicinamento.',
-    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 21-24 serie per seduta (circa 91 a settimana), 90-95 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 32 serie (quadricipiti 10, femorali 10, glutei 2, adduttori 4, polpacci 6), spalle 17 (spinte verticali 8, laterali 6, deltoidi posteriori 3), petto 12, dorsali 6, schiena media e trapezi 6, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Di solito il massimo è 2 a seduta, qui sono 4 nelle Gambe A e 3 nel Torso B e nelle Gambe B: se i carichi della seduta successiva calano, togline una o due, partendo da quelle sulle braccia e sulle alzate laterali. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Nel Torso B fai in jump set anche alzate laterali con manubri e rear delt. Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Se invece i recuperi calano o i carichi smettono di salire, togli per prime le serie extra: pec deck, rear delt e stacco con manubri. Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
+    descrizione: 'Torso A (25 serie): panca, croci ai cavi, dorsali unilaterali, lento avanti, rematore, macchina deltoidi, rear delt e addome. Prima dei torsi circa 4 minuti di mobilità dinamica, poi le serie di avvicinamento.',
+    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 21-25 serie per seduta (circa 94 a settimana), 90-95 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 32 serie (quadricipiti 10, femorali 10, glutei 2, adduttori 4, polpacci 6), spalle 20 (spinte verticali 8, laterali 6, deltoidi posteriori 6), petto 12, dorsali 6, schiena media e trapezi 6, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Di solito il massimo è 2 a seduta, qui sono 4 nelle Gambe A e 3 nel Torso B e nelle Gambe B: se i carichi della seduta successiva calano, togline una o due, partendo da quelle sulle braccia e sulle alzate laterali. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Nel Torso B fai in jump set anche alzate laterali con manubri e rear delt. Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Se invece i recuperi calano o i carichi smettono di salire, togli per prime le serie extra: pec deck, rear delt e stacco con manubri. Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
     riscaldamento: [
       {nome:'Circonduzioni delle spalle', serie:'10 avanti + 10 indietro', note:'Braccia lungo il corpo, parti con cerchi piccoli e allargali.'},
       {nome:'Gatto-mucca in quadrupedia', serie:'8-10 ripetizioni', note:'Muovi tutta la colonna lentamente, senza forzare.', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
@@ -2811,16 +2832,28 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Alzate laterali al cavo basso', serieTarget:3, ripTarget:'10-15', recupero:90,
-        tecnicaUltima:'parziali',
-        note:'Il cavo passa davanti al corpo, gomito leggermente piegato, sali fino all\'altezza della spalla guidando con il gomito e non con la mano. Scendi controllato mantenendo tensione. Ultima serie: parziali in allungamento.',
+        nome:'Macchina deltoidi Panatta (alzate laterali)', serieTarget:3, ripTarget:'10-15', recupero:90,
+        tecnicaUltima:'drop',
+        note:'Sedile con la spalla all\'altezza del perno, cuscinetti sugli avambracci. Spingi verso l\'esterno guidando con i gomiti fino all\'altezza delle spalle, scendi in 2 secondi con fermo di mezzo secondo in basso. Ultima serie: drop set.',
         alternativa:'—',
         video:'',
         immagine:'',
         guida:{
           muscoli:'Deltoide mediale.',
-          esecuzione:'Il cavo passa davanti al corpo, gomito leggermente piegato, sali fino all\'altezza della spalla guidando con il gomito e non con la mano. Scendi controllato mantenendo tensione. Ultima serie: parziali in allungamento.',
-          errori:'Niente slancio del busto e non salire oltre l\'altezza delle spalle.'
+          esecuzione:'Sedile con la spalla all\'altezza del perno, cuscinetti sugli avambracci. Spingi verso l\'esterno guidando con i gomiti fino all\'altezza delle spalle, scendi in 2 secondi con fermo di mezzo secondo in basso. Ultima serie: drop set.',
+          errori:'Niente slancio del busto, spalle basse e non salire oltre l\'altezza delle spalle.'
+        }
+      },
+      {
+        nome:'Rear delt (reverse fly)', serieTarget:3, ripTarget:'10-15', recupero:90,
+        note:'Macchina reverse fly (pec deck inverso) con il petto appoggiato. Apri portando i gomiti indietro, senza ruotare il busto e senza slancio, fermo breve in apertura, torna in 2 secondi fino a un buon allungamento.',
+        alternativa:'—',
+        video:'',
+        immagine:'',
+        guida:{
+          muscoli:'Deltoide posteriore.',
+          esecuzione:'Macchina reverse fly (pec deck inverso) con il petto appoggiato. Apri portando i gomiti indietro, senza ruotare il busto e senza slancio, fermo breve in apertura, torna in 2 secondi fino a un buon allungamento.',
+          errori:'Niente slancio e niente rotazione del busto.'
         }
       },
       {
@@ -2846,7 +2879,7 @@ const SCHEDE_DEFAULT = [
     durataSettimane: null,
     tecnicheMax: 4,
     descrizione: 'Gambe A + braccia (23 serie): hack squat, leg extension, adductor, stacco rumeno, leg curl, kneeling hip thrust, polpacci e jump set tricipiti/bicipiti. Prima delle gambe circa 5 minuti di mobilità dinamica, poi le serie di avvicinamento.',
-    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 21-24 serie per seduta (circa 91 a settimana), 90-95 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 32 serie (quadricipiti 10, femorali 10, glutei 2, adduttori 4, polpacci 6), spalle 17 (spinte verticali 8, laterali 6, deltoidi posteriori 3), petto 12, dorsali 6, schiena media e trapezi 6, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Di solito il massimo è 2 a seduta, qui sono 4 nelle Gambe A e 3 nel Torso B e nelle Gambe B: se i carichi della seduta successiva calano, togline una o due, partendo da quelle sulle braccia e sulle alzate laterali. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Nel Torso B fai in jump set anche alzate laterali con manubri e rear delt. Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Se invece i recuperi calano o i carichi smettono di salire, togli per prime le serie extra: pec deck, rear delt e stacco con manubri. Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
+    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 21-25 serie per seduta (circa 94 a settimana), 90-95 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 32 serie (quadricipiti 10, femorali 10, glutei 2, adduttori 4, polpacci 6), spalle 20 (spinte verticali 8, laterali 6, deltoidi posteriori 6), petto 12, dorsali 6, schiena media e trapezi 6, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Di solito il massimo è 2 a seduta, qui sono 4 nelle Gambe A e 3 nel Torso B e nelle Gambe B: se i carichi della seduta successiva calano, togline una o due, partendo da quelle sulle braccia e sulle alzate laterali. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Nel Torso B fai in jump set anche alzate laterali con manubri e rear delt. Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Se invece i recuperi calano o i carichi smettono di salire, togli per prime le serie extra: pec deck, rear delt e stacco con manubri. Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
     riscaldamento: [
       {nome:'Circonduzioni delle anche', serie:'8 per lato', note:'In piedi, appoggiati a un sostegno: il ginocchio alto disegna un cerchio, il bacino resta fermo.'},
       {nome:'Leg swing avanti-indietro e laterali', serie:'10 per lato per direzione', note:'Ampiezza crescente, senza slanciare con forza.'},
@@ -2978,7 +3011,7 @@ const SCHEDE_DEFAULT = [
     durataSettimane: null,
     tecnicheMax: 3,
     descrizione: 'Torso B (22 serie): chest press inclinata, pulley, spinte verticali, low row, pec deck e jump set alzate laterali/rear delt. Prima dei torsi circa 4 minuti di mobilità dinamica, poi le serie di avvicinamento.',
-    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 21-24 serie per seduta (circa 91 a settimana), 90-95 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 32 serie (quadricipiti 10, femorali 10, glutei 2, adduttori 4, polpacci 6), spalle 17 (spinte verticali 8, laterali 6, deltoidi posteriori 3), petto 12, dorsali 6, schiena media e trapezi 6, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Di solito il massimo è 2 a seduta, qui sono 4 nelle Gambe A e 3 nel Torso B e nelle Gambe B: se i carichi della seduta successiva calano, togline una o due, partendo da quelle sulle braccia e sulle alzate laterali. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Nel Torso B fai in jump set anche alzate laterali con manubri e rear delt. Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Se invece i recuperi calano o i carichi smettono di salire, togli per prime le serie extra: pec deck, rear delt e stacco con manubri. Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
+    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 21-25 serie per seduta (circa 94 a settimana), 90-95 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 32 serie (quadricipiti 10, femorali 10, glutei 2, adduttori 4, polpacci 6), spalle 20 (spinte verticali 8, laterali 6, deltoidi posteriori 6), petto 12, dorsali 6, schiena media e trapezi 6, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Di solito il massimo è 2 a seduta, qui sono 4 nelle Gambe A e 3 nel Torso B e nelle Gambe B: se i carichi della seduta successiva calano, togline una o due, partendo da quelle sulle braccia e sulle alzate laterali. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Nel Torso B fai in jump set anche alzate laterali con manubri e rear delt. Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Se invece i recuperi calano o i carichi smettono di salire, togli per prime le serie extra: pec deck, rear delt e stacco con manubri. Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
     riscaldamento: [
       {nome:'Circonduzioni delle spalle', serie:'10 avanti + 10 indietro', note:'Braccia lungo il corpo, parti con cerchi piccoli e allargali.'},
       {nome:'Gatto-mucca in quadrupedia', serie:'8-10 ripetizioni', note:'Muovi tutta la colonna lentamente, senza forzare.', video:'https://www.youtube.com/watch?v=FWKoh2uJQmU'},
@@ -3049,16 +3082,16 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Alzate laterali con manubri', serieTarget:3, ripTarget:'10-15', recupero:90,
+        nome:'Alzate laterali al cavo basso', serieTarget:3, ripTarget:'10-15', recupero:90,
         superset:'js3', jump:true, tecnicaUltima:'drop',
-        note:'Busto leggermente inclinato in avanti, gomiti leggermente piegati. Sali fino all\'altezza delle spalle (non oltre) guidando con i gomiti, senza slancio, scendi controllato. Alterna con i rear delt (jump set). Ultima serie: drop set.',
+        note:'Il cavo passa davanti al corpo, gomito leggermente piegato, sali fino all\'altezza della spalla guidando con il gomito e non con la mano. Scendi controllato mantenendo tensione. Alterna con i rear delt (jump set). Ultima serie: drop set.',
         alternativa:'—',
         video:'',
         immagine:'',
         guida:{
           muscoli:'Deltoide mediale.',
-          esecuzione:'Busto leggermente inclinato in avanti, gomiti leggermente piegati. Sali fino all\'altezza delle spalle (non oltre) guidando con i gomiti, senza slancio, scendi controllato. Alterna con i rear delt (jump set). Ultima serie: drop set.',
-          errori:'Niente slancio e non salire oltre l\'altezza delle spalle.'
+          esecuzione:'Il cavo passa davanti al corpo, gomito leggermente piegato, sali fino all\'altezza della spalla guidando con il gomito e non con la mano. Scendi controllato mantenendo tensione. Alterna con i rear delt (jump set). Ultima serie: drop set.',
+          errori:'Niente slancio del busto e non salire oltre l\'altezza delle spalle.'
         }
       },
       {
@@ -3084,7 +3117,7 @@ const SCHEDE_DEFAULT = [
     durataSettimane: null,
     tecnicheMax: 3,
     descrizione: 'Gambe B + braccia (24 serie): leg press, leg extension, stacco rumeno con manubri, leg curl, adductor, polpacci da seduto, jump set pushdown/curl e crunch. Prima delle gambe circa 5 minuti di mobilità dinamica, poi le serie di avvicinamento.',
-    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 21-24 serie per seduta (circa 91 a settimana), 90-95 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 32 serie (quadricipiti 10, femorali 10, glutei 2, adduttori 4, polpacci 6), spalle 17 (spinte verticali 8, laterali 6, deltoidi posteriori 3), petto 12, dorsali 6, schiena media e trapezi 6, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Di solito il massimo è 2 a seduta, qui sono 4 nelle Gambe A e 3 nel Torso B e nelle Gambe B: se i carichi della seduta successiva calano, togline una o due, partendo da quelle sulle braccia e sulle alzate laterali. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Nel Torso B fai in jump set anche alzate laterali con manubri e rear delt. Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Se invece i recuperi calano o i carichi smettono di salire, togli per prime le serie extra: pec deck, rear delt e stacco con manubri. Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
+    note: 'Piano di massa lenta (circa 0,7-1 kg al mese), aggiornato il 02/11/2026: 4 giorni a settimana, 21-25 serie per seduta (circa 94 a settimana), 90-95 minuti. Giro: Lunedì Torso A, Martedì Gambe A + braccia, Giovedì Torso B, Sabato Gambe B + braccia. Ogni muscolo è allenato 2 volte a settimana. Volume settimanale: gambe 32 serie (quadricipiti 10, femorali 10, glutei 2, adduttori 4, polpacci 6), spalle 20 (spinte verticali 8, laterali 6, deltoidi posteriori 6), petto 12, dorsali 6, schiena media e trapezi 6, bicipiti 6, tricipiti 6, addome 6. TECNICHE D\'INTENSITÀ: solo sull\'ultima serie di alcuni isolamenti (già segnate nelle sedute, le puoi cambiare o togliere dalla serie). Sostituiscono la serie, non si aggiungono. Mai su hack, leg press, stacco rumeno, panca e lento. Di solito il massimo è 2 a seduta, qui sono 4 nelle Gambe A e 3 nel Torso B e nelle Gambe B: se i carichi della seduta successiva calano, togline una o due, partendo da quelle sulle braccia e sulle alzate laterali. Drop set: a cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa (una sola riduzione). Rest-pause: a cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni. Parziali in allungamento: a cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato. REGOLE: sui multiarticolari pesanti (panca, hack, leg press, stacco rumeno) lascia 1 ripetizione in riserva; tutto il resto va a cedimento tecnico, ma non tutte le serie a RPE 10. Tra la prima e l\'ultima serie di un esercizio al massimo 2 ripetizioni di differenza: se crolli di più, il recupero era corto o il carico troppo alto. Progressione: quando arrivi al massimo del range su tutte le serie, aumenta il carico del 2,5-5%. Esecuzione: eccentrica controllata di 1-2 secondi, fermo di mezzo secondo in allungamento, concentrica esplosiva; non completare gli ultimi gradi di accorciamento, ma non saltare mai quelli di allungamento. Jump set: alterna tricipiti e bicipiti con 1\'30" di pausa tra una serie e l\'altra (solo isolamenti). Nel Torso B fai in jump set anche alzate laterali con manubri e rear delt. Esercizi unilaterali: serie con un braccio e poi con l\'altro, parti dal lato più debole (il sinistro); il recupero parte dopo il secondo lato. Dopo 4-6 settimane: se i carichi salgono e recuperi bene, il volume è giusto; se i carichi si fermano pur recuperando bene, aggiungi 2 serie solo al muscolo che resta indietro (primo candidato: i dorsali). Se invece i recuperi calano o i carichi smettono di salire, togli per prime le serie extra: pec deck, rear delt e stacco con manubri. Sono linee guida generali, non un parere medico: in caso di dolore articolare acuto, infortuni o condizioni mediche rivolgiti a un medico o a un fisioterapista e sospendi gli esercizi coinvolti.',
     riscaldamento: [
       {nome:'Circonduzioni delle anche', serie:'8 per lato', note:'In piedi, appoggiati a un sostegno: il ginocchio alto disegna un cerchio, il bacino resta fermo.'},
       {nome:'Leg swing avanti-indietro e laterali', serie:'10 per lato per direzione', note:'Ampiezza crescente, senza slanciare con forza.'},
@@ -3636,20 +3669,34 @@ const INFO_ESERCIZI = {
    "Presa"
   ]
  },
- "massa1|alzate laterali al cavo basso": {
-  "cp": "da trovare",
-  "impostazione": "Puleggia al minimo con maniglia singola. Mettiti di fianco al cavo, in modo che il cavo passi davanti al corpo (la maniglia è nella mano più lontana dal cavo). La tensione deve esserci già in partenza.",
-  "posizione": "Piedi a larghezza anche, ginocchia leggermente flesse. Con la mano libera tieniti a un montante per stabilità. Gomito leggermente piegato (10-15°) e fisso, polso in linea con l'avambraccio, spalla bassa.",
-  "impugnatore": "Impugnatore: maniglia singola del cavo. Presa: neutra, con il palmo verso la coscia in partenza e il pollice avvolto. Polso in linea con l'avambraccio, mano mai più alta del gomito. Presa leggera: guida con il gomito, non con la mano.",
-  "esecuzione": "Sali leggermente davanti al fianco (circa 20-30° davanti al piano laterale) guidando con il gomito, fino all'altezza della spalla, mai oltre. Scendi in 2 secondi mantenendo la tensione. In basso fai un fermo di mezzo secondo senza lasciare che il cavo ti porti la mano al fianco in modo brusco.",
-  "respirazione": "Espira salendo, inspira scendendo.",
-  "errori": "Spalla che sale verso l'orecchio. Slancio con il busto. Gomito che si piega troppo. Mano più alta del gomito. Salire oltre l'altezza della spalla.",
-  "carico": "Carico da trovare: leggero, ma non irrisorio, scegli un peso con cui fai 10-15 ripetizioni senza slancio. Nella parte bassa, che è quella allungata, il cavo tiene più tensione dei manubri.",
-  "tecnica": "Parziali in allungamento. A cedimento tecnico continua con 4-6 ripetizioni corte, solo nella metà bassa del movimento, quella in cui il muscolo è allungato.",
-  "reg": [
-   "Altezza puleggia",
-   "Distanza dal cavo"
-  ]
+ "massa1|macchina deltoidi panatta (alzate laterali)": {
+   "cp": "25 kg",
+   "impostazione": "Regola il sedile in modo che l'articolazione della spalla sia all'altezza del perno di rotazione della macchina. Cuscinetti sugli avambracci, appena sotto i gomiti. Parti con le braccia lungo i fianchi e i gomiti leggermente piegati. Scegli un carico che permetta 10-15 ripetizioni controllate: è una macchina guidata, quindi puoi spingere vicino al cedimento senza barare.",
+   "posizione": "Schiena e testa appoggiate allo schienale, petto in fuori, spalle abbassate (non salgono verso le orecchie). Piedi a terra. Parti con le braccia in basso, vicino ai fianchi, in allungamento controllato.",
+   "impugnatore": "Impugnatore: le maniglie della macchina, se ci sono, oppure solo i cuscinetti sugli avambracci. Presa: leggera, palmi rivolti verso il basso o neutri secondo la macchina, pollici avvolti. Non stringere: spingi con i gomiti e non con le mani.",
+   "esecuzione": "Spingi verso l'esterno guidando con i gomiti, fino all'altezza delle spalle, mai oltre. Fermo breve in alto. Scendi in 2 secondi e fai un fermo di mezzo secondo in basso, senza far cadere il peso.",
+   "respirazione": "Espira salendo, inspira scendendo.",
+   "errori": "Spalle che salgono verso le orecchie. Busto che si inclina per aiutarti. Rimbalzo in basso. Gomiti che si piegano troppo. Salire oltre l'altezza della spalla.",
+   "carico": "Carico di partenza 25 kg (l'ultima volta 13-12-11 con drop set 20 kg × 6). Sali quando fai 15 su tutte e 3 le serie. Recupero 1'30\"-2'.",
+   "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
+   "reg": [
+     "Altezza sedile",
+     "Posizione cuscinetti"
+   ]
+ },
+ "massa1|rear delt (reverse fly)": {
+   "cp": "15 kg",
+   "impostazione": "Usa la macchina reverse fly (pec deck inverso). Regola il sedile in modo che le maniglie siano all'altezza delle spalle e il petto appoggi sul cuscino. Regola la partenza con le braccia chiuse davanti, senza iperflessione delle spalle.",
+   "posizione": "Petto appoggiato, schiena dritta, presa neutra o prona, polsi dritti, gomiti leggermente flessi e fissi.",
+   "impugnatore": "Impugnatore: maniglie della macchina. Presa: neutra o prona, quella che ti permette di tenere il gomito più alto. Pollici avvolti, polsi dritti, mani rilassate: lavorano i gomiti.",
+   "esecuzione": "Apri portando i gomiti indietro, non le mani, senza ruotare il busto e senza lanciare. Fermo breve in apertura. Torna in 2 secondi fino a un buon allungamento. Alterna con le alzate laterali (jump set).",
+   "respirazione": "Espira aprendo, inspira tornando.",
+   "errori": "Busto che ruota o si stacca. Gomiti troppo flessi. Spalle che salgono verso le orecchie. Slancio. Carico troppo alto.",
+   "carico": "Carico di partenza 15 kg (ultima volta 15 x 16, 15 x 11, 15 x 10). Sali quando fai 15 su tutte le serie.",
+   "reg": [
+     "Sedile",
+     "Maniglie"
+   ]
  },
  "massa1|crunch machine": {
   "cp": "35 kg",
@@ -3867,19 +3914,20 @@ const INFO_ESERCIZI = {
    "Limitatore partenza"
   ]
  },
- "massa3|alzate laterali con manubri": {
-  "cp": "7,5-8 kg per mano",
-  "impostazione": "Scegli manubri leggeri (7,5-8 kg per mano come punto di partenza). Resta in piedi senza appoggi.",
-  "posizione": "Piedi a larghezza anche, ginocchia leggermente flesse, busto inclinato in avanti di 10-15°. Manubri lungo i fianchi, presa neutra, gomiti leggermente piegati e fissi.",
-  "impugnatore": "Impugnatore: manubri. Presa: neutra (palmi verso le cosce), manubri tenuti con le dita e non solo col palmo. Polsi dritti. Non ruotare i manubri durante la salita.",
-  "esecuzione": "Sali nel piano leggermente davanti al fianco (circa 20-30°), guidando con i gomiti, fino all'altezza delle spalle, non oltre. Scendi in 2 secondi, con un fermo di mezzo secondo in basso, senza dondolare. Alterna con il rear delt (jump set).",
-  "respirazione": "Espira salendo, inspira scendendo.",
-  "errori": "Slancio con il busto. Spalle che salgono verso le orecchie. Manubri più in alto dei gomiti. Gomiti che si piegano troppo. Carico troppo alto.",
-  "carico": "Carico di partenza 7,5-8 kg per mano. Jump set con il rear delt: 1'30 tra una serie e l'altra.",
-  "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
-  "reg": [
-   "Peso manubri"
-  ]
+ "massa3|alzate laterali al cavo basso": {
+   "cp": "5 kg",
+   "impostazione": "Puleggia al minimo con maniglia singola. Mettiti di fianco al cavo, in modo che il cavo passi davanti al corpo (la maniglia è nella mano più lontana dal cavo). La tensione deve esserci già in partenza.",
+   "posizione": "Piedi a larghezza anche, ginocchia leggermente flesse. Con la mano libera tieniti a un montante per stabilità. Gomito leggermente piegato (10-15°) e fisso, polso in linea con l'avambraccio, spalla bassa.",
+   "impugnatore": "Impugnatore: maniglia singola del cavo. Presa: neutra, con il palmo verso la coscia in partenza e il pollice avvolto. Polso in linea con l'avambraccio, mano mai più alta del gomito. Presa leggera: guida con il gomito, non con la mano.",
+   "esecuzione": "Sali leggermente davanti al fianco (circa 20-30° davanti al piano laterale) guidando con il gomito, fino all'altezza della spalla, mai oltre. Scendi in 2 secondi mantenendo la tensione. In basso fai un fermo di mezzo secondo senza lasciare che il cavo ti porti la mano al fianco in modo brusco.",
+   "respirazione": "Espira salendo, inspira scendendo.",
+   "errori": "Spalla che sale verso l'orecchio. Slancio con il busto. Gomito che si piega troppo. Mano più alta del gomito. Salire oltre l'altezza della spalla.",
+   "carico": "Carico da trovare: leggero, ma non irrisorio, scegli un peso con cui fai 10-15 ripetizioni senza slancio. Nella parte bassa, che è quella allungata, il cavo tiene più tensione dei manubri.",
+   "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
+   "reg": [
+     "Altezza puleggia",
+     "Distanza dal cavo"
+   ]
  },
  "massa3|rear delt (reverse fly)": {
   "cp": "15 kg",
@@ -4106,13 +4154,45 @@ const ALIAS_ESERCIZI = {
   'shoulder press sdraiato':['shoulder press'],
   'deltoidi posteriori ai cavi':['rear delt (reverse fly)']
 };
+/* Nome canonico di un esercizio: lo stesso movimento compare nelle schede (e
+   nello storico salvato) con nomi diversi — maiuscole, "(seduto, fisso)",
+   "Stacchi rumeni (RDL)" vs "Stacco rumeno", ecc. Per statistiche e "ultima
+   volta" li trattiamo come un unico esercizio. Si uniscono solo varianti
+   dello stesso identico movimento/macchina, non attrezzi diversi. */
+const NOMI_CANONICI = [
+  [/^hack squat/i, 'Hack Squat'],
+  [/^leg press 45/i, 'Leg Press 45°'],
+  [/^(rear delt|deltoidi posteriori)/i, 'Rear Delt (reverse fly)'],
+  [/^leg curl(?!.*sdraiato)/i, 'Leg Curl seduto'],
+  [/^leg extension/i, 'Leg Extension (Matrix)'],
+  [/kneeling hip thrust|hip thrust kneeling/i, 'Kneeling Hip Thrust (Impulse)'],
+  [/^(adductor|adduttore)/i, 'Adductor Machine'],
+  [/^(calf raise in piedi|polpacci in piedi)/i, 'Polpacci in piedi'],
+  [/^(calf seduto|polpacci da seduto)/i, 'Polpacci da seduto'],
+  [/^croci ai cavi dal basso/i, 'Croci ai cavi dal basso (seduto)'],
+  [/^stacchi? rumeni?(?!.*manubri)/i, 'Stacco rumeno'],
+  [/^(pec deck|pec fly)/i, 'Pec Deck'],
+  [/^rematore/i, 'Rematore con supporto al petto'],
+  [/pushdown/i, 'Pushdown con la corda'],
+  [/^(tricipiti overhead|estensione tricipiti sopra)/i, 'Tricipiti overhead al cavo'],
+  [/^(chest press inclinata|inclined chest press)/i, 'Chest Press inclinata guidata'],
+  [/^alzate laterali (al cavo basso|ai cavi)/i, 'Alzate laterali al cavo basso'],
+  [/^(alzate laterali \(macchina panatta|macchina deltoidi panatta)/i, 'Macchina deltoidi Panatta (alzate laterali)']
+];
+function nomeCanonico(nome){
+  const n = String(nome||'').trim();
+  const m = NOMI_CANONICI.find(([re])=>re.test(n));
+  return m ? m[1] : n;
+}
 function nomiEquivalenti(nome){
   const n = String(nome||'').trim().toLowerCase();
   return [n, ...(ALIAS_ESERCIZI[n]||[])];
 }
 function trovaEsInSessione(sess, nome){
   const ok = nomiEquivalenti(nome);
-  return (sess.esercizi||[]).find(e=> ok.includes(String(e.nome||'').trim().toLowerCase()));
+  const canon = nomeCanonico(nome).toLowerCase();
+  return (sess.esercizi||[]).find(e=> ok.includes(String(e.nome||'').trim().toLowerCase())) ||
+         (sess.esercizi||[]).find(e=> nomeCanonico(e.nome).toLowerCase()===canon);
 }
 /* Pesi di partenza (seduta del 22/10/2026) usati come "ultima volta" finché
    non esiste uno storico salvato per quell'esercizio. */
@@ -4468,6 +4548,32 @@ function allenamentoFattoOggi(){
   return cache.sessioni.some(s=> new Date(s.data).toDateString()===oggi);
 }
 
+/* Correzione una tantum (PDF "Correzioni kcal"): pasti fuori casa del 07/11/2026
+   mai registrati. Voci manuali (tipo ricetta) sulla Cena, idempotenti grazie
+   all'id fisso. La birra porta kcalExtra (alcol) perché le sue 290 kcal non
+   tornano col solo conto 4/4/9 sui macro. Non tocca pasti, tipo di giorno né altro. */
+function applicaCorrezioniKcal(){
+  try{
+    if(!currentUid) return;
+    const GIORNO = '2026-11-07';
+    const voci = [
+      { id:'corr-20261107-pizza', nome:'Pizza con crema di zucchine, fiori di zucca, chips di zucchine, crudo e fior di latte (senza cornicione)', kcal:1275, prot:60, carb:135, grassi:55, kcalExtra:0 },
+      { id:'corr-20261107-birra', nome:'Birra regular 0,66 l (5%)', kcal:290, prot:3, carb:25, grassi:0, kcalExtra:178 }
+    ];
+    let g = cache.dietaLog.find(d=>d.id===GIORNO);
+    if(g && (g.alimentiExtra||[]).some(a=>a.id===voci[0].id)) return; // già applicata
+    const nuovo = !g;
+    if(!g){ g = { id:GIORNO, pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, giornoAllenamento:true }; cache.dietaLog.push(g); cache.dietaLog.sort((a,b)=>a.id.localeCompare(b.id)); }
+    if(g.manualMacros){
+      const m = g.manualMacros; m.kcal=(m.kcal||0)+1565; m.prot=(m.prot||0)+63; m.carb=(m.carb||0)+160; m.grassi=(m.grassi||0)+55;
+    } else {
+      if(!g.alimentiExtra) g.alimentiExtra = [];
+      voci.forEach(v=> g.alimentiExtra.push({ ...v, marca:'', grammi:null, isRicetta:true, ricettaId:null, ingredienti:[], polio:0, pasto:4, fonte:'stima fuori casa' }));
+    }
+    salvaGiornoDietaLog(GIORNO, g);
+    console.info('Correzioni kcal 07/11 applicate', nuovo?'(giorno creato)':'');
+  }catch(e){ console.warn('Correzioni kcal non applicate', e); }
+}
 async function loadData(){
   const [sessioniSnap, misureSnap, dietaLogSnap, alimentiCustomSnap, ricetteSnap, cardioSnap] = await Promise.all([
     userCollection('sessioni').orderBy('data','asc').get(),
@@ -4650,7 +4756,7 @@ function ricalcolaVoceExtraPerGrammi(voce, nuoviGrammi){
     voce.grassi = round1((voce.grassi||0)*fattore);
     voce.polio = round1((voce.polio||0)*fattore);
   }
-  voce.kcal = kcalDaMacro(voce.prot, voce.carb, voce.grassi, voce.polio);
+  voce.kcal = kcalDaMacro(voce.prot, voce.carb, voce.grassi, voce.polio) + (voce.kcalExtra||0);
   voce.grammi = nuoviGrammi;
 }
 
@@ -6287,6 +6393,24 @@ function setDropPct(ei, si, pct){
   set.pesoDrop = calcolaPesoDrop(set);
   renderSessionePreservandoScroll();
 }
+/* Tecnica d'intensità in un tocco: si applica all'ultima serie non saltata
+   (le altre serie restano gestibili dal menu ⋯ della singola riga). */
+function ultimoSetTecnico(draft){
+  for(let i=draft.sets.length-1;i>=0;i--) if(!draft.sets[i].saltata) return i;
+  return -1;
+}
+function toggleTecnicaRapida(ei){
+  const u = uiDi(sessionDraft.esercizi[ei]);
+  u.tec = !u.tec;
+  hapticaLieve();
+  renderSessionePreservandoScroll();
+}
+function applicaTecnicaRapida(ei, val){
+  const li = ultimoSetTecnico(sessionDraft.esercizi[ei]);
+  if(li<0) return;
+  uiDi(sessionDraft.esercizi[ei]).tec = false;
+  setTecnica(ei, li, val);
+}
 function setTecnica(ei, si, val){
   sessionDraft.esercizi[ei].sets[si].tecnica = val || '';
   if(val==='drop'){ const st = sessionDraft.esercizi[ei].sets[si]; if(!st.pesoDropManuale) st.pesoDrop = calcolaPesoDrop(st); }
@@ -7056,8 +7180,17 @@ function renderEsercizioCard(scheda, ei, supersetTag){
   });
   html += `<div class="ex2-actions">
     <button type="button" class="s2-chip" onclick="aggiungiSet(${ei})">+ Aggiungi serie</button>
+    <button type="button" class="s2-chip${(ui.tec || ultimoSetTecnico(draft)>=0 && draft.sets[ultimoSetTecnico(draft)].tecnica)?' on':''}" onclick="toggleTecnicaRapida(${ei})">⚡ Tecnica</button>
     <button type="button" class="s2-chip${ui.more?' on':''}" onclick="toggleAltroEsercizio(${ei})">${ui.more ? '▲ Meno' : '⋯ Altro'}</button>
   </div>`;
+  if(ui.tec){
+    const li = ultimoSetTecnico(draft);
+    const cur = li>=0 ? draft.sets[li].tecnica : '';
+    html += `<div class="ex2-tec"><span>Serie ${li+1}:</span>
+      ${Object.keys(TECNICHE).map(k=>`<button type="button" class="s2-chip${cur===k?' on':''}" onclick="applicaTecnicaRapida(${ei},'${k}')">${TECNICHE[k].icona} ${TECNICHE[k].label}</button>`).join('')}
+      ${cur ? `<button type="button" class="s2-chip" onclick="applicaTecnicaRapida(${ei},'')">✕ Nessuna</button>` : ''}
+    </div>`;
+  }
 
   if(ui.more){
     const nUn = unitaSessione(scheda).length;
@@ -7913,6 +8046,8 @@ const METRICHE_ESERCIZIO = [
 const GRUPPI_MUSCOLARI_PATTERN = [
   {gruppo:'Glutei', re:/hip thrust|glute/i},
   {gruppo:'Core', re:/plank|addom|crunch|\bcore\b/i},
+  // Adduttori/abduttori: coscia interna/esterna, quindi Gambe (prima non matchavano e finivano in Altro).
+  {gruppo:'Gambe', re:/adductor|adduttor|abductor|abduttor/i},
   // Stacchi rumeni (RDL): femorali come muscolo principale (vedi guida.muscoli
   // "Femorali, glutei, bassa schiena in stabilizzazione") — stessa famiglia
   // di Leg Curl, quindi Gambe e non Glutei (riservato a hip thrust/glute
@@ -7921,14 +8056,14 @@ const GRUPPI_MUSCOLARI_PATTERN = [
   // Pec Fly: fly/croci per pettorali. Push-up (anche sulle ginocchia): stessa
   // catena della Chest Press di cui è l'alternativa (guida.muscoli "Pettorali,
   // spalle anteriori e tricipiti").
-  {gruppo:'Petto', re:/chest|petto|panca|croci|pec fly|push-?up/i},
+  {gruppo:'Petto', re:/chest|petto|panca|croci|pec fly|pec deck|push-?up/i},
   // Pulley: alternativa alla Row Machine, stesso lavoro dorsale (dorsali,
   // romboidi, trapezio). Hyperextension: lombari come muscolo principale
   // (guida.muscoli "Lombari, glutei, femorali") — è la bassa schiena, non le gambe.
-  {gruppo:'Dorso', re:/lat machine|pulldown|rematore|\brow\b|trazioni|dorso|schiena|pulley|hyperextens|iperestensione/i},
+  {gruppo:'Dorso', re:/pullover|lat machine|pulldown|rematore|\brow\b|trazioni|dorso|schiena|pulley|hyperextens|iperestensione/i},
   // Rear Delt (reverse fly): deltoide posteriore — una spalla, non un
   // pettorale, anche se il nome contiene "fly".
-  {gruppo:'Spalle', re:/spalla|shoulder|military|alzate|arnold|rear delt|deltoid/i},
+  {gruppo:'Spalle', re:/spalla|shoulder|military|alzate|arnold|rear delt|deltoid|lento avanti|spinte verticali|overhead press/i},
   {gruppo:'Braccia', re:/curl|bicip|tricip|push.?down|french|braccio/i}
 ];
 function gruppoMuscolareEsercizio(nome){
@@ -7978,7 +8113,8 @@ function renderVolumeGruppiCard(){
 }
 
 function calcolaValoreEsercizio(sessione, nomeEsercizio, metrica){
-  const e = sessione.esercizi.find(x=>x.nome===nomeEsercizio);
+  const canon = nomeCanonico(nomeEsercizio);
+  const e = sessione.esercizi.find(x=>x.nome===nomeEsercizio) || sessione.esercizi.find(x=>nomeCanonico(x.nome)===canon);
   if(!e) return null;
   if(metrica==='rpeMedio'){
     const rpes = (e.sets||[]).map(s=>s.rpe).filter(v=>v!=null && !isNaN(v));
@@ -8134,15 +8270,14 @@ function renderStatistiche(){
   html += renderObiettivoCorpoStatCard();
   if(haveSessioni) html += renderVolumeGruppiCard();
   if(haveSessioni){
-    html += `<div class="card"><h3 style="margin-top:0;font-size:15px;">📊 Carichi esercizi</h3>
-      <div class="stat-highlight" id="statHighlight"></div>
-      <div class="chip-select" id="metricaChips">
+    html += `<div class="card cs-card"><h3 class="cs-title">📊 Carichi esercizi</h3>
+      <div class="cs-seg" id="metricaChips">
         ${METRICHE_ESERCIZIO.map((m,i)=>`<div class="chip ${i===0?'active':''}" data-m="${m.key}">${m.label}</div>`).join('')}
       </div>
-      <p class="field-hint" id="gruppoChipsLabel" style="margin:-4px 0 6px;">Gruppo muscolare</p>
-      <div class="chip-select" id="gruppoChips"></div>
-      <div class="chip-select" id="exChips"></div>
-      <canvas class="chart-canvas" id="progChart" height="180"></canvas>
+      <div class="cs-scroll" id="gruppoChips"></div>
+      <div class="cs-scroll cs-ex" id="exChips"></div>
+      <div class="stat-highlight cs-hl" id="statHighlight"></div>
+      <div class="cs-chart"><canvas class="chart-canvas" id="progChart" height="180"></canvas></div>
     </div>`;
   }
   if(haveMisureStats){
@@ -8162,7 +8297,8 @@ function renderStatistiche(){
     cache.sessioni.forEach(s=>{
       const t = new Date(s.data).getTime();
       (s.esercizi||[]).forEach(e=>{
-        if(!ultimaVoltaPerNome[e.nome] || t > ultimaVoltaPerNome[e.nome]) ultimaVoltaPerNome[e.nome] = t;
+        const cn = nomeCanonico(e.nome);
+        if(!ultimaVoltaPerNome[cn] || t > ultimaVoltaPerNome[cn]) ultimaVoltaPerNome[cn] = t;
       });
     });
     const exNames = Object.keys(ultimaVoltaPerNome).sort((a,b)=> ultimaVoltaPerNome[b]-ultimaVoltaPerNome[a]);
@@ -8179,7 +8315,7 @@ function renderStatistiche(){
     const gruppiDisponibili = ORDINE_GRUPPI.filter(g=>exPerGruppo[g] && exPerGruppo[g].length);
 
     const gruppoWrap = document.getElementById('gruppoChips');
-    const gruppoLabel = document.getElementById('gruppoChipsLabel');
+    const gruppoLabel = null;
     const chipWrap = document.getElementById('exChips');
     const metricaWrap = document.getElementById('metricaChips');
     const highlightBox = document.getElementById('statHighlight');
@@ -8214,10 +8350,17 @@ function renderStatistiche(){
           deltaHtml = `<span class="misura-delta">＝ invariato vs sessione precedente</span>`;
         }
       }
+      const record = Math.max(...points.map(p=>p.v));
       highlightBox.innerHTML = `
-        <div class="stat-highlight-value">${fmt1(ultimo)}<span class="stat-highlight-unit">${unita}</span></div>
-        <div class="stat-highlight-label">${name} · ${metaInfo.label}</div>
-        ${deltaHtml}`;
+        <div class="cs-hl-main">
+          <div class="stat-highlight-value">${fmt1(ultimo)}<span class="stat-highlight-unit">${unita}</span></div>
+          <div class="stat-highlight-label">${name} · ${metaInfo.label}</div>
+          ${deltaHtml}
+        </div>
+        <div class="cs-hl-side">
+          <div><b>${fmt1(record)}${unita}</b><span>record</span></div>
+          <div><b>${points.length}</b><span>sedute</span></div>
+        </div>`;
     }
 
     function drawChart(name, metrica){
@@ -8248,7 +8391,7 @@ function renderStatistiche(){
 
     function renderExChips(){
       const nomi = exPerGruppo[gruppoSel] || [];
-      chipWrap.innerHTML = nomi.map(n=>`<div class="chip ${n===selected?'active':''}" data-n="${n}">${n}</div>`).join('');
+      chipWrap.innerHTML = nomi.map(n=>`<div class="chip ${n===selected?'active':''}" data-n="${escHtml(n)}">${escHtml(n)}</div>`).join('');
       chipWrap.querySelectorAll('.chip').forEach(chip=>{
         chip.addEventListener('click', ()=>{
           chipWrap.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
@@ -9531,7 +9674,7 @@ function renderAlimentazione(){
   // non sommate dalle kcal dichiarate di ciascun alimento: altrimenti, per
   // via di fibre/alcol/arrotondamenti, l'anello poteva mostrare "oltre"
   // anche quando il conto a mano sui macro tornava sotto il target.
-  acquisito.kcal = kcalDaMacro(acquisito.prot, acquisito.carb, acquisito.grassi, acquisito.polio);
+  acquisito.kcal = round1(kcalDaMacro(acquisito.prot, acquisito.carb, acquisito.grassi, acquisito.polio) + alimentiExtra.reduce((s,a)=>s+(a.kcalExtra||0),0));
 
   const kcalPct = t.kcal ? Math.min(100, Math.round((acquisito.kcal/t.kcal)*100)) : 0;
   const kcalOver = acquisito.kcal > t.kcal;
@@ -10041,11 +10184,13 @@ function calcolaTotaliGiorno(g){
     if(snap){ protTot+=snap.prot; carbTot+=snap.carb; grassiTot+=snap.grassi; }
     else dettagliNonDisponibili = true;
   });
-  alimentiExtra.forEach(a=>{ protTot+=a.prot; carbTot+=a.carb; grassiTot+=a.grassi; polioTot+=(a.polio||0); });
+  let kcalExtraTot = 0;
+  alimentiExtra.forEach(a=>{ protTot+=a.prot; carbTot+=a.carb; grassiTot+=a.grassi; polioTot+=(a.polio||0); kcalExtraTot+=(a.kcalExtra||0); });
   // Kcal ricalcolate dai macro (vedi kcalDaMacro) invece di sommare le kcal
   // dichiarate di ciascun alimento: così il totale del giorno coincide
   // sempre col conto 4/4/9 fatto sui macro, anche per i giorni già loggati.
-  const kcalTot = kcalDaMacro(protTot, carbTot, grassiTot, polioTot);
+  // kcalExtra: kcal non ricavabili dai macro (es. alcol di una birra): si sommano a parte.
+  const kcalTot = round1(kcalDaMacro(protTot, carbTot, grassiTot, polioTot) + kcalExtraTot);
   return { kcalTot, protTot, carbTot, grassiTot, polioTot, dettagliNonDisponibili, manuale:false };
 }
 
@@ -12573,6 +12718,7 @@ async function avviaApp(){
     // loadDataInVolo è ancora vuoto, quindi partiamo da zero come prima.
     await (loadDataInVolo || loadData());
     loadDataInVolo = null;
+    if(profiloUtente && profiloUtente.schedeAssegnate===null) applicaCorrezioniKcal();
     applicaPulloverSessioneOggi(); // senza attendere: non deve mai bloccare l'avvio
     // A schermata già pronta, scarica i grafici in background: Statistiche si apre subito.
     setTimeout(()=>{ (window.requestIdleCallback||setTimeout)(()=>{ caricaChartJs().catch(()=>{}); }); }, 4000);
@@ -12638,7 +12784,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-12-legcurl-v24';
+const BUILD_ID = '2026-11-14-stat-v27';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
