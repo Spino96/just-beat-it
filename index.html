@@ -8836,8 +8836,37 @@ async function salvaModificaSessione(id){
 }
 
 /* ============ PROFILO ============ */
+/* Diagnostica riaperture: registra come parte ogni apertura (da zero, ricarica,
+   quanto tempo era rimasta in background) per capire perché il telefono
+   riavvia l'app. Si legge in Profilo > Diagnostica. */
+function registraAperturaDiag(){
+  try{
+    const nav = (performance.getEntriesByType('navigation')[0]||{}).type || '?';
+    const ult = JSON.parse(localStorage.getItem('by_diag_ult')||'null');
+    const ora = Date.now();
+    const log = JSON.parse(localStorage.getItem('by_diag')||'[]');
+    log.unshift({ t:ora, nav, build:(typeof BUILD_ID!=='undefined'?BUILD_ID:'?'),
+      bg: ult && ult.hiddenAt ? Math.round((ora-ult.hiddenAt)/1000) : null,
+      sw: !!(navigator.serviceWorker && navigator.serviceWorker.controller),
+      mem: (navigator.deviceMemory||null) });
+    localStorage.setItem('by_diag', JSON.stringify(log.slice(0,12)));
+    localStorage.setItem('by_diag_ult', JSON.stringify({ hiddenAt:null }));
+  }catch(e){}
+}
+document.addEventListener('visibilitychange', ()=>{
+  try{ localStorage.setItem('by_diag_ult', JSON.stringify({ hiddenAt: document.visibilityState==='hidden' ? Date.now() : null })); }catch(e){}
+});
+function htmlDiagnostica(){
+  let log=[]; try{ log=JSON.parse(localStorage.getItem('by_diag')||'[]'); }catch(e){}
+  const righe = log.map(x=>`<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border);"><span>${new Date(x.t).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span><span style="color:var(--text-dim);">${x.nav}${x.bg!=null?` · era in bg ${x.bg}s`:''}</span></div>`).join('');
+  return `<details class="card" style="margin-top:14px;"><summary style="cursor:pointer;font-weight:800;font-size:14px;">🛠 Diagnostica app</summary>
+    <p class="field-hint" style="margin:10px 0 6px;">Versione: <b>${BUILD_ID}</b></p>
+    <p class="field-hint" style="margin:0 0 6px;">Ultime aperture (se "era in bg" è alto e l'app riparte da capo, il telefono l'ha scaricata dalla memoria):</p>
+    ${righe || '<p class="field-hint">Nessun dato ancora.</p>'}</details>`;
+}
 function renderProfilo(){
   pageTitle.textContent = 'Profilo';
+  setTimeout(()=>{ if(route.name==='profilo') view.insertAdjacentHTML('beforeend', htmlDiagnostica()); },0);
   const p = profiloUtente || {};
   // Le stesse etichette di sezione già usate in Home: raggruppano le card
   // (dati personali / obiettivi / notifiche) invece di lasciarle in fila
@@ -12811,6 +12840,7 @@ async function avviaApp(){
     if(pianoPersonale && cache.dietaLogOggi.giornoAllenamento === null){
       await chiediEImpostaGiornoAllenamento();
     }
+    registraAperturaDiag();
     const riprendi = await controllaSessioneInCorso();
     const rSalvata = riprendi ? null : routeSalvata();
     goHome();
@@ -12870,7 +12900,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-16-riprendi-v29';
+const BUILD_ID = '2026-11-17-diag-v30';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
