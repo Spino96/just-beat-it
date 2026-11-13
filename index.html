@@ -1830,40 +1830,115 @@ function messagingSupportata(){
   return !!(firebase.messaging && firebase.messaging.isSupported && firebase.messaging.isSupported() && 'Notification' in window);
 }
 
+/* Stato delle notifiche (come in Casa): install = iPhone con l'app non ancora
+   aggiunta alla Home; unsupported = browser senza push; denied = bloccate dal
+   telefono; on = attive e registrate; off = da attivare. */
+function statoNotifiche(){
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone = window.navigator.standalone===true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  if(ios && !standalone) return 'install';
+  if(!('serviceWorker' in navigator) || !('Notification' in window) || !messagingSupportata()) return 'unsupported';
+  if(Notification.permission==='denied') return 'denied';
+  if(Notification.permission==='granted' && profiloUtente && profiloUtente.fcmToken) return 'on';
+  return 'off';
+}
+async function ottieniTokenPush(){
+  // Passiamo esplicitamente il nostro service worker (sw.js) a Firebase Messaging:
+  // senza, cercherebbe "firebase-messaging-sw.js" che qui non esiste.
+  const registrazioneSW = await navigator.serviceWorker.ready;
+  return firebase.messaging().getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registrazioneSW });
+}
+async function salvaTokenPush(token){
+  await attendiScrittura(db.collection('users').doc(currentUid).set({ fcmToken: token, fcmTokenAgg: Date.now() }, { merge:true }));
+  if(profiloUtente){ profiloUtente.fcmToken = token; profiloUtente.fcmTokenAgg = Date.now(); }
+}
+/* Riattivazione silenziosa a ogni apertura (e al ritorno in primo piano, al
+   massimo ogni 6 ore): se il permesso è già concesso si richiede di nuovo il
+   token e, se è cambiato o mancava, si salva. Così le notifiche restano
+   sempre registrate anche quando il sistema ruota il token (iPhone), senza
+   dover riattivare a mano da Profilo. */
+async function riattivaNotificheSilenzioso(forza){
+  try{
+    if(!VAPID_KEY || !currentUid || !profiloUtente) return;
+    if(!messagingSupportata() || !('Notification' in window) || Notification.permission!=='granted') return;
+    const ult = Number(localStorage.getItem('by_push_check')||0);
+    if(!forza && profiloUtente.fcmToken && Date.now()-ult < 6*3600*1000) return;
+    const token = await ottieniTokenPush();
+    try{ localStorage.setItem('by_push_check', String(Date.now())); }catch(e){}
+    if(token && token!==profiloUtente.fcmToken) await salvaTokenPush(token);
+  }catch(e){ console.warn('Riattivazione notifiche non riuscita', e); }
+}
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') riattivaNotificheSilenzioso(); });
+
 async function attivaNotifichePush(){
   const stato = document.getElementById('notificheStato');
+  const mostra = html=>{ if(stato) stato.innerHTML = html; };
   if(!VAPID_KEY){
-    if(stato) stato.innerHTML = `<div class="error-banner">Manca ancora la chiave VAPID nel codice (va generata nella console Firebase e incollata in VAPID_KEY). Finché non c'è, le notifiche non possono attivarsi.</div>`;
+    mostra(`<div class="error-banner">Manca ancora la chiave VAPID nel codice (va generata nella console Firebase e incollata in VAPID_KEY). Finché non c'è, le notifiche non possono attivarsi.</div>`);
+    return;
+  }
+  if(statoNotifiche()==='install'){
+    mostra(`<div class="error-banner">Su iPhone le notifiche funzionano solo con l'app aggiunta alla schermata Home: da Safari tocca Condividi → "Aggiungi a Home", poi aprila da lì.</div>`);
     return;
   }
   if(!messagingSupportata()){
-    if(stato) stato.innerHTML = `<div class="error-banner">Il tuo browser non supporta le notifiche push, o l'app non è installata sulla schermata Home (richiesto su iPhone).</div>`;
+    mostra(`<div class="error-banner">Il tuo browser non supporta le notifiche push.</div>`);
     return;
   }
   try{
     const permesso = await Notification.requestPermission();
     if(permesso !== 'granted'){
-      if(stato) stato.innerHTML = `<div class="error-banner">Permesso non concesso. Puoi riattivarlo dalle impostazioni di notifica del browser/telefono.</div>`;
+      mostra(`<div class="error-banner">Permesso non concesso. Puoi riattivarlo dalle impostazioni di notifica del telefono.</div>`);
+      aggiornaUiNotifiche();
       return;
     }
-    // Senza specificare quale service worker usare, Firebase Messaging
-    // proverebbe da solo a registrarne uno con nome fisso
-    // "firebase-messaging-sw.js" che in questo progetto non esiste (usiamo
-    // "sw.js" per l'offline/cache) — fallendo con
-    // "messaging/failed-service-worker-registration". Gli passiamo invece
-    // esplicitamente il nostro service worker già attivo, che gestisce
-    // anche l'evento "push" (vedi sw.js).
-    const registrazioneSW = await navigator.serviceWorker.ready;
-    const messaging = firebase.messaging();
-    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registrazioneSW });
+    const token = await ottieniTokenPush();
     if(!token) throw new Error('Nessun token ottenuto');
-    await attendiScrittura(db.collection('users').doc(currentUid).set({ fcmToken: token }, { merge:true }));
-    if(profiloUtente) profiloUtente.fcmToken = token;
-    if(stato) stato.innerHTML = `<div class="success-banner" style="margin:0;padding:14px;">Notifiche attivate ✅</div>`;
+    await salvaTokenPush(token);
+    try{ localStorage.setItem('by_push_check', String(Date.now())); }catch(e){}
+    mostra(`<div class="success-banner" style="margin:0;padding:14px;">Notifiche attivate ✅</div>`);
+    aggiornaUiNotifiche();
   }catch(e){
-    if(stato) stato.innerHTML = `<div class="error-banner">Non sono riuscito ad attivare le notifiche: ${e.message}</div>`;
+    mostra(`<div class="error-banner">Non sono riuscito ad attivare le notifiche: ${e.message}</div>`);
   }
 }
+function aggiornaUiNotifiche(){
+  if(route && route.name==='profilo') renderProfilo();
+  else if(route && route.name==='home') renderHome();
+}
+/* Notifica di prova: verifica subito che arrivino (chiama lo stesso canale
+   locale usato per i messaggi in primo piano). */
+async function provaNotifica(){
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification('Beat Yourself', { body:'Le notifiche funzionano ✅', icon:'icon-192.png', badge:'icon-192.png', tag:'prova', data:{ url:'./' } });
+  }catch(e){ alert('Notifica di prova non riuscita: '+e.message); }
+}
+function messaggioStatoNotifiche(st){
+  return ({
+    install: '📲 Su iPhone aggiungi prima l\'app alla schermata Home (Condividi → Aggiungi a Home), poi aprila da lì e attiva le notifiche.',
+    unsupported: 'Questo browser non supporta le notifiche push.',
+    denied: '🚫 Le notifiche sono bloccate: riattivale dalle impostazioni del telefono per questa app.',
+    on: '✅ Notifiche attive su questo telefono: si registrano da sole a ogni apertura.',
+    off: 'Le notifiche non sono ancora attive su questo telefono.'
+  })[st];
+}
+/* Banner in Home finché le notifiche non sono attive (si può chiudere: ricompare dopo 3 giorni). */
+function htmlBannerNotifiche(){
+  try{
+    const st = statoNotifiche();
+    if(st==='on' || st==='unsupported') return '';
+    const ult = Number(localStorage.getItem('by_push_dismiss')||0);
+    if(Date.now()-ult < 3*86400000) return '';
+    const azione = st==='off' ? `<button class="btn small" style="margin-top:10px;" onclick="attivaNotifichePush()">Attiva notifiche</button>` : '';
+    return `<div class="card" style="border-left:3px solid var(--accent);position:relative;">
+      <button aria-label="Chiudi" onclick="chiudiBannerNotifiche()" style="position:absolute;top:8px;right:10px;background:none;border:0;color:var(--text-dim);font-size:18px;">✕</button>
+      <div style="font-weight:800;font-size:14px;margin-bottom:4px;">🔔 Promemoria e notifiche</div>
+      <div class="field-hint" style="margin:0;padding-right:16px;">${messaggioStatoNotifiche(st)}</div>${azione}
+    </div>`;
+  }catch(e){ return ''; }
+}
+function chiudiBannerNotifiche(){ try{ localStorage.setItem('by_push_dismiss', String(Date.now())); }catch(e){} renderHome(); }
 
 /* Le notifiche in primo piano (app aperta) non vengono mostrate in automatico
    dal sistema come quelle in background: le intercettiamo e le mostriamo noi.
@@ -1876,7 +1951,10 @@ if(messagingSupportata()){
       const titolo = (payload.notification && payload.notification.title) || 'Beat Yourself';
       const corpo = (payload.notification && payload.notification.body) || '';
       const tag = (payload.data && payload.data.tag) || undefined;
-      if(Notification.permission==='granted') new Notification(titolo, { body: corpo, icon:'icon-192.png', tag });
+      if(Notification.permission!=='granted') return;
+      const opz = { body: corpo, icon:'icon-192.png', badge:'icon-192.png', tag, data:{ url:(payload.data && payload.data.url) || './' } };
+      // showNotification (via service worker) è più affidabile di new Notification su iPhone/Android installati.
+      navigator.serviceWorker.ready.then(reg=> reg.showNotification(titolo, opz)).catch(()=>{ try{ new Notification(titolo, opz); }catch(e){} });
     });
   }catch(e){}
 }
@@ -5695,6 +5773,7 @@ function renderHome(){
   const oggiPanel = renderOggiPanel();
   view.innerHTML = `
     ${saluto}
+    ${htmlBannerNotifiche()}
     ${oggiPanel}
     ${promemoria}
     <p class="section-label">Le tue sezioni</p>
@@ -9151,8 +9230,9 @@ function renderProfilo(){
   <div class="card">
     <div class="dic-t" style="font-size:13.5px;font-weight:800;margin-bottom:6px;">🔔 Promemoria</div>
     <p class="field-hint" style="margin:0 0 14px;">Ricevi una notifica se dimentichi di segnare un pasto, un integratore serale o se hai bevuto poca acqua durante la giornata.</p>
-    <div id="notificheStato"></div>
-    <button class="btn secondary" style="width:100%;" onclick="attivaNotifichePush()">${p.fcmToken ? '🔔 Notifiche attive — riattiva' : 'Attiva notifiche'}</button>
+    <div id="notificheStato"><p class="field-hint" style="margin:0 0 10px;">${messaggioStatoNotifiche(statoNotifiche())}</p></div>
+    ${['install','unsupported','denied'].includes(statoNotifiche()) ? '' : `<button class="btn secondary" style="width:100%;" onclick="attivaNotifichePush()">${statoNotifiche()==='on' ? '🔔 Riattiva / aggiorna registrazione' : 'Attiva notifiche'}</button>`}
+    ${statoNotifiche()==='on' ? `<button class="btn secondary" style="width:100%;margin-top:8px;" onclick="provaNotifica()">Invia notifica di prova</button>` : ''}
   </div>
 
   <button class="btn danger" style="margin-top:20px;" onclick="logout()">Esci</button>`;
@@ -13094,6 +13174,7 @@ async function avviaApp(){
       await chiediEImpostaGiornoAllenamento();
     }
     registraAperturaDiag();
+    riattivaNotificheSilenzioso(true);
     const riprendi = await controllaSessioneInCorso();
     const rSalvata = riprendi ? null : routeSalvata();
     goHome();
@@ -13153,7 +13234,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-20-torsob-v33';
+const BUILD_ID = '2026-11-21-notifiche-v34';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
