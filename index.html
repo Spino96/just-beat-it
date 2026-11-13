@@ -5388,7 +5388,44 @@ function setRoute(r){
   }
 }
 
+/* Ricorda l'ultima schermata aperta: se il telefono scarica l'app dalla
+   memoria (o la ricarica dopo un errore di connessione ai dati) si riparte da
+   dove eri, non dalla Home. Solo schermate "semplici", senza dati in corso. */
+const ROUTE_RIPRISTINABILI = ['home','allenamento-list','alimentazione','diario','statistiche','misure','storico','storico-allenamento','storico-misure','profilo','blocco3-anteprima'];
+function salvaRouteCorrente(){
+  try{
+    if(!currentUid) return;
+    if(ROUTE_RIPRISTINABILI.includes(route.name)) localStorage.setItem('by_route', JSON.stringify({ uid:currentUid, name:route.name, t:Date.now() }));
+  }catch(e){}
+}
+function routeSalvata(){
+  try{
+    const r = JSON.parse(localStorage.getItem('by_route')||'null');
+    if(!r || r.uid!==currentUid || !ROUTE_RIPRISTINABILI.includes(r.name)) return null;
+    if(Date.now()-r.t > 12*3600*1000) return null;
+    return r.name;
+  }catch(e){ return null; }
+}
+
+/* Gesto/tasto "indietro" del telefono: torna alla schermata precedente
+   dell'app invece di chiuderla (la app non aveva voci nella cronologia).
+   Dalla Home il gesto chiude l'app come di consueto. */
+let cronologiaPronta = false;
+function preparaCronologia(){
+  if(cronologiaPronta) return; cronologiaPronta = true;
+  try{
+    history.replaceState({by:'root'}, '');
+    history.pushState({by:'app'}, '');
+    window.addEventListener('popstate', ()=>{
+      if(route.name==='home') return; // già in Home: lascia uscire
+      try{ history.pushState({by:'app'}, ''); }catch(e){}
+      backBtn.click();
+    });
+  }catch(e){}
+}
+
 function render(){
+  salvaRouteCorrente();
   clearRestTimer();
   // Il tick del cronometro cardio aggiorna elementi presenti solo nella
   // schermata 'sessione-cardio': fuori da lì lo fermiamo (i minuti trascorsi
@@ -12775,8 +12812,11 @@ async function avviaApp(){
       await chiediEImpostaGiornoAllenamento();
     }
     const riprendi = await controllaSessioneInCorso();
+    const rSalvata = riprendi ? null : routeSalvata();
     goHome();
+    preparaCronologia();
     if(riprendi) setRoute({name:'sessione'});
+    else if(rSalvata && rSalvata!=='home') setRoute({name:rSalvata});
   }catch(e){
     view.innerHTML = `<div class="error-banner">Errore nel caricamento dei dati: ${e.message}</div>`;
   }
@@ -12830,7 +12870,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-15-tortino-v28';
+const BUILD_ID = '2026-11-16-riprendi-v29';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
