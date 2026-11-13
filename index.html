@@ -3082,16 +3082,16 @@ const SCHEDE_DEFAULT = [
         }
       },
       {
-        nome:'Alzate laterali al cavo basso', serieTarget:3, ripTarget:'10-15', recupero:90,
+        nome:'Alzate laterali con manubri', serieTarget:3, ripTarget:'10-15', recupero:90,
         superset:'js3', jump:true, tecnicaUltima:'drop',
-        note:'Il cavo passa davanti al corpo, gomito leggermente piegato, sali fino all\'altezza della spalla guidando con il gomito e non con la mano. Scendi controllato mantenendo tensione. Alterna con i rear delt (jump set). Ultima serie: drop set.',
+        note:'Busto leggermente inclinato in avanti, gomiti leggermente piegati. Sali fino all\'altezza delle spalle (non oltre) guidando con i gomiti, senza slancio, scendi controllato. Alterna con i rear delt (jump set). Ultima serie: drop set.',
         alternativa:'—',
         video:'',
         immagine:'',
         guida:{
           muscoli:'Deltoide mediale.',
-          esecuzione:'Il cavo passa davanti al corpo, gomito leggermente piegato, sali fino all\'altezza della spalla guidando con il gomito e non con la mano. Scendi controllato mantenendo tensione. Alterna con i rear delt (jump set). Ultima serie: drop set.',
-          errori:'Niente slancio del busto e non salire oltre l\'altezza delle spalle.'
+          esecuzione:'Busto leggermente inclinato in avanti, gomiti leggermente piegati. Sali fino all\'altezza delle spalle (non oltre) guidando con i gomiti, senza slancio, scendi controllato. Alterna con i rear delt (jump set). Ultima serie: drop set.',
+          errori:'Niente slancio e non salire oltre l\'altezza delle spalle.'
         }
       },
       {
@@ -3914,20 +3914,19 @@ const INFO_ESERCIZI = {
    "Limitatore partenza"
   ]
  },
- "massa3|alzate laterali al cavo basso": {
-   "cp": "5 kg",
-   "impostazione": "Puleggia al minimo con maniglia singola. Mettiti di fianco al cavo, in modo che il cavo passi davanti al corpo (la maniglia è nella mano più lontana dal cavo). La tensione deve esserci già in partenza.",
-   "posizione": "Piedi a larghezza anche, ginocchia leggermente flesse. Con la mano libera tieniti a un montante per stabilità. Gomito leggermente piegato (10-15°) e fisso, polso in linea con l'avambraccio, spalla bassa.",
-   "impugnatore": "Impugnatore: maniglia singola del cavo. Presa: neutra, con il palmo verso la coscia in partenza e il pollice avvolto. Polso in linea con l'avambraccio, mano mai più alta del gomito. Presa leggera: guida con il gomito, non con la mano.",
-   "esecuzione": "Sali leggermente davanti al fianco (circa 20-30° davanti al piano laterale) guidando con il gomito, fino all'altezza della spalla, mai oltre. Scendi in 2 secondi mantenendo la tensione. In basso fai un fermo di mezzo secondo senza lasciare che il cavo ti porti la mano al fianco in modo brusco.",
-   "respirazione": "Espira salendo, inspira scendendo.",
-   "errori": "Spalla che sale verso l'orecchio. Slancio con il busto. Gomito che si piega troppo. Mano più alta del gomito. Salire oltre l'altezza della spalla.",
-   "carico": "Carico da trovare: leggero, ma non irrisorio, scegli un peso con cui fai 10-15 ripetizioni senza slancio. Nella parte bassa, che è quella allungata, il cavo tiene più tensione dei manubri.",
-   "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
-   "reg": [
-     "Altezza puleggia",
-     "Distanza dal cavo"
-   ]
+ "massa3|alzate laterali con manubri": {
+  "cp": "7,5-8 kg per mano",
+  "impostazione": "Scegli manubri leggeri (7,5-8 kg per mano come punto di partenza). Resta in piedi senza appoggi.",
+  "posizione": "Piedi a larghezza anche, ginocchia leggermente flesse, busto inclinato in avanti di 10-15°. Manubri lungo i fianchi, presa neutra, gomiti leggermente piegati e fissi.",
+  "impugnatore": "Impugnatore: manubri. Presa: neutra (palmi verso le cosce), manubri tenuti con le dita e non solo col palmo. Polsi dritti. Non ruotare i manubri durante la salita.",
+  "esecuzione": "Sali nel piano leggermente davanti al fianco (circa 20-30°), guidando con i gomiti, fino all'altezza delle spalle, non oltre. Scendi in 2 secondi, con un fermo di mezzo secondo in basso, senza dondolare. Alterna con il rear delt (jump set).",
+  "respirazione": "Espira salendo, inspira scendendo.",
+  "errori": "Slancio con il busto. Spalle che salgono verso le orecchie. Manubri più in alto dei gomiti. Gomiti che si piegano troppo. Carico troppo alto.",
+  "carico": "Carico di partenza 7,5-8 kg per mano. Jump set con il rear delt: 1'30 tra una serie e l'altra.",
+  "tecnica": "Drop set. A cedimento tecnico, senza pausa riduci il carico del 20-30% (sposta il perno o togli un disco in pochi secondi) e vai di nuovo a cedimento. Una sola riduzione.",
+  "reg": [
+   "Peso manubri"
+  ]
  },
  "massa3|rear delt (reverse fly)": {
   "cp": "15 kg",
@@ -7096,7 +7095,7 @@ function unitaCaricoEsercizio(nome, def){
   const n = String(nome||'');
   if(/leg extension/i.test(n)) return 'dischi';
   if(/croci ai cavi/i.test(n)) return 'per lato';
-  if(/high row unilaterale|low row a un braccio|curl con manubri|spinte verticali con manubri|stacco rumeno con manubri|bicep curl|spider curl|spinte panca 30/i.test(n)) return 'per braccio';
+  if(/high row unilaterale|low row a un braccio|curl con manubri|spinte verticali con manubri|stacco rumeno con manubri|bicep curl|spider curl|spinte panca 30|alzate laterali con manubri/i.test(n)) return 'per braccio';
   return 'totale';
 }
 function stepCarico(peso, stepEsercizio){
@@ -13154,7 +13153,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-19-correzioni-v32';
+const BUILD_ID = '2026-11-20-torsob-v33';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
