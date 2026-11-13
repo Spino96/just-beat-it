@@ -4291,22 +4291,50 @@ function progressoBlocco(gruppo){
    d'allarme quando (a) il blocco va avanti da un po' di settimane e (b)
    nelle ultime due settimane l'RPE medio segnato e' rimasto alto — segno
    di fatica che si accumula piu' che di singole sedute dure isolate. */
+/* Top set di un esercizio in una seduta: serie fatte col carico più alto,
+   escluse riscaldamento, drop, rest-pause, parziali e back off. */
+function topSetEsercizio(es){
+  const validi = (es.sets||[]).filter(x=> x.fatta && !x.saltata && !x.riscaldamento && !x.tecnica && !isNaN(parseFloat(x.peso)) && parseFloat(x.peso)>0);
+  if(!validi.length) return { peso:null, sets:[] };
+  const peso = Math.max(...validi.map(x=>parseFloat(x.peso)));
+  return { peso, sets: validi.filter(x=>parseFloat(x.peso)===peso) };
+}
+function punteggioTopSet(es){
+  const t = topSetEsercizio(es);
+  if(t.peso==null) return null;
+  const rips = t.sets.map(x=>parseInt(x.rip)).filter(n=>!isNaN(n));
+  if(!rips.length) return null;
+  return t.peso * Math.max(...rips);
+}
+
 function valutaDeload(scheda){
   const inizio = blocchiIniziati[scheda.id];
   if(!inizio) return null;
   const settimaneTrascorse = Math.floor((new Date() - new Date(inizio)) / (7*86400000));
   if(settimaneTrascorse < 5) return null;
 
-  const dueSettimaneFa = new Date(); dueSettimaneFa.setDate(dueSettimaneFa.getDate()-14);
-  const sessioniRecenti = cache.sessioni.filter(s=> s.schedaId===scheda.id && new Date(s.data) >= dueSettimaneFa);
-  if(sessioniRecenti.length < 2) return null;
-
-  const rpeValori = sessioniRecenti.flatMap(s=> (s.esercizi||[]).flatMap(e=> (e.sets||[]).map(x=>x.rpe))).filter(v=>v!=null && !isNaN(v));
-  if(rpeValori.length < 4) return null;
-  const rpeMedio = rpeValori.reduce((a,b)=>a+b,0)/rpeValori.length;
-
-  if(rpeMedio >= 8.3 || settimaneTrascorse >= 8){
-    return { settimaneTrascorse, rpeMedio: Math.round(rpeMedio*10)/10 };
+  // Criterio sulle prestazioni (non sull'RPE, che con serie sempre a cedimento
+  // non distingue nulla): per ogni esercizio, la miglior top set di ognuna
+  // delle ultime 3 settimane. Cali per 2 settimane di fila su almeno metà
+  // degli esercizi confrontabili => scarico.
+  const ora = Date.now(), W = 7*86400000;
+  const perEs = {};
+  cache.sessioni.filter(s=> s.schedaId===scheda.id).forEach(s=>{
+    const eta = ora - new Date(s.data).getTime();
+    const w = Math.floor(eta / W);
+    if(w<0 || w>2) return;
+    (s.esercizi||[]).forEach(es=>{
+      const sc = punteggioTopSet(es); if(sc==null) return;
+      const k = nomeCanonico(es.nome);
+      perEs[k] = perEs[k] || [null,null,null];
+      perEs[k][w] = Math.max(perEs[k][w]||0, sc);
+    });
+  });
+  const confrontabili = Object.values(perEs).filter(v=> v[0]!=null && v[1]!=null && v[2]!=null);
+  if(confrontabili.length < 3) return null;
+  const incalo = confrontabili.filter(v=> v[0] < v[1] && v[1] < v[2]).length;
+  if(incalo >= Math.ceil(confrontabili.length/2)){
+    return { settimaneTrascorse, esercizi: incalo, su: confrontabili.length };
   }
   return null;
 }
@@ -5740,7 +5768,7 @@ function renderAllenamentoList(){
       html += `<div class="card" style="border-left:3px solid var(--accent-2);">
         <p style="margin:0;font-size:13px;line-height:1.6;">
           <b>🔁 Valuta uno scarico su "${s.nome}"</b><br>
-          Sono ${deload.settimaneTrascorse} settimane che vai avanti su questo blocco${deload.rpeMedio!=null ? ` e l'RPE medio delle ultime sedute è alto (${deload.rpeMedio}/10)` : ''}: una settimana a volume/intensità ridotta aiuta a smaltire la fatica accumulata prima di continuare a progredire.
+          Sono ${deload.settimaneTrascorse} settimane che vai avanti su questo blocco e in ${deload.esercizi} esercizi su ${deload.su} le top set sono calate per 2 settimane di fila: una settimana a volume/intensità ridotta aiuta a smaltire la fatica accumulata prima di continuare a progredire.
         </p>
       </div>`;
     }
@@ -6428,14 +6456,15 @@ function toggleUnilaterale(ei){
 const TECNICHE = {
   drop:     { label:'Drop set',               icona:'⬇️', hint:'A cedimento, riduci il carico del 20-30% e vai di nuovo a cedimento senza pausa. Una sola riduzione.' },
   restpause:{ label:'Rest-pause',             icona:'⏸', hint:'A cedimento, 15-20 secondi di pausa, poi altre 3-5 ripetizioni.' },
-  parziali: { label:'Parziali in allungamento', icona:'↕️', hint:'A cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato.' }
+  parziali: { label:'Parziali in allungamento', icona:'↕️', hint:'A cedimento, continua 4-6 ripetizioni solo nella metà del movimento in cui il muscolo è allungato.' },
+  backoff:  { label:'Back off', icona:'↘️', hint:'Dopo le top set: carico −10% e più ripetizioni. Non conta per progressione, record e confronti tra sedute.' }
 };
 const TECNICHE_MAX_SEDUTA = 2;
 function maxTecnicheSeduta(){ try{ return (sessionDraft && schedaSessione().tecnicheMax) || TECNICHE_MAX_SEDUTA; }catch(e){ return TECNICHE_MAX_SEDUTA; } }
 const TECNICHE_SCONSIGLIATE_RE = /hack|leg press|rumeno|lento avanti|panca 15|^panca/i;
 function contaTecnicheSessione(){
   if(!sessionDraft) return 0;
-  return sessionDraft.esercizi.reduce((n,e)=> n + e.sets.filter(s=>s.tecnica && !s.saltata).length, 0);
+  return sessionDraft.esercizi.reduce((n,e)=> n + e.sets.filter(s=>s.tecnica && s.tecnica!=='backoff' && !s.saltata).length, 0);
 }
 /* Drop set: il peso dopo la riduzione si calcola da solo dal peso della serie
    (riduzione 20/25/30%, default 25%, arrotondata a 0,5 kg). Si aggiorna finché
@@ -6499,6 +6528,12 @@ function setTecnica(ei, si, val){
   aggiornaProgressoSessione();
   renderSessionePreservandoScroll();
 }
+function applicaBackoff(ei, si, kg){
+  const st = sessionDraft.esercizi[ei].sets[si];
+  st.peso = String(kg);
+  hapticaLieve();
+  renderSessionePreservandoScroll();
+}
 function avviaPausaRestPause(){ startRestTimer(20); }
 /* Riga di riepilogo di una serie (storico, "ultima volta"): include lato destro e tecnica. */
 function descriviSerie(s, uni){
@@ -6509,6 +6544,7 @@ function descriviSerie(s, uni){
   if(s.tecnica==='drop') tec = ` ⚡Drop${s.pesoDrop?` ${s.pesoDrop}kg`:''}${s.ripDrop?`×${s.ripDrop}`:''}`;
   else if(s.tecnica==='restpause') tec = ` ⚡Rest-pause${s.ripRP?` +${s.ripRP}`:''}`;
   else if(s.tecnica==='parziali') tec = ` ⚡Parziali${s.ripParz?` +${s.ripParz}`:''}`;
+  else if(s.tecnica==='backoff') tec = ' ↘️Back off';
   return base + tec;
 }
 function tecnicaPanelHtml(ei, si, set, nome){
@@ -6524,6 +6560,10 @@ function tecnicaPanelHtml(ei, si, set, nome){
     const campoDrop = `<input type="number" inputmode="decimal" min="0" max="500" step="0.5" id="drop-${ei}-${si}" placeholder="kg" value="${set.pesoDrop??''}" style="width:70px;text-align:center;" oninput="updateSet(${ei},${si},'pesoDrop',this.value)">`;
     corpo = `<div style="width:100%;margin-bottom:6px;">${chips}</div><span class="tec-l">Dopo la riduzione:</span> ${campoDrop} <span class="tec-l">kg ×</span> ${campo('ripDrop','rip',56)}
       <div class="tec-h" id="drophint-${ei}-${si}" style="margin-top:6px;">${set.pesoDropManuale ? 'Peso modificato a mano. Se cambi il peso della serie o tocchi una percentuale, si ricalcola.' : (set.peso ? `Calcolato in automatico: ${set.peso} kg −${pct}%.` : 'Inserisci il peso della serie: il drop si calcola da solo.')}</div>`;
+  } else if(set.tecnica==='backoff'){
+    const topW = Math.max(0, ...sessionDraft.esercizi[ei].sets.filter(x=>x!==set && !x.tecnica && !x.saltata).map(x=>parseFloat(x.peso)).filter(n=>!isNaN(n)));
+    const sugg = topW>0 ? Math.round(topW*0.9/1.25)*1.25 : null;
+    corpo = sugg ? `<span class="tec-l">Carico suggerito (−10%):</span> <b>${fmtKg(sugg)} kg</b> <button type="button" class="set-mini-btn" onclick="applicaBackoff(${ei},${si},${sugg})">Usa</button>` : `<span class="tec-l">Segna prima le top set: il carico suggerito sarà −10%.</span>`;
   } else if(set.tecnica==='restpause'){
     corpo = `<span class="tec-l">Rip dopo la pausa:</span> ${campo('ripRP','3-5',56)} <button type="button" class="set-mini-btn" onclick="avviaPausaRestPause()">⏱ Pausa 20"</button>`;
   } else {
@@ -6533,8 +6573,8 @@ function tecnicaPanelHtml(ei, si, set, nome){
     <div class="tec-t">${t.icona} ${t.label} <span class="tec-sost">sostituisce questa serie</span></div>
     <div class="tec-h">${t.hint}</div>
     <div class="tec-f">${corpo}</div>
-    ${sconsigliata ? `<div class="tec-w">⚠️ Il piano sconsiglia le tecniche d'intensità su questo esercizio.</div>` : ''}
-    ${troppe ? `<div class="tec-w">⚠️ Hai già ${contaTecnicheSessione()} tecniche in questa seduta: il piano ne prevede al massimo ${maxTecnicheSeduta()}.</div>` : ''}
+    ${sconsigliata && set.tecnica!=='backoff' ? `<div class="tec-w">⚠️ Il piano sconsiglia le tecniche d'intensità su questo esercizio.</div>` : ''}
+    ${troppe && set.tecnica!=='backoff' ? `<div class="tec-w">⚠️ Hai già ${contaTecnicheSessione()} tecniche in questa seduta: il piano ne prevede al massimo ${maxTecnicheSeduta()}.</div>` : ''}
   </div>`;
 }
 
@@ -7023,48 +7063,89 @@ function datiUltimaSessione(nomeEsercizio){
   return { data: trovata.data, sets: trovata.es.sets || [], noteUtente: trovata.es.noteUtente || '' };
 }
 
-function suggerimentoProgressione(nomeEsercizio, ripTargetStr){
-  const target = parseRipTarget(ripTargetStr);
-  if(!target) return null;
+/* Caduta di ripetizioni a parità di carico (prima − ultima serie): oltre 2 è il
+   segnale di recupero troppo corto. Escluse tecniche, back off e riscaldamento. */
+function cadutaRipetizioni(draft){
+  const per = {};
+  (draft.sets||[]).filter(x=> x.fatta && !x.saltata && !x.tecnica && !x.riscaldamento).forEach(x=>{
+    const w = parseFloat(x.peso), r = parseInt(x.rip);
+    if(isNaN(w) || isNaN(r)) return;
+    (per[w] = per[w]||[]).push(r);
+  });
+  let best = null;
+  Object.keys(per).forEach(w=>{
+    const rs = per[w]; if(rs.length<2) return;
+    const d = rs[0]-rs[rs.length-1];
+    if(d>2 && (!best || rs.length>best.n)) best = { w, d, n:rs.length };
+  });
+  return best ? `Caduta di ${best.d} ripetizioni tra prima e ultima serie a ${fmtKg(parseFloat(best.w))} kg: allunga un po' il recupero.` : null;
+}
+function parseRipRange(str){
+  if(!str) return null;
+  const isTime = str.includes('"');
+  const nums = str.replace(/"/g,'').split('-').map(n=>parseInt(n)).filter(n=>!isNaN(n));
+  if(!nums.length) return null;
+  return { min: Math.min(...nums), max: Math.max(...nums), isTime };
+}
+/* Incremento di carico consigliato: 1 kg sotto gli 8 kg, 1,25 kg fino a 15 kg,
+   2,5 kg fino a 40 kg, oltre il ~4% (arrotondato a 1,25 kg, minimo 2,5 kg). */
+/* Unità del carico per esercizio: evita equivoci tra carico totale, per
+   braccio, per lato e a dischi. */
+function unitaCaricoEsercizio(nome, def){
+  if(def && def.unitaCarico) return def.unitaCarico;
+  const n = String(nome||'');
+  if(/leg extension/i.test(n)) return 'dischi';
+  if(/croci ai cavi/i.test(n)) return 'per lato';
+  if(/high row unilaterale|low row a un braccio|curl con manubri|spinte verticali con manubri|stacco rumeno con manubri|bicep curl|spider curl|spinte panca 30/i.test(n)) return 'per braccio';
+  return 'totale';
+}
+function stepCarico(peso, stepEsercizio){
+  if(stepEsercizio>0) return stepEsercizio;
+  if(peso<8) return 1;
+  if(peso<=15) return 1.25;
+  if(peso<=40) return 2.5;
+  return Math.max(2.5, Math.round(peso*0.04/1.25)*1.25);
+}
+const fmtKg = n => String(Math.round(n*100)/100).replace('.',',');
+
+/* Doppia progressione sulle top set: si propone di salire quando, nell'ultima
+   seduta, TUTTE le serie col carico più alto (esclusi riscaldamento, back off,
+   drop, rest-pause) arrivano al massimo del range. Dopo l'aumento le top set
+   non sono più al massimo, quindi non si ripropone finché non ci si ritorna.
+   Se per 2 sedute le top set restano sotto il minimo si propone di scendere. */
+function suggerimentoProgressione(nomeEsercizio, ripTargetStr, stepEsercizio){
+  const range = parseRipRange(ripTargetStr);
+  if(!range) return null;
   const ultime = cache.sessioni
     .slice().sort((a,b)=> new Date(b.data)-new Date(a.data))
     .map(s=> trovaEsInSessione(s, nomeEsercizio))
     .filter(Boolean)
     .slice(0,2);
-  if(ultime.length < 2) return null;
+  if(!ultime.length) return null;
 
-  const entrambeOk = ultime.every(es=>
-    es.sets.length>0 && es.sets.every(set=>{
-      const rip = parseInt(set.rip);
-      return set.fatta && !isNaN(rip) && rip >= target.max;
-    })
-  );
-  const entrambeFallite = ultime.every(es=>
-    es.sets.length>0 && es.sets.some(set=>{
-      const rip = parseInt(set.rip);
-      return !set.fatta || isNaN(rip) || rip < target.max;
-    })
-  );
+  if(range.isTime){
+    if(ultime.length<2) return null;
+    const ok = ultime.every(es=> es.sets.length>0 && es.sets.every(x=> x.fatta && parseInt(x.rip)>=range.max));
+    return ok ? 'Nelle ultime 2 sedute hai completato tutta la durata richiesta: prova ad aumentare di qualche secondo.' : null;
+  }
 
-  if(entrambeOk){
-    // Auto-regolazione: se hai completato le rip ma con RPE già molto alto,
-    // meglio consolidare il carico un'altra seduta prima di alzarlo ancora.
-    const tuttiRpe = ultime.flatMap(es=> es.sets.map(s=>s.rpe)).filter(v=>v!=null && !isNaN(v));
-    const rpeMedio = tuttiRpe.length ? tuttiRpe.reduce((a,b)=>a+b,0)/tuttiRpe.length : null;
-    if(rpeMedio!=null && rpeMedio>=9){
-      return `Nelle ultime 2 sedute hai completato ${target.isTime?'tutta la durata richiesta':'tutte le ripetizioni richieste'}, ma con un RPE medio alto (${rpeMedio.toFixed(1)}/10): meglio mantenere questo carico un'altra seduta prima di aumentare.`;
+  const top0 = topSetEsercizio(ultime[0]);
+  if(top0.peso!=null){
+    const tuttiAlMax = top0.sets.length>0 && top0.sets.every(x=> parseInt(x.rip) >= range.max);
+    if(tuttiAlMax){
+      const st = stepCarico(top0.peso, stepEsercizio);
+      return `Nell'ultima seduta tutte le serie col carico più alto (${fmtKg(top0.peso)} kg) sono arrivate a ${range.max} ripetizioni: prova ${fmtKg(top0.peso+st)} kg (+${fmtKg(st)}).`;
     }
-    return target.isTime
-      ? 'Nelle ultime 2 sedute hai completato tutta la durata richiesta: prova ad aumentare di qualche secondo.'
-      : 'Nelle ultime 2 sedute hai completato tutte le ripetizioni richieste: prova ad aumentare il peso di circa 2.5 kg.';
   }
-
-  if(entrambeFallite){
-    return target.isTime
-      ? "Nelle ultime 2 sedute non hai completato la durata richiesta: valuta di scendere leggermente d'intensità o di recuperare un po' di più tra le serie."
-      : 'Nelle ultime 2 sedute non hai completato le ripetizioni richieste: valuta di scendere leggermente di peso per tornare a muoverti con buona tecnica.';
+  if(ultime.length>=2){
+    const sottoMin = es=>{
+      const t = topSetEsercizio(es);
+      return t.peso!=null && t.sets.some(x=>{ const r=parseInt(x.rip); return !isNaN(r) && r < range.min; });
+    };
+    if(sottoMin(ultime[0]) && sottoMin(ultime[1])){
+      return `Nelle ultime 2 sedute le serie col carico più alto sono rimaste sotto le ${range.min} ripetizioni: valuta di scendere un po' di peso o di allungare il recupero.`;
+    }
   }
-
   return null;
 }
 
@@ -7241,9 +7322,15 @@ function renderEsercizioCard(scheda, ei, supersetTag){
   html += `<div class="ex2-chips">
     <button type="button" class="rec-chip${serieRipPersonalizzate[e.nome]?' custom':''}" onclick="apriModificaSerie(${ei})" aria-label="Modifica serie e ripetizioni">${serieEsercizio(e)} × ${escHtml(ripEsercizio(e))} ✎</button>
     <button type="button" class="rec-chip${recuperiPersonalizzati[e.nome]!=null?' custom':''}" onclick="apriModificaRecupero(${ei})" aria-label="Modifica il tempo di recupero">⏱ ${fmtRecupero(recuperoEsercizio(e))} ✎</button>
+    <span class="ex2-cp">⚖️ carico ${unitaCaricoEsercizio(nomeAttivo, e)}</span>
     ${infoEs && infoEs.cp ? `<span class="ex2-cp">🏁 ${escHtml(infoEs.cp==='da trovare' ? 'carico da trovare' : infoEs.cp)}</span>` : ''}
     ${uni ? `<span class="ex2-cp">↔ un lato alla volta · parti dal SX</span>` : ''}
   </div>`;
+  // Suggerimenti sempre visibili (non più nascosti nel pannello "Altro").
+  { const sugg = suggerimentoProgressione(nomeAttivo, e.ripTarget, e.step);
+    if(sugg) html += `<div class="progress-tip">💡 ${sugg}</div>`;
+    const cad = cadutaRipetizioni(draft);
+    if(cad) html += `<div class="progress-tip">⚠️ ${cad}</div>`; }
   const ultimaVolta = datiUltimaSessione(nomeAttivo);
   if(ultimaVolta){
     const dataLbl = new Date(ultimaVolta.data).toLocaleDateString('it-IT',{day:'numeric',month:'short'});
@@ -7290,9 +7377,7 @@ function renderEsercizioCard(scheda, ei, supersetTag){
       <button type="button" class="s2-chip s2-danger" onclick="saltaEsercizioConferma(${ei})">⏭ Salta esercizio</button>
     </div>`;
     if(e.note) html += `<div class="note-box">${usaAlt ? `Stai facendo l'alternativa al posto di <b>${escHtml(e.nome)}</b>. ` : ''}${escHtml(e.note)}</div>`;
-    const suggerimento = suggerimentoProgressione(nomeAttivo, e.ripTarget);
-    if(suggerimento) html += `<div class="progress-tip">💡 ${suggerimento}</div>`;
-    html += `<p class="rpe-legend">RPE: 6 = leggero · 8 = a 2 rip dal cedimento · 10 = cedimento totale</p>`;
+    html += `<p class="rpe-legend">RPE: 10 = cedimento reale · 9 = 1 rip in riserva · 8 = 2 in riserva · 6 = leggero</p>`;
     html += `<textarea class="note-user" placeholder="Le tue note su questo esercizio (sensazioni, dolori, aggiustamenti...)" oninput="updateNotaEsercizio(${ei}, this.value)">${escHtml(draft.noteUtente||'')}</textarea>`;
     if(!usaAlt && infoEs) html += schedaEsercizioHtml(ei, e.nome, infoEs);
     else if(!usaAlt) html += `<button class="toggle-guide" onclick="toggleGuide(${ei})">Guida esercizio ▾</button>
@@ -7867,13 +7952,13 @@ function sintesiMangiatoGiorno(g){
 function esportaCSV(){
   const righe = [];
   righe.push('=== ALLENAMENTI ===');
-  righe.push(['Data','Scheda','Esercizio','Serie','Peso (kg)','Rip','Completata','RPE','Note','Unilaterale','Peso DX (kg)','Rip DX','Tecnica','Dettaglio tecnica'].join(','));
+  righe.push(['Data','Scheda','Esercizio','Serie','Peso (kg)','Rip','Completata','RPE','Note','Unilaterale','Peso DX (kg)','Rip DX','Tecnica','Dettaglio tecnica','Unità carico'].join(','));
   cache.sessioni.slice().sort((a,b)=> new Date(a.data)-new Date(b.data)).forEach(s=>{
     const data = new Date(s.data).toLocaleDateString('it-IT');
     s.esercizi.forEach(e=>{
       e.sets.forEach((set,i)=>{
         const rpeVal = set.rpe!=null ? set.rpe : (e.rpe||'');
-        righe.push([data, csvEscape(s.schedaNome), csvEscape(e.nome), i+1, set.peso||'', csvEscape(set.rip||''), set.fatta?'si':'no', rpeVal, csvEscape(e.noteUtente||''), e.unilaterale?'si':'', set.pesoDx||'', csvEscape(set.ripDx||''), csvEscape(set.tecnica||''), csvEscape(set.tecnica==='drop' ? [set.pesoDrop?set.pesoDrop+'kg':'', set.ripDrop?'x'+set.ripDrop:''].join('') : set.tecnica==='restpause' ? (set.ripRP?'+'+set.ripRP+' rip':'') : set.tecnica==='parziali' ? (set.ripParz?'+'+set.ripParz+' parziali':'') : '')].join(','));
+        righe.push([data, csvEscape(s.schedaNome), csvEscape(e.nome), i+1, set.peso||'', csvEscape(set.rip||''), set.fatta?'si':'no', rpeVal, csvEscape(e.noteUtente||''), e.unilaterale?'si':'', set.pesoDx||'', csvEscape(set.ripDx||''), csvEscape(set.tecnica||''), csvEscape(set.tecnica==='drop' ? [set.pesoDrop?set.pesoDrop+'kg':'', set.ripDrop?'x'+set.ripDrop:''].join('') : set.tecnica==='restpause' ? (set.ripRP?'+'+set.ripRP+' rip':'') : set.tecnica==='parziali' ? (set.ripParz?'+'+set.ripParz+' parziali':'') : ''), unitaCaricoEsercizio(e.nome)].join(','));
       });
     });
   });
@@ -8147,7 +8232,43 @@ const GRUPPI_MUSCOLARI_PATTERN = [
   {gruppo:'Spalle', re:/spalla|shoulder|military|alzate|arnold|rear delt|deltoid|lento avanti|spinte verticali|overhead press/i},
   {gruppo:'Braccia', re:/curl|bicip|tricip|push.?down|french|braccio/i}
 ];
+/* Classificazione fine (muscolo/sottogruppo): l'ordine conta. "Rematore con
+   supporto al petto" e "Low row (appoggio al petto)" sono schiena media, non
+   petto; "Spinte verticali ... (panca 60-75°)" sono spalle, non petto; "Curl
+   ... della lat machine" sono bicipiti; "Stacco" (non solo "stacchi") sono
+   femorali. Usata sia dal volume settimanale sia dal gruppo largo delle
+   Statistiche. */
+const SOTTOGRUPPI_PATTERN = [
+  [/hip thrust|glute/i, 'Glutei'],
+  [/plank|addom|crunch|\bcore\b/i, 'Addome'],
+  [/adductor|adduttor/i, 'Adduttori'],
+  [/abductor|abduttor/i, 'Abduttori'],
+  [/polpacc|calf/i, 'Polpacci'],
+  [/leg curl|stacc|\brdl\b|rumeno/i, 'Femorali'],
+  [/hack|leg press|leg extension|squat|affond|quadricip|\bgamba\b/i, 'Quadricipiti'],
+  [/curl|bicip/i, 'Bicipiti'],
+  [/tricip|push.?down|french|skull/i, 'Tricipiti'],
+  [/rear delt|deltoidi posteriori|reverse fly/i, 'Spalle · posteriori'],
+  [/alzate laterali|macchina deltoidi|deltoidi|lateral raise/i, 'Spalle · laterali'],
+  [/lento avanti|spinte verticali|shoulder press|military|arnold|overhead press|\bspalla\b|\bspalle\b/i, 'Spalle · spinte'],
+  [/rematore|low row|hyperextens|iperestens|row machine|tirata/i, 'Schiena media'],
+  [/lat machine|pulldown|high row|pulley|trazioni|pullover|\bdorso\b|\bschiena\b/i, 'Dorsali'],
+  [/chest|petto|panca|croci|pec |pec$|pec fly|pec deck|push-?up|\bfly\b/i, 'Petto']
+];
+const SOTTOGRUPPO_A_GRUPPO = {
+  'Petto':'Petto','Dorsali':'Dorso','Schiena media':'Dorso',
+  'Spalle · spinte':'Spalle','Spalle · laterali':'Spalle','Spalle · posteriori':'Spalle',
+  'Quadricipiti':'Gambe','Femorali':'Gambe','Adduttori':'Gambe','Abduttori':'Gambe','Polpacci':'Gambe',
+  'Glutei':'Glutei','Bicipiti':'Braccia','Tricipiti':'Braccia','Addome':'Core'
+};
+function sottogruppoEsercizio(nome){
+  const n = String(nome||'');
+  const m = SOTTOGRUPPI_PATTERN.find(([re])=>re.test(n));
+  return m ? m[1] : null;
+}
 function gruppoMuscolareEsercizio(nome){
+  const sg = sottogruppoEsercizio(nome);
+  if(sg) return SOTTOGRUPPO_A_GRUPPO[sg];
   const match = GRUPPI_MUSCOLARI_PATTERN.find(p=>p.re.test(nome||''));
   return match ? match.gruppo : 'Altro';
 }
@@ -8157,15 +8278,40 @@ function gruppoMuscolareEsercizio(nome){
    anche per esercizi a corpo libero o a tempo (es. Plank) dove non c'e' un
    peso numerico. 10-20 serie/settimana per gruppo e' un range spesso citato
    come riferimento generale per l'ipertrofia, non una prescrizione personale. */
-function volumeSettimanalePerGruppo(giorni){
+/* Serie a settimana previste dal piano Massa (94 totali), per sottogruppo.
+   Modificabili toccando la riga nella card: i valori scelti si salvano sul
+   telefono (localStorage). */
+const VOLUME_PREVISTO_DEFAULT = {
+  'Petto':12, 'Dorsali':6, 'Schiena media':6,
+  'Spalle · spinte':8, 'Spalle · laterali':6, 'Spalle · posteriori':6,
+  'Quadricipiti':10, 'Femorali':10, 'Glutei':2, 'Adduttori':4, 'Polpacci':6,
+  'Bicipiti':6, 'Tricipiti':6, 'Addome':6
+};
+function volumePrevisto(){
+  let ov = {}; try{ ov = JSON.parse(localStorage.getItem('by_volume_previsto')||'{}')||{}; }catch(e){}
+  return { ...VOLUME_PREVISTO_DEFAULT, ...ov };
+}
+function impostaVolumePrevisto(g){
+  const att = volumePrevisto()[g] ?? 0;
+  const v = window.prompt(`Serie a settimana previste per "${g}":`, String(att));
+  if(v===null) return;
+  const n = parseInt(v);
+  if(isNaN(n) || n<0 || n>60) return;
+  let ov = {}; try{ ov = JSON.parse(localStorage.getItem('by_volume_previsto')||'{}')||{}; }catch(e){}
+  ov[g] = n;
+  try{ localStorage.setItem('by_volume_previsto', JSON.stringify(ov)); }catch(e){}
+  renderStatistiche();
+}
+function volumeSettimanalePerGruppo(giorni, fine){
   giorni = giorni || 7;
   const daData = new Date(); daData.setDate(daData.getDate()-giorni+1); daData.setHours(0,0,0,0);
   const conteggio = {};
   cache.sessioni.filter(s=> new Date(s.data) >= daData).forEach(s=>{
     (s.esercizi||[]).forEach(e=>{
-      const setFatte = (e.sets||[]).filter(x=>x.fatta).length;
+      // Le serie di riscaldamento non contano nel volume.
+      const setFatte = (e.sets||[]).filter(x=>x.fatta && !x.riscaldamento).length;
       if(setFatte>0){
-        const gruppo = gruppoMuscolareEsercizio(e.nome);
+        const gruppo = fine ? (sottogruppoEsercizio(e.nome) || 'Altro') : gruppoMuscolareEsercizio(e.nome);
         conteggio[gruppo] = (conteggio[gruppo]||0) + setFatte;
       }
     });
@@ -8174,21 +8320,30 @@ function volumeSettimanalePerGruppo(giorni){
 }
 
 function renderVolumeGruppiCard(){
-  const conteggio = volumeSettimanalePerGruppo(7);
-  const gruppi = Object.keys(conteggio).sort((a,b)=> conteggio[b]-conteggio[a]);
-  if(!gruppi.length) return '';
+  const conteggio = volumeSettimanalePerGruppo(7, true);
+  const prev = volumePrevisto();
+  const ordine = Object.keys(VOLUME_PREVISTO_DEFAULT);
+  const gruppi = [...ordine.filter(g=> (conteggio[g]||0)>0 || prev[g]>0), ...Object.keys(conteggio).filter(g=>!ordine.includes(g))];
+  if(!Object.keys(conteggio).length) return '';
   const righe = gruppi.map(g=>{
-    const n = conteggio[g];
-    const pct = Math.min(100, Math.round((n/20)*100));
-    const etichetta = n<10 ? 'basso' : (n<=20 ? 'nel range comune' : 'alto');
-    return `<div class="blocco-progress">
-      <p class="bp-label">${g} · ${n} serie · ${etichetta}</p>
-      <div class="bp-bar"><div class="bp-fill" style="width:${pct}%"></div></div>
+    const n = conteggio[g]||0, tgt = prev[g]||0;
+    let etichetta = '', cls = '';
+    if(tgt>0){
+      const r = n/tgt;
+      etichetta = r<0.8 ? 'da completare' : (r<=1.2 ? 'in linea' : 'oltre il piano');
+      cls = r>1.2 ? ' over' : '';
+    }
+    const pct = tgt>0 ? Math.min(100, Math.round((n/tgt)*100)) : Math.min(100, n*5);
+    const sx = tgt>0 ? `${n} / ${tgt} serie · ${etichetta}` : `${n} serie`;
+    const edit = (tgt>0 || ordine.includes(g)) ? ` onclick="impostaVolumePrevisto('${g.replace(/'/g,"\\'")}')" style="cursor:pointer;"` : '';
+    return `<div class="blocco-progress"${edit}>
+      <p class="bp-label">${g} · ${sx}</p>
+      <div class="bp-bar"><div class="bp-fill${cls}" style="width:${pct}%"></div></div>
     </div>`;
   }).join('');
   return `<div class="card">
     <h3 style="margin-top:0;font-size:15px;">💪 Volume settimanale per gruppo</h3>
-    <p class="field-hint" style="margin:0 0 14px;">Serie completate negli ultimi 7 giorni per gruppo muscolare. 10-20 serie/settimana per gruppo è un range spesso citato come riferimento generale per l'ipertrofia — non una prescrizione, solo un punto di partenza.</p>
+    <p class="field-hint" style="margin:0 0 14px;">Serie completate negli ultimi 7 giorni contro quelle previste dal tuo piano (riscaldamento escluso). Tocca una riga per cambiare le serie previste.</p>
     ${righe}
   </div>`;
 }
@@ -8204,6 +8359,7 @@ function calcolaValoreEsercizio(sessione, nomeEsercizio, metrica){
   }
   const validi = [];
   (e.sets||[]).forEach(x=>{
+    if(x.tecnica==='backoff' || x.riscaldamento) return; // back off e riscaldamento non contano per record e confronti
     validi.push({peso:parseFloat(x.peso), rip:parseInt(x.rip)});
     if(x.pesoDx!=null && x.pesoDx!=='') validi.push({peso:parseFloat(x.pesoDx), rip:parseInt(x.ripDx)});
   });
@@ -8211,7 +8367,16 @@ function calcolaValoreEsercizio(sessione, nomeEsercizio, metrica){
   if(!validi.length) return null;
   if(metrica==='pesoMax') return Math.max(...validi.map(x=>x.peso));
   if(metrica==='volume') return validi.reduce((sum,x)=> sum + x.peso*x.rip, 0);
-  if(metrica==='rm') return Math.max(...validi.map(x=> x.peso*(1+x.rip/30)));
+  if(metrica==='rm'){
+    // 1RM stimato (Epley) affidabile solo fino a ~10 ripetizioni e su multiarticolari;
+    // altrimenti niente valore (la card mostra "miglior serie").
+    const sg = sottogruppoEsercizio(nomeEsercizio);
+    const multi = !['Adduttori','Abduttori','Polpacci','Bicipiti','Tricipiti','Addome','Spalle · laterali','Spalle · posteriori'].includes(sg) && !/extension|leg curl|croci|pec |pec$|pec deck|fly|pushdown/i.test(nomeEsercizio||'');
+    const ok = validi.filter(x=> x.rip<=10);
+    if(!multi || !ok.length) return null;
+    return Math.max(...ok.map(x=> x.peso*(1+x.rip/30)));
+  }
+  if(metrica==='bestSet'){ const m = validi.reduce((b,x)=> (x.peso*x.rip > b.peso*b.rip ? x : b), validi[0]); return m.peso*m.rip; }
   return null;
 }
 
@@ -8230,8 +8395,23 @@ function renderAderenzaCard(){
       if(gruppiMostrati.has(s.gruppo)) return;
       gruppiMostrati.add(s.gruppo);
       const prog = progressoBlocco(s.gruppo);
-      if(!prog || !prog.seduteTarget) return;
+      if(!prog) return;
       const membri = membriGruppo(s.gruppo);
+      if(!prog.seduteTarget){
+        // Blocco senza durata (es. Massa): sedute degli ultimi 7 e 28 giorni
+        // contro la frequenza settimanale (e 4 settimane).
+        const freq = membri[0].frequenzaSettimanale || 4;
+        const tutte = sessioniGruppo(s.gruppo);
+        const nGiorni = d=>{ const da=new Date(); da.setDate(da.getDate()-d+1); da.setHours(0,0,0,0); return tutte.filter(x=> new Date(x.data)>=da).length; };
+        const riga = (lbl, fatte, attese)=>`<div class="blocco-progress">
+          <p class="bp-label">${lbl} · ${fatte}/${attese} sedute</p>
+          <div class="bp-bar"><div class="bp-fill" style="width:${Math.min(100,Math.round(fatte/attese*100))}%"></div></div>
+        </div>`;
+        html += `<p class="field-hint" style="margin:0 0 8px;">${membri.length>1 ? membri[0].nome.split('—')[0].trim() : membri[0].nome}</p>`;
+        html += riga('Ultimi 7 giorni', nGiorni(7), freq);
+        html += riga('Ultimi 28 giorni', nGiorni(28), freq*4);
+        return;
+      }
       const tag = m => { const mm = m.nome.match(/\(([^)]+)\)/); return mm ? mm[1] : m.nome; };
       const base = membri[0].nome.split('—')[0].trim();
       const nomeGruppo = membri.length>1 ? `${base} (${membri.map(tag).join('/')})` : membri[0].nome;
@@ -8263,6 +8443,49 @@ function renderAderenzaCard(){
   return html;
 }
 
+/* Peso: media degli ultimi 7 giorni contro i 7 precedenti (servono almeno 3
+   pesate per finestra) e semaforo rispetto all'obiettivo di crescita. */
+function sogliePesoSettimana(){
+  try{ const v = JSON.parse(localStorage.getItem('by_peso_soglie')||'null'); if(v && v.min>=0 && v.max>v.min) return v; }catch(e){}
+  return { min:0.15, max:0.25 };
+}
+function impostaSogliePeso(){
+  const att = sogliePesoSettimana();
+  const v = window.prompt('Obiettivo di crescita in kg/settimana (minimo-massimo):', `${att.min}-${att.max}`);
+  if(v===null) return;
+  const m = v.replace(/,/g,'.').match(/^\s*([\d.]+)\s*-\s*([\d.]+)\s*$/);
+  if(!m) return;
+  const min = parseFloat(m[1]), max = parseFloat(m[2]);
+  if(!(min>=0 && max>min && max<3)) return;
+  try{ localStorage.setItem('by_peso_soglie', JSON.stringify({min,max})); }catch(e){}
+  renderStatistiche();
+}
+function renderPesoMedioCard(){
+  const pesi = cache.misure.filter(m=>m.peso!=null && m.peso!=='').map(m=>({ t:new Date(m.data).getTime(), v:Number(m.peso) })).filter(x=>!isNaN(x.v));
+  if(!pesi.length) return '';
+  const ora = Date.now(), W = 7*86400000;
+  const corr = pesi.filter(x=> ora-x.t < W && ora-x.t >= 0), prec = pesi.filter(x=> ora-x.t >= W && ora-x.t < 2*W);
+  const media = a => a.reduce((s,x)=>s+x.v,0)/a.length;
+  let corpo;
+  if(corr.length<3 || prec.length<3){
+    corpo = `<p class="field-hint" style="margin:0;">Servono almeno 3 pesate in ognuna delle ultime due settimane (ora ${corr.length} e ${prec.length}). Pesati a digiuno, stessa ora.</p>`;
+  } else {
+    const mc = media(corr), mp = media(prec), d = mc-mp, sg = sogliePesoSettimana();
+    let sem, testo;
+    if(d>0.5){ sem='🔴'; testo='sale troppo in fretta'; }
+    else if(d>sg.max){ sem='🟠'; testo='sopra l\'obiettivo'; }
+    else if(d>=sg.min){ sem='🟢'; testo='in linea con l\'obiettivo'; }
+    else { sem='🟡'; testo='sotto l\'obiettivo'; }
+    const f = n=>(Math.round(n*100)/100).toString().replace('.',',');
+    corpo = `<div class="oggi-stats">
+      <div class="oggi-stat"><div class="v">${f(mc)}</div><div class="l">Media 7 gg<br>kg</div></div>
+      <div class="oggi-stat"><div class="v">${d>0?'+':''}${f(d)}</div><div class="l">vs 7 gg prima<br>kg/sett.</div></div>
+    </div>
+    <p style="margin:12px 0 0;font-size:13px;cursor:pointer;" onclick="impostaSogliePeso()">${sem} ${testo} (obiettivo +${sg.min}–${sg.max} kg/sett. · tocca per cambiare)</p>`;
+  }
+  return `<div class="card"><h3 style="margin-top:0;font-size:15px;">⚖️ Peso medio settimanale</h3>${corpo}</div>`;
+}
+
 function renderRiepilogoSettimanale(){
   const pianoPersonale = profiloUtente && profiloUtente.schedeAssegnate === null;
   const seiGiorniFa = new Date(); seiGiorniFa.setDate(seiGiorniFa.getDate()-6); seiGiorniFa.setHours(0,0,0,0);
@@ -8277,12 +8500,22 @@ function renderRiepilogoSettimanale(){
     // (rimosse su richiesta): restano solo le kcal medie della settimana,
     // calcolate su tutti i giorni tracciati (inclusi quelli con macro
     // inseriti a mano tramite manualMacros).
-    const tuttiGiorniSettimana = cache.dietaLog.filter(d=> new Date(d.id) >= seiGiorniFa);
-    const kcalGiorni = tuttiGiorniSettimana.map(g=> calcolaTotaliGiorno(g).kcalTot).filter(v=>v>0);
-    if(kcalGiorni.length){
-      const kcalMedia = Math.round(kcalGiorni.reduce((a,b)=>a+b,0)/kcalGiorni.length);
-      aderenzaTiles += `<div class="oggi-stat"><div class="v">${kcalMedia}</div><div class="l">Kcal medie<br>/giorno</div></div>`;
+    // La giornata in corso non è finita: resta fuori dalla media (appare a
+    // parte come "oggi parziale") e la media copre i 7 giorni COMPLETI precedenti.
+    const oggiKey = todayKey();
+    const da = new Date(); da.setDate(da.getDate()-7); const daKey = chiaveGiorno(da);
+    const giorniChiusi = cache.dietaLog.filter(d=> d.id >= daKey && d.id < oggiKey);
+    const tot = giorniChiusi.map(g=> calcolaTotaliGiorno(g)).filter(t=>t.kcalTot>0);
+    if(tot.length){
+      const kcalMedia = Math.round(tot.reduce((a,t)=>a+t.kcalTot,0)/tot.length);
+      const protMedia = Math.round(tot.reduce((a,t)=>a+t.protTot,0)/tot.length);
+      const tPesi = obiettiviAttivi(true), tRip = obiettiviAttivi(false);
+      const kcalTarget = Math.round((4*tPesi.kcal + 3*tRip.kcal)/7);
+      aderenzaTiles += `<div class="oggi-stat"><div class="v">${kcalMedia}</div><div class="l">Kcal medie/giorno<br>target ${kcalTarget}</div></div>`;
+      aderenzaTiles += `<div class="oggi-stat"><div class="v">${protMedia}</div><div class="l">Proteine medie<br>target ${tPesi.prot} g</div></div>`;
     }
+    const oggiTot = calcolaTotaliGiorno(cache.dietaLogOggi);
+    if(oggiTot.kcalTot>0) aderenzaTiles += `<div class="oggi-stat"><div class="v">${Math.round(oggiTot.kcalTot)}</div><div class="l">Oggi<br>(parziale)</div></div>`;
   }
 
   if(!sessioniSettimana.length && !aderenzaTiles) return '';
@@ -8347,6 +8580,7 @@ function renderStatistiche(){
   }
 
   let html = renderRiepilogoSettimanale();
+  html += renderPesoMedioCard();
   html += renderAderenzaCard();
   html += renderObiettivoCorpoStatCard();
   if(haveSessioni) html += renderVolumeGruppiCard();
@@ -8408,11 +8642,11 @@ function renderStatistiche(){
     let gruppoSel = gruppoMuscolareEsercizio(selected);
     let metricaSel = 'pesoMax';
 
-    const UNITA_METRICA = { pesoMax:'kg', volume:'kg', rm:'kg', rpeMedio:'/10' };
+    const UNITA_METRICA = { pesoMax:'kg', volume:'kg', rm:'kg', bestSet:'kg·rip', rpeMedio:'/10' };
 
-    function aggiornaHighlight(name, metrica, points){
+    function aggiornaHighlight(name, metrica, points, metaInfoArg){
       if(!highlightBox) return;
-      const metaInfo = METRICHE_ESERCIZIO.find(m=>m.key===metrica);
+      const metaInfo = metaInfoArg || METRICHE_ESERCIZIO.find(m=>m.key===metrica);
       const unita = UNITA_METRICA[metrica] || '';
       if(!points.length){
         highlightBox.innerHTML = `<div class="stat-highlight-label">Nessun dato ancora per ${name}</div>`;
@@ -8445,12 +8679,19 @@ function renderStatistiche(){
     }
 
     function drawChart(name, metrica){
-      const metaInfo = METRICHE_ESERCIZIO.find(m=>m.key===metrica);
-      const points = cache.sessioni
+      const calcPunti = m => cache.sessioni
         .slice().sort((a,b)=> new Date(a.data)-new Date(b.data))
-        .map(s=>({ data: new Date(s.data).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}), v: calcolaValoreEsercizio(s, name, metrica) }))
+        .map(s=>({ data: new Date(s.data).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'}), v: calcolaValoreEsercizio(s, name, m) }))
         .filter(p=>p.v!==null);
-      aggiornaHighlight(name, metrica, points);
+      let points = calcPunti(metrica);
+      let metaInfo = METRICHE_ESERCIZIO.find(m=>m.key===metrica);
+      // 1RM stimato non ha senso oltre ~10 rip o su isolamenti: mostra la miglior serie.
+      if(metrica==='rm' && !points.length){
+        points = calcPunti('bestSet');
+        metaInfo = { key:'bestSet', label:'Miglior serie (kg × rip)' };
+        metrica = 'bestSet';
+      }
+      aggiornaHighlight(name, metrica, points, metaInfo);
       const ctx = document.getElementById('progChart');
       if(window._chart) window._chart.destroy();
       if(points.length===0){
@@ -9324,7 +9565,7 @@ const DIETA_PIANO_BLOCCO3 = {
       riposo:      { kcal:2450, prot:158, carb:313, grassi:63 },
       allenamento: { kcal:2700, prot:158, carb:375, grassi:63 } },
     { id:'massa',  nome:'Massa lenta',                da:new Date(2026, 10, 3),  dal:'03/11', al:'in corso',
-      note:'Target di massa lenta (circa +0,7-1 kg al mese): TDEE stimato ~2600 kcal + circa 220 kcal (+8%). Media settimanale ~2821 kcal (4 giorni di pesi, 3 di riposo). Carboidrati = (kcal − 1270) / 4. Pesati ogni mattina a digiuno e valuta la media settimanale, dalla seconda settimana (nei primi giorni salgono 0,5-1 kg tra acqua e glicogeno). +0,35-0,5 kg ogni 2 settimane: perfetto, non cambiare nulla. Meno di +0,2 kg in 2 settimane: aggiungi 150 kcal, soprattutto carboidrati. Più di +0,5 kg a settimana per 2 settimane: togli 150 kcal. Se in 4-6 settimane la vita sale di 2-3 cm e il peso corre oltre 1,5 kg al mese, togli 100-150 kcal. Quando mangi fuori scrivi una stima prudente verso l\'alto, mai zero (un pasto da ristorante vale 900-1200 kcal). Misure ogni 2 settimane a digiuno (vita, petto, braccia, cosce) e foto con stessa luce e pose.',
+      note:'Target di massa lenta (circa +0,7-1 kg al mese): TDEE stimato ~2600 kcal + circa 220 kcal (+8%). Media settimanale ~2821 kcal (4 giorni di pesi, 3 di riposo). Carboidrati = (kcal − 1270) / 4. Pesati ogni mattina a digiuno e valuta la media settimanale, dalla seconda settimana (nei primi giorni salgono 0,5-1 kg tra acqua e glicogeno). +0,35-0,5 kg ogni 2 settimane: perfetto, non cambiare nulla. Meno di +0,2 kg in 2 settimane: aggiungi 150 kcal, soprattutto carboidrati. Più di +0,5 kg in 2 settimane (oltre 0,25 kg a settimana): togli 150 kcal. Se in 4-6 settimane la vita sale di 2-3 cm e il peso corre oltre 1,5 kg al mese, togli 100-150 kcal. Quando mangi fuori scrivi una stima prudente verso l\'alto, mai zero (un pasto da ristorante vale 900-1200 kcal). Misure ogni 2 settimane a digiuno (vita, petto, braccia, cosce) e foto con stessa luce e pose.',
       riposo:      { kcal:2650, prot:160, carb:345, grassi:70 },
       allenamento: { kcal:2950, prot:160, carb:420, grassi:70 } }
   ],
@@ -9339,7 +9580,15 @@ const DIETA_PIANO_BLOCCO3 = {
   // oltre 0,5 kg in 2 settimane, o la vita di oltre 1 cm, si torna allo step
   // precedente. Se forza in calo, sonno peggiore o fame fuori controllo per
   // più giorni, si alzano le kcal di uno step.
-  checkIn: '08/11/2026'
+  // Prossimo check-in: ogni 2 settimane dall'inizio della fase di massa (03/11),
+  // calcolato sempre sulla prima data che non è già passata.
+  get checkIn(){
+    const f = this.fasi.find(x=>x.id==='massa') || this.faseAttiva;
+    const ora = new Date(); ora.setHours(0,0,0,0);
+    const d = new Date(f.da);
+    while(d < ora) d.setDate(d.getDate()+14);
+    return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+  }
 };
 
 
@@ -9836,9 +10085,14 @@ function renderAlimentazione(){
     </div>`;
   }).join('');
 
-  const timingHtml = allenamentoFattoOggi()
-    ? `<div class="note-box">💪 Ti sei allenato oggi: nelle prossime ore punta su un pasto con proteine e carboidrati per favorire il recupero.</div>`
+  // Giorno segnato "Pesi" ma niente seduta registrata a fine giornata: il target
+  // resterebbe a quello dei pesi, quindi si propone di passare a Riposo.
+  const promemoriaRiposo = (cache.dietaLogOggi.giornoAllenamento && !allenamentoFattoOggi() && new Date().getHours() >= 20)
+    ? `<div class="note-box">🛋️ Oggi non risulta nessuna seduta: vuoi passare a <b>Riposo</b> e usare il target di riposo? <button class="btn small secondary" style="margin-top:8px;width:100%;" onclick="impostaGiornoDiretto(false)">Passa a Riposo</button></div>`
     : '';
+  const timingHtml = promemoriaRiposo + (allenamentoFattoOggi()
+    ? `<div class="note-box">💪 Ti sei allenato oggi: nelle prossime ore punta su un pasto con proteine e carboidrati per favorire il recupero.</div>`
+    : '');
 
   // Target per pasto: non più una media fissa uguale tutti i giorni, ma
   // ricalibrata sul target giornaliero ATTIVO (riposo o allenamento) ogni
@@ -12900,7 +13154,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-17-diag-v30';
+const BUILD_ID = '2026-11-19-correzioni-v32';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
