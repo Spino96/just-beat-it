@@ -4939,6 +4939,58 @@ async function applicaTortinoCorrezione(){
     if(route && route.name==='alimentazione') renderAlimentazione();
   }catch(e){ console.warn('Correzione tortino non applicata', e); }
 }
+/* Una tantum (promemoria "alimenti da aggiungere"): crea i 5 alimenti
+   personalizzati (valori per 100 g, stima) e registra il pasto di ieri
+   (14/11/2026) sulla Cena. Idempotente: alimenti creati una sola volta per
+   nome, voci del diario con id fisso. Le kcal dichiarate vanno in kcalExtra
+   (differenza rispetto al conto 4/4/9 sui macro; per la birra è l'alcol).
+   Quantità del pasto: pizza 440 g, straccetti 150 g, maionese 20 g (stima,
+   non indicata), birra 200 ml, mezzo dolcetto. */
+async function applicaPastoAlimentiNuovi(){
+  try{
+    if(!currentUid) return;
+    const GIORNO = '2026-11-14', PREF = 'corr-20261114-';
+    // nome, kcal100 dichiarate, prot, carb, grassi per 100 g (dolcetto: per 1 pezzo = "100 g"), grammi nel pasto
+    const AL = [
+      { k:'pizza',    nome:'Pizza con mozzarella, salsiccia, nduja e patate (senza cornicione)', kcal:240, p:11,  c:27, f:10, g:440 },
+      { k:'straccetti', nome:'Straccetti di pollo panati', kcal:250, p:17, c:14, f:13, g:150 },
+      { k:'maionese', nome:'Maionese con il 65% di grassi in meno', kcal:270, p:0.5, c:5, f:28, g:20 },
+      { k:'birra',    nome:'Birra regular 5% (per 100 ml)', kcal:43, p:0.4, c:3.3, f:0, g:200 },
+      { k:'dolcetto', nome:'Dolcetto al pistacchio (1 pezzo intero = 100 g)', kcal:240, p:4, c:24, f:14, g:50 }
+    ];
+    for(const a of AL){
+      if(!cache.alimentiPersonalizzati.some(x=>x.nome===a.nome)){
+        const payload = { nome:a.nome, kcal100:kcalDaMacro(a.p,a.c,a.f,0), prot100:a.p, carb100:a.c, grassi100:a.f, fibre100:null, polio100:0, zuccheri100:null, fonte:'stima', creato:new Date().toISOString() };
+        const ref = await aggiungiDocRapido(userCollection('alimentiPersonalizzati'), payload);
+        cache.alimentiPersonalizzati.push({ id:ref.id, ...payload });
+      }
+    }
+    const oggi = (GIORNO===todayKey());
+    let g = oggi ? cache.dietaLogOggi : cache.dietaLog.find(d=>d.id===GIORNO);
+    if(g && (g.alimentiExtra||[]).some(x=>x.id===PREF+'pizza')) return;
+    const voci = AL.map(a=>{
+      const f = a.g/100, prot=round1(a.p*f), carb=round1(a.c*f), grassi=round1(a.f*f);
+      const kcalDich = Math.round(a.kcal*f*10)/10;
+      return { id:PREF+a.k, nome:a.nome.replace(' (per 100 ml)','').replace(' (1 pezzo intero = 100 g)',' (mezzo)'), marca:'', grammi:a.g,
+        kcal:kcalDich, kcalExtra:round1(kcalDich-kcalDaMacro(prot,carb,grassi,0)), prot, carb, grassi, polio:0,
+        prot100:a.p, carb100:a.c, grassi100:a.f, polio100:0, pasto:4, fonte:'stima' };
+    });
+    if(!g){
+      g = { id:GIORNO, pastiFatti:{}, acquaMl:0, integratoriFatti:{}, alimentiExtra:[], pastiSnapshot:{}, pastiViaExtra:{}, giornoAllenamento:null };
+      cache.dietaLog.push(g); cache.dietaLog.sort((a,b)=>a.id.localeCompare(b.id));
+    }
+    if(g.manualMacros){
+      const m=g.manualMacros;
+      voci.forEach(v=>{ m.kcal=(m.kcal||0)+v.kcal; m.prot=(m.prot||0)+v.prot; m.carb=(m.carb||0)+v.carb; m.grassi=(m.grassi||0)+v.grassi; });
+    } else {
+      if(!g.alimentiExtra) g.alimentiExtra=[];
+      voci.forEach(v=>g.alimentiExtra.push(v));
+    }
+    if(oggi) salvaDietaLogOggi(); else salvaGiornoDietaLog(GIORNO, g);
+    if(route && route.name==='alimentazione') renderAlimentazione();
+    console.info('Pasto 14/11 registrato', voci.map(v=>v.kcal));
+  }catch(e){ console.warn('Pasto alimenti nuovi non applicato', e); }
+}
 async function loadData(){
   const [sessioniSnap, misureSnap, dietaLogSnap, alimentiCustomSnap, ricetteSnap, cardioSnap] = await Promise.all([
     userCollection('sessioni').orderBy('data','asc').get(),
@@ -13384,7 +13436,7 @@ async function avviaApp(){
     // loadDataInVolo è ancora vuoto, quindi partiamo da zero come prima.
     await (loadDataInVolo || loadData());
     loadDataInVolo = null;
-    if(profiloUtente && profiloUtente.schedeAssegnate===null){ applicaCorrezioniKcal(); applicaTortinoCorrezione(); }
+    if(profiloUtente && profiloUtente.schedeAssegnate===null){ applicaCorrezioniKcal(); applicaTortinoCorrezione(); applicaPastoAlimentiNuovi(); }
     applicaPulloverSessioneOggi(); // senza attendere: non deve mai bloccare l'avvio
     // A schermata già pronta, scarica i grafici in background: Statistiche si apre subito.
     setTimeout(()=>{ (window.requestIdleCallback||setTimeout)(()=>{ caricaChartJs().catch(()=>{}); }); }, 4000);
@@ -13455,7 +13507,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-15-piano-v10';
+const BUILD_ID = '2026-11-15-alimenti-v11';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
