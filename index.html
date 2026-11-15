@@ -1788,12 +1788,14 @@
   }
   .hx-rings{ position:relative;width:148px;height:148px; }
   .hx-rings svg{ width:100%;height:100%;transform:rotate(-90deg); }
-  .hx-rings circle{ fill:none;stroke-linecap:round;stroke-width:9; }
-  .hx-rings .trk{ stroke:rgba(255,255,255,.07); }
+  .hx-rings circle{ fill:none;stroke-linecap:round;stroke-width:5.5; }
+  .hx-rings .val{ filter:drop-shadow(0 0 2px rgba(255,255,255,.25)); }
+  .hx-center .ok{ font:900 11px 'Manrope',sans-serif;color:var(--sa);margin-top:5px;letter-spacing:.04em; }
+  .hx-rings .trk{ stroke:rgba(255,255,255,.08); }
   .hx-rings .val{ transition:stroke-dashoffset 1.1s var(--ease); }
   .hx-center{ position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center; }
-  .hx-center b{ font-family:var(--disp);font-size:32px;line-height:1;letter-spacing:.02em;font-weight:400; }
-  .hx-center small{ font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:800;margin-top:3px; }
+  .hx-center b{ font-family:var(--disp);font-size:30px;line-height:1;letter-spacing:.02em;font-weight:400; }
+  .hx-center small{ font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);font-weight:800;margin-top:3px; }
   .hx-leg{ display:flex;flex-direction:column;gap:11px;min-width:0; }
   .hx-leg div{ display:flex;flex-direction:column;gap:2px; }
   .hx-leg span{ font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:var(--text-dim);display:flex;align-items:center;gap:6px; }
@@ -6343,13 +6345,14 @@ function renderHome(){
   const ini = new Date(); ini.setDate(ini.getDate()-((ini.getDay()+6)%7)); ini.setHours(0,0,0,0);
   const fatti = cache.sessioni.filter(s=> new Date(s.data)>=ini).length;
   const target = targetAllenamentiSettimana();
+  const pAfix = target ? 0 : Math.min(100, fatti/4*100);
   const pK = t.kcal ? tot.kcalTot/t.kcal*100 : 0, pP = t.prot ? tot.protTot/t.prot*100 : 0, pA = target ? fatti/target*100 : 0;
   const hero = `<div class="hx-hero">
-    <div class="hx-rings">${ringsSvg([{pct:pK,color:'#ff8a3d',r:52},{pct:pP,color:'#3dffa0',r:40},{pct:pA,color:'#5b8cff',r:28}])}
-      <div class="hx-center"><b>${haPiano ? fmt1(Math.abs(kcalRes)) : fatti}</b><small>${haPiano ? (kcalRes>=0?'kcal restanti':'kcal oltre') : 'sedute'}</small></div></div>
+    <div class="hx-rings">${ringsSvg([{pct:pK,color:(pK>108?'#ff5470':'#ff8a3d'),r:55},{pct:pP,color:'#3dffa0',r:46},{pct:(target?pA:pAfix),color:'#5b8cff',r:37}])}
+      <div class="hx-center">${haPiano ? (Math.abs(kcalRes)<=30 ? `<b>${Math.round(tot.kcalTot)}</b><small>kcal</small><div class="ok">✓ Centrato</div>` : `<b>${Math.round(Math.abs(kcalRes))}</b><small>${kcalRes>0?'kcal rimaste':'kcal oltre'}</small>`) : `<b>${fatti}</b><small>sedute</small>`}</div></div>
     <div class="hx-leg">
-      ${haPiano ? `<div><span><i style="background:#ff8a3d"></i>Kcal</span><b>${Math.round(tot.kcalTot)} <em>/ ${t.kcal}</em></b></div>
-      <div><span><i style="background:#3dffa0"></i>Proteine</span><b>${Math.round(tot.protTot)} <em>/ ${t.prot} g</em></b></div>` : ''}
+      ${haPiano ? `<div><span><i style="background:#ff8a3d"></i>Kcal</span><b>${Math.round(tot.kcalTot)} <em>/ ${t.kcal} · ${Math.round(pK)}%</em></b></div>
+      <div><span><i style="background:#3dffa0"></i>Proteine</span><b>${Math.round(tot.protTot)} <em>/ ${t.prot} g · ${Math.round(pP)}%</em></b></div>` : ''}
       <div><span><i style="background:#5b8cff"></i>Allenamenti</span><b>${fatti} <em>${target?'/ '+target+' sett.':'questa sett.'}</em></b></div>
     </div>
   </div>`;
@@ -14218,7 +14221,7 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-15-restyle-v12';
+const BUILD_ID = '2026-11-15-restyle-v12e';
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
