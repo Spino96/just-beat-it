@@ -4891,12 +4891,19 @@ function erroreClientTerminato(err){
   return !!(err && /terminated/i.test(String(err.message||err)));
 }
 function ripristinaConnessioneDati(){
+  /* Non ricaricare mai durante un allenamento o subito dopo il ritorno
+     dallo sfondo: i dati sono già salvati in locale e le scritture
+     riprovano da sole. Si ricarica solo se l'app è ferma in primo piano. */
   try{
     const ult = Number(sessionStorage.getItem('byRipristino')||0);
     if(Date.now()-ult < 30000) return;
     sessionStorage.setItem('byRipristino', String(Date.now()));
   }catch(e){}
-  setTimeout(()=>location.reload(), 1200);
+  try{ db.enableNetwork().catch(()=>{}); }catch(e){}
+  if((typeof sessionDraft!=='undefined' && sessionDraft) || (Date.now()-(window.__byRipresa||0) < 20000)){
+    window.__byRicaricaPendente = true; return;
+  }
+  setTimeout(()=>{ if(typeof sessionDraft!=='undefined' && sessionDraft) return; location.reload(); }, 1200);
 }
 window.addEventListener('unhandledrejection', ev=>{ if(erroreClientTerminato(ev.reason)) ripristinaConnessioneDati(); });
 function attendiScrittura(promise, ms){
@@ -7292,7 +7299,7 @@ function cancellaSessioneSalvata(){
   try{ if(currentUid) db.collection('users').doc(currentUid).set({ sessioneInCorso: null }, { mergeFields:['sessioneInCorso'] }).catch(()=>{}); }catch(e){}
 }
 ['input','change','click'].forEach(ev=> document.addEventListener(ev, ()=>{ if(sessionDraft) pianificaSalvataggioSessione(); }));
-document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') salvaSessioneOra(); });
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ salvaSessioneOra(); try{ if(sessionDraft && typeof focusState!=='undefined' && focusState) localStorage.setItem('by_focus_'+currentUid,'1'); else localStorage.removeItem('by_focus_'+currentUid); }catch(e){} } });
 window.addEventListener('pagehide', salvaSessioneOra);
 
 function ricostruisciSessione(s){
@@ -7340,7 +7347,8 @@ async function controllaSessioneInCorso(){
   if(!s){ cancellaSessioneSalvata(); return false; }
   const ric = ricostruisciSessione(s);
   if(!ric){ cancellaSessioneSalvata(); return false; }
-  const riprendi = await chiediRiprendiAllenamento(s);
+  const recente = (Date.now() - (s.salvato||0)) < 6*3600*1000;
+  const riprendi = recente ? true : await chiediRiprendiAllenamento(s);
   if(!riprendi){ cancellaSessioneSalvata(); return false; }
   sessionDraft = ric;
   return true;
@@ -14166,7 +14174,9 @@ async function avviaApp(){
     const rSalvata = riprendi ? null : routeSalvata();
     goHome();
     preparaCronologia();
-    if(riprendi) setRoute({name:'sessione'});
+    if(riprendi){ setRoute({name:'sessione'});
+      try{ if(localStorage.getItem('by_focus_'+currentUid)==='1'){ localStorage.removeItem('by_focus_'+currentUid); setTimeout(()=>{ try{ if(sessionDraft && !focusState) apriFocus(); }catch(e){} }, 150); } }catch(e){}
+    }
     else if(rSalvata && rSalvata!=='home') setRoute({name:rSalvata});
   }catch(e){
     view.innerHTML = `<div class="error-banner">Errore nel caricamento dei dati: ${e.message}</div>`;
@@ -14221,25 +14231,58 @@ if('serviceWorker' in navigator){
    dopo un nuovo push il telefono può restare sulla versione vecchia. All'avvio
    si legge index.html dal server (senza cache): se l'identificativo di versione
    è diverso, si svuotano cache e service worker e si ricarica una sola volta. */
-const BUILD_ID = '2026-11-15-restyle-v12e';
+const BUILD_ID = '2026-11-18-resume-v13';
+const AVVIO_PAG = Date.now();
+let ultimoControlloVer = 0;
+function mostraBannerAggiornamento(){
+  if(document.getElementById('byUpdBanner')) return;
+  const d=document.createElement('div'); d.id='byUpdBanner';
+  d.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:9999;background:#1b2330;color:#fff;border:1px solid #3a4a63;border-radius:14px;padding:10px 12px;display:flex;gap:10px;align-items:center;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.4)';
+  d.innerHTML='<span style="flex:1">Nuova versione disponibile</span><button id="byUpdOk" style="background:#4ade80;color:#06210f;border:0;border-radius:10px;padding:8px 12px;font-weight:700">Aggiorna</button><button id="byUpdNo" style="background:transparent;color:#9fb0c8;border:0;font-size:18px">✕</button>';
+  document.body.appendChild(d);
+  d.querySelector('#byUpdNo').onclick=()=>d.remove();
+  d.querySelector('#byUpdOk').onclick=async()=>{
+    try{ if(typeof sessionDraft!=='undefined' && sessionDraft && typeof salvaSessioneOra==='function') salvaSessioneOra(); }catch(e){}
+    await applicaAggiornamento();
+  };
+}
+async function applicaAggiornamento(){
+  try{
+    if('caches' in window){ const ks = await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(g=>g.unregister()));
+  }catch(e){}
+  location.reload();
+}
 async function controllaNuovaVersione(){
   try{
     if(!navigator.onLine) return;
+    if(Date.now()-ultimoControlloVer < 60000) return; ultimoControlloVer = Date.now();
     const ctrl = new AbortController(); const to = setTimeout(()=>ctrl.abort(), 8000);
     const r = await fetch('index.html?v='+Date.now(), { cache:'no-store', signal: ctrl.signal }).finally(()=>clearTimeout(to));
     if(!r || !r.ok) return;
     const txt = await r.text();
-    const m = txt.match(/const BUILD_ID = '([^']+)'/);
+    const m = txt.match(/^const BUILD_ID = '([^']+)'/m);
     if(!m || m[1]===BUILD_ID) return;
-    if(sessionStorage.getItem('byReload')===m[1]) return;
-    sessionStorage.setItem('byReload', m[1]);
-    if(typeof sessionDraft!=='undefined' && sessionDraft) return; // non interrompere un allenamento in corso
-    if('caches' in window){ const ks = await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }
-    const regs = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(regs.map(g=>g.unregister()));
-    location.reload();
+    /* Mai ricaricare da soli se c'è un allenamento (anche salvato) o l'app è
+       aperta da più di qualche secondo: si mostra solo il banner. */
+    let allenamento = (typeof sessionDraft!=='undefined' && sessionDraft);
+    try{ if(!allenamento && currentUid && localStorage.getItem('by_sessione_in_corso_'+currentUid)) allenamento = true; }catch(e){}
+    const appenaAperta = Date.now()-AVVIO_PAG < 6000 && document.visibilityState==='visible';
+    let giaFatto = false;
+    try{ giaFatto = sessionStorage.getItem('byReload')===m[1]; sessionStorage.setItem('byReload', m[1]); }catch(e){}
+    if(!allenamento && appenaAperta && !giaFatto){ await applicaAggiornamento(); return; }
+    mostraBannerAggiornamento();
   }catch(e){}
 }
+/* Al ritorno dallo sfondo: nessun ricaricamento, solo ripresa silenziosa. */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState!=='visible') return;
+  window.__byRipresa = Date.now();
+  try{ db.enableNetwork().catch(()=>{}); }catch(e){}
+  setTimeout(controllaNuovaVersione, 3000);
+});
+window.addEventListener('pageshow', ev=>{ if(ev.persisted) window.__byRipresa = Date.now(); });
 </script>
 </body>
 </html>
